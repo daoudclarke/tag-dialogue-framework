@@ -1,22 +1,30 @@
 package uk.ac.susx.tag.dialoguer;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import uk.ac.susx.tag.dialoguer.dialogue.analisers.Analiser;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
-import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 import uk.ac.susx.tag.dialoguer.dialogue.handlers.Handler;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * The definition of a Dialoguer task.
  *
  * Definition includes:
  *
- * --------- Responses -----------
+ * --------- Responses -------------------------------
  *
  *    Available responses are defined in a JSON object:
  *
@@ -39,7 +47,28 @@ import java.util.Random;
  *    The system will require a response that contains the variable "product name", and will replace "{product name}"
  *    with its value when using the template.
  *
- * -------------------------------
+ * --------- Intents & Slots ------------------------
+ *
+ *   You can specify that certain slots must be filled in for a given intent. The system will automatically
+ *   re-query for them if they are missing from a user message.
+ *
+ *   You can specify a mapping between slot names and a more human-readable portion. If so, this is the phrase
+ *   that will be used when automatically querying the user about that slot.
+ *
+ *   {
+ *      requiredSlots : {
+ *         intentName1 : [ requiredSlot1, requiredSlot2, ...],
+ *         intentName2 : [ requiredSlot1, requiredSlot2, ...],
+ *         ...
+ *      },
+ *      humanReadableSlotNames : {
+ *          slotName1 : readableSlotName1,
+ *          slotName2 : readableSlotName2,
+ *          ...
+ *      }
+ *   }
+ *
+ * ---------------------------------------------------
  *
  *
  * User: Andrew D. Robertson
@@ -53,7 +82,10 @@ public class Dialoguer {
 
     private Handler handler;
     private Analiser analiser;
-    private Map<String, List<String>> responseTemplates;
+
+    private Map<String, Set<String>> necessarySlotsPerIntent;
+    private Map<String, String> humanReadableSlotNames;
+    private HashMap<String, List<String>> responseTemplates;
 
     public Dialogue interpret(String message, Dialogue dialogue){
         dialogue.addNewUserMessage(message, analiser.analise(message, dialogue));
@@ -63,6 +95,15 @@ public class Dialoguer {
         dialogue.setStates(r.getNewStates());
 
         return dialogue;
+    }
+
+    public static Dialoguer loadJSON(File dialoguerDefinition) throws FileNotFoundException, UnsupportedEncodingException {
+        return gson.fromJson(new JsonReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8")), Dialoguer.class);
+    }
+
+    private static class NecessarySlotData {
+        private Map<String, Set<String>> necessarySlotsPerIntent;
+        private Map<String, String> humanReadableSlotNames;
     }
 
     private String fillTemplateWithResponse(Response r){

@@ -16,4 +16,9 @@ public class TagAnaliser extends Analiser {
     public List<Intent> analise(String message, Dialogue dialogue) {
         return null;
     }
+
+    @Override
+    public void close() throws Exception {
+
+    }
 }
