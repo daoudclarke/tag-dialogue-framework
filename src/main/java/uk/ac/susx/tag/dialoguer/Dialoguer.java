@@ -98,6 +98,7 @@ public class Dialoguer {
     }
 
     public static Dialoguer loadJSON(File dialoguerDefinition) throws FileNotFoundException, UnsupportedEncodingException {
+        //TODO, this won't work, we'll need to do custom serialisation for the analiser and handler. Should only reference by name
         return gson.fromJson(new JsonReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8")), Dialoguer.class);
     }
 
