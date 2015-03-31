@@ -1,9 +1,10 @@
 package uk.ac.susx.tag.dialoguer;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import uk.ac.susx.tag.dialoguer.dialogue.analisers.Analiser;
+import uk.ac.susx.tag.dialoguer.dialogue.analisers.Analyser;
+import uk.ac.susx.tag.dialoguer.dialogue.analisers.simple.CancellationAnalyser;
+import uk.ac.susx.tag.dialoguer.dialogue.analisers.simple.CancellationAnalyserStringMatching;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handlers.Handler;
@@ -79,16 +80,17 @@ public class Dialoguer {
 
     private static final Random random = new Random();
     private static final Gson gson = new Gson();
+    private static final CancellationAnalyser cancellationAnalyser = new CancellationAnalyserStringMatching();
 
     private Handler handler;
-    private Analiser analiser;
+    private Analyser analyser;
 
     private Map<String, Set<String>> necessarySlotsPerIntent;
     private Map<String, String> humanReadableSlotNames;
     private HashMap<String, List<String>> responseTemplates;
 
     public Dialogue interpret(String message, Dialogue dialogue){
-        dialogue.addNewUserMessage(message, analiser.analise(message, dialogue));
+        dialogue.addNewUserMessage(message, analyser.analise(message, dialogue));
 
         Response r = handler.handle(dialogue);
         dialogue.addNewSystemMessage(fillTemplateWithResponse(r));

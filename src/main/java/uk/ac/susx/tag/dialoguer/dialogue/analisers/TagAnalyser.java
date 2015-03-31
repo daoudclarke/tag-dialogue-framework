@@ -11,7 +11,7 @@ import java.util.List;
  * Date: 17/03/2015
  * Time: 14:18
  */
-public class TagAnaliser extends Analiser {
+public class TagAnalyser extends Analyser {
     @Override
     public List<Intent> analise(String message, Dialogue dialogue) {
         return null;

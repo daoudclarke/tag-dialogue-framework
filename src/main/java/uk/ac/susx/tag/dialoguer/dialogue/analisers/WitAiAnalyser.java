@@ -19,14 +19,14 @@ import java.util.Map;
  * Date: 17/03/2015
  * Time: 14:17
  */
-public class WitAiAnaliser extends Analiser {
+public class WitAiAnalyser extends Analyser {
 
     private static final String witApi = "https://api.wit.ai/message";
 
     private Client client;
     private String serverAccessToken;
 
-    public WitAiAnaliser(String serverAccessToken){
+    public WitAiAnalyser(String serverAccessToken){
         client = ClientBuilder.newClient();
         this.serverAccessToken = serverAccessToken;
     }
