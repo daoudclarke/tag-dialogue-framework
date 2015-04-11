@@ -14,10 +14,12 @@ import java.util.Map;
 public class Dialogue {
 
     private String id;
-    private Map<String, Object> data; // Data about the current dialogue, e.g. What products were we asking the user to select among?
+    private Map<String, Object> workingMemory; // Data about the current dialogue, e.g. partially filled slots that could be useful for subsequent intents
     private List<String> states;
+    private List<String> choices; // Choices currently presented to the user
     private List<Message> history;    // Log of the user and system messages in chronological order
     private User user;                // Data about the user with which we're interacting
+
 
     public void addNewUserMessage(String message, List<Intent> intents) {
         //TODO
@@ -44,12 +46,12 @@ public class Dialogue {
         return states;
     }
 
-    public void setData(String key, Object dataValue) {
-        data.put(key, dataValue);
+    public void addToWorkingMemory(String key, Object dataValue) {
+        workingMemory.put(key, dataValue);
     }
 
-    public <T> T getData(String key) {
-        return (T)data.get(key);
+    public <T> T getFromWorkingMemory(String key) {
+        return (T)workingMemory.get(key);
     }
 
     public enum MessageType {SYSTEM, USER}

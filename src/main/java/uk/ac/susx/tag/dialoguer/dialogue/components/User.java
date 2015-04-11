@@ -15,7 +15,6 @@ public class User {
     private double latitude = 0.0;
     private double longitude = 0.0;
     private double uncertaintyRadius = 0.0; // in Metres
-
     private Map<String, Object> attributes;
 
     public User(){

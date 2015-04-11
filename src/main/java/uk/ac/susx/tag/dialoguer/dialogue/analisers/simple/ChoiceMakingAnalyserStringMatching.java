@@ -20,7 +20,8 @@ public class ChoiceMakingAnalyserStringMatching  implements ChoiceMakingAnalyser
             "none",
             "no",
             "none of them",
-            "no thanks"
+            "no thanks",
+            "neither"
     );
 
     @Override
@@ -58,6 +59,7 @@ public class ChoiceMakingAnalyserStringMatching  implements ChoiceMakingAnalyser
      * Given a list of choices that were presented to the user, and the user response, determine whether or not
      * the user response was in fact making a choice.
      */
+    @Override
     public boolean isNullChoice(String userMessage, List<String> choices){
         userMessage = SimplePatterns.stripAll(userMessage);
         return nullChoicePhrases.contains(userMessage);

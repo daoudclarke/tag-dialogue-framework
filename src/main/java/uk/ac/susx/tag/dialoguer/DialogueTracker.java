@@ -1,6 +1,7 @@
 package uk.ac.susx.tag.dialoguer;
 
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
+import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -18,36 +19,36 @@ public class DialogueTracker {
     private Dialoguer dialoguer;
     private Map<String, Dialogue> dialogues;
     private Map<String, LocalDateTime> lastUpdated;
+    private Duration trackedTimeLimit;
 
     public DialogueTracker(Dialoguer dialoguer){
         this.dialoguer = dialoguer;
         this.dialogues = new HashMap<>();
     }
 
-    public String getResponse(String id, String userMessage){
+    public String getResponse(String dialogueId, String userMessage, User userData){
+        if (isTracked(dialogueId, trackedTimeLimit)){
+            lastUpdated.put(dialogueId, LocalDateTime.now());
+
+        }
         return null;
     }
 
     public void untrackDialogue(String id){
-        //TODO
+        dialogues.remove(id);
+        lastUpdated.remove(id);
     }
 
-    public boolean isTracked(String id) {
-        return false;
-
+    public boolean isTracked(String dialogueId) {
+        return isTracked(dialogueId, null);
     }
 
-    public boolean isTracked(String dialogueId, Duration timeLimit, boolean removeIfExpired){
-        if (dialogues.containsKey(dialogueId)){
-            if (timeLimit == null || isTimeSinceLastUpdateLessThan(timeLimit, dialogueId)){
-                return true;
-            } else {
-                if (removeIfExpired){
-                    untrackDialogue(dialogueId);
-                }
-                return false;
-            }
-        } return false;
+    public boolean isTracked(String dialogueId, Duration timeLimit){
+        return dialogues.containsKey(dialogueId) && (timeLimit == null || isTimeSinceLastUpdateLessThan(timeLimit, dialogueId));
+    }
+
+    public boolean isTracked(String dialogueID, long timeLimitInHours){
+        return isTracked(dialogueID, Duration.ofHours(timeLimitInHours));
     }
 
     public boolean isTimeSinceLastUpdateLessThan(Duration d, String dialogueId){
@@ -57,20 +58,5 @@ public class DialogueTracker {
 
     public void log(String dialogueId){
         //TODO
-    }
-
-    public static void main(String[] args){
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
-        LocalDateTime fourWeeksAgo = LocalDateTime.now().minusWeeks(4);
-
-        Duration d2 = Duration.between(now, twoWeeksAgo).abs();
-        Duration d4 = Duration.between(now, fourWeeksAgo).abs();
-
-        System.out.println(d2.compareTo(d4));
-
-
-
-        System.out.println("Done");
     }
 }
