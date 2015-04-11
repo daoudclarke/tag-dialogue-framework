@@ -17,6 +17,8 @@ public class Response {
 
     private static final Pattern templateVariableRegex = Pattern.compile("\\{(.+?)\\}");
 
+    private static final String defaultConfirmCancelResponseId = "confirm_cancellation";
+
     private String responseName;
     private Map<String, String> responseVariables;
     private List<String> newStates;
@@ -62,6 +64,13 @@ public class Response {
         }
         m.appendTail(filledTemplate);
         return filledTemplate.toString();
+    }
+
+    public static Response buildCancellationResponse(){
+        return new Response(defaultConfirmCancelResponseId);
+    }
+    public static Response buildCancellationResponse(Map<String, String> responseVariables, List<String> newStates){
+        return new Response(defaultConfirmCancelResponseId, responseVariables, newStates);
     }
 
     public static class ResponseException extends RuntimeException {

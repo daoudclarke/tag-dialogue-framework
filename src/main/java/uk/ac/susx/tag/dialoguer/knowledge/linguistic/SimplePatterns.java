@@ -40,7 +40,7 @@ public class SimplePatterns {
     public static Pattern botReferenceRegex = StringUtils.buildDisjunctionWithWordBoundaries(Lists.newArrayList(
             "(why|y) do?n'?t (u|you)",
             "ca?n (you|u)",
-            "i'?d li?ke (you|u) (to|2)",
+            "i'?d l(i|y)ke? (you|u) (to|2)",
             "i wa?nt (you|u) (to|2)",
             "w(oul|u)d (you|u)"
     ));

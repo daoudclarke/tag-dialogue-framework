@@ -1,12 +1,35 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
+import java.util.List;
 import java.util.Set;
 
 /**
- * Created with IntelliJ IDEA.
+ * Default intents:
+ *
+ * ----User wishes to cancel----:
+ *
+ *  {
+ *    name = "cancel"
+ *    slots = {}
+ *  }
+ *
+ * ----User is making a choice----:
+ *
+ *  {
+ *    name = "choice"
+ *    slots = {
+ *        choice_index = <integer>
+ *    }
+ *  }
+ *
+ * ----User is explicitly rejecting a list of choices----:
+ *  {
+ *      name = "null_choice"
+ *      slots = {}
+ *  }
+ *
  * User: Andrew D. Robertson
  * Date: 16/03/2015
  * Time: 14:58
@@ -17,20 +40,14 @@ public class Intent {
     private String text;
     private Multimap<String, Slot> slots;
 
-    public Set<String> getUnfilledSlotNames(Set<String> requiredSlotNames){
-        return Sets.difference(requiredSlotNames, slots.keySet());
+    public Intent(String name, String text){
+        this(name, text, ArrayListMultimap.create());
     }
 
-    public boolean areSlotsFilled(Set<String> requiredSlotNames){
-        return !getUnfilledSlotNames(requiredSlotNames).isEmpty();
-    }
-
-    public void fillSlot(String name, String value, int start, int end){
-        slots.put(name, new Slot(name, value, start, end));
-    }
-
-    public void fillSlot(String value, String type){
-        fillSlot(value, type, 0, 0);
+    public Intent(String name, String text, Multimap<String, Slot> slots){
+        this.name = name;
+        this.text = text;
+        this.slots = slots;
     }
 
     public String getName() {
@@ -49,15 +66,33 @@ public class Intent {
         this.text = text;
     }
 
+/**********************************************
+ * Slot management
+ **********************************************/
+    public Set<String> getUnfilledSlotNames(Set<String> requiredSlotNames){
+        return Sets.difference(requiredSlotNames, slots.keySet());
+    }
+
+    public boolean areSlotsFilled(Set<String> requiredSlotNames){
+        return !getUnfilledSlotNames(requiredSlotNames).isEmpty();
+    }
+
+    public void fillSlot(String name, String value, int start, int end){
+        slots.put(name, new Slot(name, value, start, end));
+    }
+    public void fillSlot(String name, String value){
+        fillSlot(name, value, 0, 0);
+    }
+
     public Multimap<String, Slot> getSlots() {
         return slots;
     }
-
     public void setSlots(Multimap<String, Slot> slots) {
         this.slots = slots;
     }
 
     public static class Slot {
+
         public String name;
         public String value;
         public int start;
@@ -69,5 +104,33 @@ public class Intent {
             this.start = start;
             this.end = end;
         }
+    }
+
+/**********************************************
+ * Default intents
+ **********************************************/
+    public static Intent buildNullChoiceIntent(String userMessage){
+        return new Intent("null_choice", userMessage);
+    }
+
+    public static Intent buildChoiceIntent(String userMessage, int choiceNumber){
+        Intent i = new Intent("choice", userMessage);
+        i.fillSlot("choice", Integer.toString(choiceNumber), 0, 0);
+        return i;
+    }
+
+    public static Intent buildNoChoiceIntent(String userMessage){
+        return new Intent("no_choice", userMessage);
+    }
+
+    public static Intent buildCancelIntent(String userMessage){
+        return new Intent("cancel", userMessage);
+    }
+
+/**********************************************
+ * Utility
+ **********************************************/
+    public List<Intent> toList(){
+        return Lists.newArrayList(this);
     }
 }

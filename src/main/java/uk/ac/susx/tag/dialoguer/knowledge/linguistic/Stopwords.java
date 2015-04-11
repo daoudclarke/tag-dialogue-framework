@@ -151,6 +151,7 @@ public class Stopwords {
     public static final Pattern stopwordsRegex = StringUtils.buildDisjunctionWithWordBoundaries(stopwords);
 
     public static String removeStopwords(String message){
-        return stopwordsRegex.matcher(message).replaceAll("");
+        String noStopwords = stopwordsRegex.matcher(message).replaceAll("");
+        return SimplePatterns.whitespaceRegex.matcher(noStopwords).replaceAll(" ").trim();
     }
 }

@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analisers;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -19,7 +20,7 @@ import java.util.Map;
  * Date: 17/03/2015
  * Time: 14:17
  */
-public class WitAiAnalyser extends Analyser {
+public class WitAiAnalyser implements Analyser {
 
     private static final String witApi = "https://api.wit.ai/message";
 
@@ -33,7 +34,25 @@ public class WitAiAnalyser extends Analyser {
 
     @Override
     public List<Intent> analise(String message, Dialogue dialogue) {
-        return null;
+        WitAiResponse r = queryAPI(message, dialogue.getStates(), serverAccessToken, client);
+
+        WitAiResponse.Outcome o = r.getMostLikelyOutcome();
+
+        Intent i = new Intent(o.getIntent(), o.getText());
+
+        for (Map.Entry<String, List<WitAiResponse.EntityDefinition>> entry : o.getEntities().entrySet()){
+            String name = entry.getKey();
+            for (WitAiResponse.EntityDefinition e : entry.getValue()){
+                i.fillSlot(name, e.value, e.start, e.end);
+            }
+        }
+
+        return Lists.newArrayList(i);
+    }
+
+    @Override
+    public String getName() {
+        return "wit.ai";
     }
 
     public static WitAiResponse queryAPI(String message,  List<String> states, String serverAccessToken, Client client){

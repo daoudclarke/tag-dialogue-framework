@@ -8,6 +8,8 @@ import uk.ac.susx.tag.dialoguer.dialogue.analisers.simple.CancellationAnalyserSt
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handlers.Handler;
+import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
+import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -80,7 +82,7 @@ public class Dialoguer {
 
     private static final Random random = new Random();
     private static final Gson gson = new Gson();
-    private static final CancellationAnalyser cancellationAnalyser = new CancellationAnalyserStringMatching();
+    private static final Analyser cancellationAnalyser = new CancellationAnalyserStringMatching();
 
     private Handler handler;
     private Analyser analyser;
@@ -90,7 +92,11 @@ public class Dialoguer {
     private HashMap<String, List<String>> responseTemplates;
 
     public Dialogue interpret(String message, Dialogue dialogue){
-        dialogue.addNewUserMessage(message, analyser.analise(message, dialogue));
+        String stripped = SimplePatterns.stripAll(message);
+        dialogue.putToWorkingMemory("stripped", stripped);
+        dialogue.putToWorkingMemory("strippedNoStopwords", Stopwords.removeStopwords(stripped));
+
+//        dialogue.addNewUserMessage(message, analyser.analise(message, dialogue), dialog);
 
         Response r = handler.handle(dialogue);
         dialogue.addNewSystemMessage(fillTemplateWithResponse(r));
@@ -104,6 +110,10 @@ public class Dialoguer {
     public static Dialoguer loadJSON(File dialoguerDefinition) throws FileNotFoundException, UnsupportedEncodingException {
         //TODO, this won't work, we'll need to do custom serialisation for the analiser and handler. Should only reference by name
         return gson.fromJson(new JsonReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8")), Dialoguer.class);
+    }
+
+    private String getHumanReadableSlotNameIfPresent(String slotName){
+        return humanReadableSlotNames.containsKey(slotName) ? humanReadableSlotNames.get(slotName) : slotName;
     }
 
     private static class NecessarySlotData {

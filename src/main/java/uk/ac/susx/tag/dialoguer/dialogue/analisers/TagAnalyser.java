@@ -11,10 +11,15 @@ import java.util.List;
  * Date: 17/03/2015
  * Time: 14:18
  */
-public class TagAnalyser extends Analyser {
+public class TagAnalyser implements Analyser {
     @Override
     public List<Intent> analise(String message, Dialogue dialogue) {
         return null;
+    }
+
+    @Override
+    public String getName() {
+        return "tag";
     }
 
     @Override

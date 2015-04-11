@@ -2,6 +2,7 @@ package uk.ac.susx.tag.dialoguer.dialogue.components;
 
 import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,26 +15,43 @@ import java.util.Map;
 public class Dialogue {
 
     private String id;
-    private Map<String, Object> workingMemory; // Data about the current dialogue, e.g. partially filled slots that could be useful for subsequent intents
+    private Map<String, String> workingMemory; // Data about the current dialogue, e.g. partially filled slots that could be useful for subsequent intents
     private List<String> states;
+    private List<String> questionFocusStack;
     private List<String> choices; // Choices currently presented to the user
-    private List<Message> history;    // Log of the user and system messages in chronological order
+    private List<Message> history;    // Log of the user and system messages in chronological order (oldest first)
     private User user;                // Data about the user with which we're interacting
 
-
-    public void addNewUserMessage(String message, List<Intent> intents) {
-        //TODO
-    }
-
-    public void addNewSystemMessage(String message) {
-        //TODO
-    }
-
+/***********************************************
+ * Intent management
+ ***********************************************/
     public List<Intent> getCurrentIntents() {
         //TODO
         return null;
     }
 
+/***********************************************
+ * Question focus stack
+ ***********************************************/
+
+    public String peekTopFocus() { return questionFocusStack.get(questionFocusStack.size()-1);}
+
+    public String popTopFocus() { return questionFocusStack.remove(questionFocusStack.size()-1);}
+
+    public void pushFocus(String newTopFocus) { questionFocusStack.add(newTopFocus); }
+
+    public void clearFocusStack() { questionFocusStack.clear();}
+
+/***********************************************
+ * Choice management
+ ***********************************************/
+    public boolean isChoicesPresented(){return !choices.isEmpty();}
+    public void clearChoices(){ choices.clear(); }
+    public List<String> getChoices() { return choices; }
+
+/***********************************************
+ * State management
+ ***********************************************/
     public void setStates(List<String> states){
         this.states = states;
     }
@@ -41,17 +59,38 @@ public class Dialogue {
     public void setState(String state){
         this.states = Lists.newArrayList(state);
     }
+    public List<String> getStates(){ return states; }
 
-    public List<String> getStates(){
-        return states;
-    }
+    public void clearStates() { states.clear(); }
 
-    public void addToWorkingMemory(String key, Object dataValue) {
+/***********************************************
+ * Working memory management
+ ***********************************************/
+    public void putToWorkingMemory(String key, String dataValue) {
         workingMemory.put(key, dataValue);
     }
 
-    public <T> T getFromWorkingMemory(String key) {
-        return (T)workingMemory.get(key);
+    public String getFromWorkingMemory(String key) {
+        return workingMemory.get(key);
+    }
+
+    public String getStrippedText(){
+        return getFromWorkingMemory("stripped");
+    }
+
+    public String getStrippedNoStopwordsText(){
+        return getFromWorkingMemory("strippedNoStopwords");
+    }
+
+/***********************************************
+ * Message management
+ ***********************************************/
+    public void addNewUserMessage(String message, List<Intent> intents, User user) {
+        //TODO
+    }
+
+    public void addNewSystemMessage(String message) {
+        //TODO
     }
 
     public enum MessageType {SYSTEM, USER}

@@ -73,8 +73,8 @@ public class User {
         return attributes;
     }
 
-    public Object getAttribute(String name){
-        return attributes.get(name);
+    public <T> T getAttribute(String name){
+        return (T)attributes.get(name);
     }
 
     public boolean hasAttribute(String name){
