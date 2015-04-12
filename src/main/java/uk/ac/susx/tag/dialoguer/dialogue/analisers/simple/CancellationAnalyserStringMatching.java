@@ -7,6 +7,8 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -56,6 +58,11 @@ public class CancellationAnalyserStringMatching implements Analyser {
     @Override
     public String getName() {
         return "simple_cancel";
+    }
+
+    @Override
+    public Analyser readJson(InputStream json) throws IOException {
+        return new CancellationAnalyserStringMatching();
     }
 
     @Override

@@ -4,6 +4,9 @@ import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
@@ -18,4 +21,6 @@ public interface  Analyser extends AutoCloseable {
     public abstract List<Intent> analise(String message, Dialogue dialogue);
 
     public String getName();
+
+    public Analyser readJson(InputStream json) throws IOException;
 }

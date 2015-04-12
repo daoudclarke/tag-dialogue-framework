@@ -3,6 +3,9 @@ package uk.ac.susx.tag.dialoguer.dialogue.analisers;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -20,6 +23,11 @@ public class TagAnalyser implements Analyser {
     @Override
     public String getName() {
         return "tag";
+    }
+
+    @Override
+    public Analyser readJson(InputStream json) throws IOException {
+        return null;
     }
 
     @Override

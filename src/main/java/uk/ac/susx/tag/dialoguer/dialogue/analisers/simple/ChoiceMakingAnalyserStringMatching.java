@@ -11,6 +11,8 @@ import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Numbers;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -111,6 +113,11 @@ public class ChoiceMakingAnalyserStringMatching  implements Analyser {
     @Override
     public String getName() {
         return "simple_choice";
+    }
+
+    @Override
+    public Analyser readJson(InputStream json) throws IOException {
+        return new ChoiceMakingAnalyserStringMatching(0.5);
     }
 
     @Override

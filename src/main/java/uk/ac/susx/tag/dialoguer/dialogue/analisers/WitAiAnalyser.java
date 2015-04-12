@@ -2,12 +2,14 @@ package uk.ac.susx.tag.dialoguer.dialogue.analisers;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -24,8 +26,13 @@ public class WitAiAnalyser implements Analyser {
 
     private static final String witApi = "https://api.wit.ai/message";
 
-    private Client client;
+    private transient Client client;
     private String serverAccessToken;
+
+    private WitAiAnalyser(){
+        client = ClientBuilder.newClient();
+        serverAccessToken = null;
+    }
 
     public WitAiAnalyser(String serverAccessToken){
         client = ClientBuilder.newClient();
@@ -47,12 +54,19 @@ public class WitAiAnalyser implements Analyser {
             }
         }
 
-        return Lists.newArrayList(i);
+        return i.toList();
     }
 
     @Override
     public String getName() {
         return "wit.ai";
+    }
+
+    @Override
+    public Analyser readJson(InputStream json) throws IOException {
+        try (JsonReader r = new JsonReader(new InputStreamReader(json, "UTF-8"))) {
+            return new Gson().fromJson(r, WitAiAnalyser.class);
+        }
     }
 
     public static WitAiResponse queryAPI(String message,  List<String> states, String serverAccessToken, Client client){

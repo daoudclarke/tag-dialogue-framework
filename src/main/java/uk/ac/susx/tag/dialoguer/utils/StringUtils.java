@@ -24,6 +24,10 @@ public class StringUtils {
         +")");
     }
 
+    public static String addWordBoundaries(String input){
+        return "\\b" + input + "\\b";
+    }
+
     /**
      * Given a list of choices, return a string formatting those choices as a numbered list, with a custom separator.
      */
@@ -31,5 +35,9 @@ public class StringUtils {
         return IntStream.range(0, choices.size())
                     .mapToObj(i -> i+". "+choices.get(i))
                     .collect(Collectors.joining(separator));
+    }
+
+    public static String numberList(List<String> choices){
+        return numberList(choices, "\n");
     }
 }

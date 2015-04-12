@@ -18,7 +18,8 @@ public class Dialogue {
     private Map<String, String> workingMemory; // Data about the current dialogue, e.g. partially filled slots that could be useful for subsequent intents
     private List<String> states;
     private List<String> questionFocusStack;
-    private List<String> choices; // Choices currently presented to the user
+    private List<String> choices;     // Choices currently presented to the user
+    private boolean requestingYesNo;  // Whether or not the system is currently requesting a Yes/No answer
     private List<Message> history;    // Log of the user and system messages in chronological order (oldest first)
     private User user;                // Data about the user with which we're interacting
 
@@ -43,11 +44,15 @@ public class Dialogue {
     public void clearFocusStack() { questionFocusStack.clear();}
 
 /***********************************************
- * Choice management
+ * Choice / Confirmation management
  ***********************************************/
     public boolean isChoicesPresented(){return !choices.isEmpty();}
     public void clearChoices(){ choices.clear(); }
     public List<String> getChoices() { return choices; }
+    public boolean isRequestingYesNo() { return requestingYesNo; }
+    public void setRequestingYesNo(boolean requestingYesNo){
+        this.requestingYesNo = requestingYesNo;
+    }
 
 /***********************************************
  * State management

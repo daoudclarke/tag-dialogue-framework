@@ -58,6 +58,8 @@ public class Intent {
         this.name = name;
     }
 
+    public boolean isName(String name) { return this.name.equals(name); }
+
     public String getText() {
         return text;
     }
@@ -127,10 +129,20 @@ public class Intent {
         return new Intent("cancel", userMessage);
     }
 
+    public static Intent buildNoIntent(String userMessage) { return new Intent("no", userMessage);}
+
+    public static Intent buildYesIntent(String userMessage) { return new Intent("yes", userMessage); }
+
 /**********************************************
  * Utility
  **********************************************/
     public List<Intent> toList(){
         return Lists.newArrayList(this);
+    }
+
+    public static boolean isPresent(String name, List<Intent> intents){
+        for (Intent i : intents){
+            if (i.isName(name)) return true;
+        } return false;
     }
 }

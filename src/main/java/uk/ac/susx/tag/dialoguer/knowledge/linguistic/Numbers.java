@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Created by Andy on 11/04/2015.
+ * Created by Andrew D. Robertson on 11/04/2015.
  */
 public class Numbers {
 

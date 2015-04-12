@@ -3,8 +3,8 @@ package uk.ac.susx.tag.dialoguer;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import uk.ac.susx.tag.dialoguer.dialogue.analisers.Analyser;
-import uk.ac.susx.tag.dialoguer.dialogue.analisers.simple.CancellationAnalyser;
 import uk.ac.susx.tag.dialoguer.dialogue.analisers.simple.CancellationAnalyserStringMatching;
+import uk.ac.susx.tag.dialoguer.dialogue.analisers.simple.ChoiceMakingAnalyserStringMatching;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handlers.Handler;
@@ -26,6 +26,28 @@ import java.util.Set;
  * The definition of a Dialoguer task.
  *
  * Definition includes:
+ *
+ * --------- Setup -----------------------------------
+ *
+ * analyser : {
+ *     name : string name of analyser
+ *     path : path to JSON file definition for analyser
+ * }
+ *
+ * cancellation_analyser : {
+ *     name : string name of analyser
+ *     path : path to JSON file definition for analyser
+ * }
+ *
+ * choice_making_analyser : {
+ *     name : string name of analyser
+ *     path : path to JSON file definition for analyser
+ * }
+ *
+ * yes_no_analyser : {
+ *     name : string name of analyser
+ *     path : path to JSON file definition for analyser
+ * }
  *
  * --------- Responses -------------------------------
  *
@@ -82,7 +104,10 @@ public class Dialoguer {
 
     private static final Random random = new Random();
     private static final Gson gson = new Gson();
-    private static final Analyser cancellationAnalyser = new CancellationAnalyserStringMatching();
+
+
+    private Analyser cancellationAnalyser;
+    private Analyser choiceMakingAnalyser;
 
     private Handler handler;
     private Analyser analyser;
@@ -92,6 +117,7 @@ public class Dialoguer {
     private HashMap<String, List<String>> responseTemplates;
 
     public Dialogue interpret(String message, Dialogue dialogue){
+
         String stripped = SimplePatterns.stripAll(message);
         dialogue.putToWorkingMemory("stripped", stripped);
         dialogue.putToWorkingMemory("strippedNoStopwords", Stopwords.removeStopwords(stripped));
