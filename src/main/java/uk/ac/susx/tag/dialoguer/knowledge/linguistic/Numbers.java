@@ -70,6 +70,14 @@ public class Numbers {
         }
     }
 
+    public static String convertIfNumber(String number){
+        try {
+            return Integer.toString(parseNumber(number));
+        } catch (NumberFormatException e) {
+            return number;
+        }
+    }
+
     /**
      * Convert integer to number-based ordinal, e.g.:
      *

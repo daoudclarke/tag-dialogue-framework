@@ -1,12 +1,26 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import com.google.gson.GsonBuilder;
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Default intents:
+ * Represents an intent of the user. An intent has a name, and potentially text associated with it (optional).
+ *
+ * It also has a number of filled slots.
+ *
+ * Each slot has a type and a value (and optionally, a start and end span in the text).
+ *
+ * There can be multiple values for a single slot type.
+ *
+ * There are a number of default intents:
  *
  * ----User wishes to cancel----:
  *
@@ -30,6 +44,19 @@ import java.util.Set;
  *      slots = {}
  *  }
  *
+ * ----User wishes to say yes or confirm--------------:
+ *
+ *  {
+ *      name = "yes"
+ *      slots = {}
+ *  }
+ *
+ * ---User wishes to say no or decline --------------:
+ * {
+ *     name = "no"
+ *     slots = {}
+ * }
+ *
  * User: Andrew D. Robertson
  * Date: 16/03/2015
  * Time: 14:58
@@ -39,6 +66,10 @@ public class Intent {
     private String name;
     private String text;
     private Multimap<String, Slot> slots;
+
+    public Intent(String name) {
+        this(name, "");
+    }
 
     public Intent(String name, String text){
         this(name, text, ArrayListMultimap.create());
@@ -79,19 +110,16 @@ public class Intent {
         return !getUnfilledSlotNames(requiredSlotNames).isEmpty();
     }
 
-    public void fillSlot(String name, String value, int start, int end){
-        slots.put(name, new Slot(name, value, start, end));
+    public Intent fillSlot(String name, String value, int start, int end){
+        slots.put(name, new Slot(name, value, start, end));  return this;
     }
-    public void fillSlot(String name, String value){
-        fillSlot(name, value, 0, 0);
+    public Intent fillSlot(String name, String value){
+        return fillSlot(name, value, 0, 0);
     }
 
-    public Multimap<String, Slot> getSlots() {
-        return slots;
-    }
-    public void setSlots(Multimap<String, Slot> slots) {
-        this.slots = slots;
-    }
+    public Collection<Slot> getSlotByType(String slotType){ return slots.get(slotType);}
+    public Multimap<String, Slot> getSlots() { return slots; }
+    public void setSlots(Multimap<String, Slot> slots) { this.slots = slots; }
 
     public static class Slot {
 
@@ -116,9 +144,8 @@ public class Intent {
     }
 
     public static Intent buildChoiceIntent(String userMessage, int choiceNumber){
-        Intent i = new Intent("choice", userMessage);
-        i.fillSlot("choice", Integer.toString(choiceNumber), 0, 0);
-        return i;
+        return new Intent("choice", userMessage)
+                     .fillSlot("choice", Integer.toString(choiceNumber), 0, 0);
     }
 
     public static Intent buildNoChoiceIntent(String userMessage){
@@ -144,5 +171,10 @@ public class Intent {
         for (Intent i : intents){
             if (i.isName(name)) return true;
         } return false;
+    }
+
+    @Override
+    public String toString(){
+        return Dialoguer.gson.toJson(this);
     }
 }

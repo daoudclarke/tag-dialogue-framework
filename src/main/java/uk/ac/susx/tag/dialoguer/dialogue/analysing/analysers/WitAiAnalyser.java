@@ -1,7 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
 import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.WitAiAnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
@@ -10,7 +9,6 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -18,7 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
+ * Determine user intent using a WitAi instance.
+ *
  * User: Andrew D. Robertson
  * Date: 17/03/2015
  * Time: 14:17

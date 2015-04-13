@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer;
 
+import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
@@ -9,11 +10,15 @@ import org.reflections.Reflections;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
+import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
+import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
+import uk.ac.susx.tag.dialoguer.utils.JsonUtils;
+import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,61 +33,53 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * The definition of a Dialoguer task.
+ *
+ * Should be in a JSON file. Should be a large JSON object, with all the following properties.
  *
  * Definition includes:
  *
  * --------- Setup -----------------------------------
  *
  * handler  : {
- *     name : string name of the handler
- *     path : path to JSON file definition for handler
+ *   name : <string name of the handler>
+ *   path : <path to JSON file definition for handler>
  * }
  *
- * analyser : {
- *     name : string name of analyser
- *     path : path to JSON file definition for analyser
- * }
- *
- * cancellation_analyser : {
- *     name : string name of analyser
- *     path : path to JSON file definition for analyser
- * }
- *
- * choice_making_analyser : {
- *     name : string name of analyser
- *     path : path to JSON file definition for analyser
- * }
- *
- * yes_no_analyser : {
- *     name : string name of analyser
- *     path : path to JSON file definition for analyser
- * }
- *
+ * analysers : [
+ *   {
+ *     name: <String name of analyser>,
+ *     path: <string path to JSON file definition for handler
+ *   },
+ *   ... (as many analysers as you like)...
+ * ]
  * --------- Responses -------------------------------
  *
- *    Available responses are defined in a JSON object:
+ * Available responses are defined in a JSON object:
  *
- *    {
- *        responseName1 : {
- *            templates : [string, alternative_1, alternative2, ...]
- *        },
- *        responseName2 : {
- *            templates : [string, alternative_1, alternative2, ...]
- *        },
- *        ...
- *    }
+ *   responses : {
+ *     responseName1 : {
+ *       templates : [string, alternative_1, alternative2, ...]
+ *     },
+ *     ... (as many responses as you like, each with a unique response name (notice this is an object map, not an array)...
+ *   }
  *
- *    Each response name refers to a type of response that the system can make. Each response has a list of
- *    one or more templates, which are simply alternative ways of expressing that response (among which the system
- *    will choose randomly). One may define variables to be filled in the template using curly braces. For example:
+ * Each response name refers to a type of response that the system can make. Each response has a list of
+ * one or more templates, which are simply alternative ways of expressing that response (among which the system
+ * will choose randomly). One may define variables to be filled in the template using curly braces. For example:
  *
- *      "Are you sure you want to purchase {product name}?"
+ *   "Are you sure you want to purchase {product name}?"
  *
- *    The system will require a response that contains the variable "product name", and will replace "{product name}"
- *    with its value when using the template.
+ * The system will require a response that contains the variable "product name", and will replace "{product name}"
+ * with its value when using the template.
+ *
+ * There are some responses that have default templates, you can override them by specifying responses for them:
+ *
+ *   confirm_cancellation : the response given to the user when they have requested a cancellation of the dialogue
+ *
  *
  * --------- Intents & Slots ------------------------
  *
@@ -115,9 +112,11 @@ import java.util.Set;
 public class Dialoguer {
 
     public static final Random random = new Random();
-    public static final Gson gson = new GsonBuilder()
-                                        .registerTypeAdapter(Analyser.class, new AnalyserAdaptor().nullSafe()) // Custom deserialisation for analysers
-                                        .registerTypeAdapter(Handler.class, new HandlerAdaptor().nullSafe())   // Custom deserialisation for handlers
+    public static final Gson gson = new GsonBuilder().setPrettyPrinting()
+                                        .registerTypeAdapter(Analyser.class, new JsonUtils.AnalyserAdaptor().nullSafe()) // Custom deserialisation for analysers
+                                        .registerTypeAdapter(Handler.class, new JsonUtils.HandlerAdaptor().nullSafe())   // Custom deserialisation for handlers
+                                        .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonSerializer())
+                                        .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonDeserializer())
                                         .create();
 
     private Handler handler;
@@ -135,18 +134,32 @@ public class Dialoguer {
         responseTemplates = new HashMap<>();
     }
 
-    public Dialogue interpret(String message, Dialogue dialogue){
+    public Dialogue interpret(String message, User user, Dialogue dialogue){
 
+        // Cache some simple string processing of the user message in the working memory of the dialogue object
         String stripped = SimplePatterns.stripAll(message);
         dialogue.putToWorkingMemory("stripped", stripped);
         dialogue.putToWorkingMemory("strippedNoStopwords", Stopwords.removeStopwords(stripped));
 
-//        dialogue.addNewUserMessage(message, analyser.analise(message, dialogue), dialog);
+        // Add the new user message to the dialogue object
+        dialogue.addNewUserMessage(message, user);
 
-        Response r = handler.handle(dialogue);
+        // Let each analysers decide on the intents which the user is trying to convey
+        List<Intent> intents = analysers.stream()
+                                   .map((analyser) -> analyser.analise(message, dialogue)) // Get list of predicted intents for each analyser
+                                   .flatMap((listOfIntents) -> listOfIntents.stream())     // Flatten each list so we get one intent at a time
+                                   .collect(Collectors.toList());                          // Join all of the intents into one big list
+
+        // Ask the handler for a response to these intents
+        Response r = handler.handle(intents, dialogue);
+
+        // Add the response to the dialogue object
         dialogue.addNewSystemMessage(fillTemplateWithResponse(r));
+
+        // Extract the new states from the response and put the dialogue in those states
         dialogue.setStates(r.getNewStates());
 
+        // Return the updated dialogue
         return dialogue;
     }
 
@@ -171,85 +184,6 @@ public class Dialoguer {
                 return r.fillTemplate(alternatives.get(random.nextInt(alternatives.size())));
         }
         throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
-    }
-
-    public static class HandlerAdaptor extends TypeAdapter<Handler> {
-        public void write(JsonWriter out, Handler value) throws IOException {
-            throw new UnsupportedOperationException("Cannot be written");
-        }
-
-        public Handler read(JsonReader in) throws IOException {
-            String handlerName = null;
-            String handlerPath = null;
-
-            in.beginObject();
-            while (in.hasNext()){
-                String name = in.nextName();
-                switch (name){
-                    case "name": handlerName = in.nextString(); break;
-                    case "path": handlerPath = in.nextString(); break;
-                }
-            } in.endObject();
-
-            if (handlerName==null) throw new DialoguerException("No handler name found");
-            return getHandler(handlerName, handlerPath == null ? null : new File(handlerPath));
-        }
-    }
-
-    public static class AnalyserAdaptor extends TypeAdapter<Analyser> {
-        public void write(JsonWriter out, Analyser value) throws IOException {
-            throw new UnsupportedOperationException("Cannot be written.");
-        }
-        public Analyser read(JsonReader in) throws IOException {
-            String analyserName = null;
-            String analyserPath = null;
-
-            in.beginObject();
-            while (in.hasNext()){
-                String name = in.nextName();
-                switch (name){
-                    case "name": analyserName = in.nextString(); break;
-                    case "path": analyserPath = in.nextString(); break;
-                }
-            } in.endObject();
-
-            if (analyserName==null) throw new DialoguerException("No analyser name found");
-            return getAnalyser(analyserName, analyserPath==null? null : new File(analyserPath));
-        }
-    }
-
-    private static Analyser getAnalyser(String analyserName, File analyserSetupJson) {
-        Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.analysing.factories");
-
-        Set<Class<? extends AnalyserFactory>> foundAnalyserFactories = reflections.getSubTypesOf(AnalyserFactory.class);
-
-        for (Class<? extends AnalyserFactory> klass : foundAnalyserFactories){
-            try {
-                AnalyserFactory analyserFactory = klass.newInstance();
-                if (analyserFactory.getName().equals(analyserName)) {
-                    return analyserFactory.readJson(analyserSetupJson);
-                }
-            } catch (IOException | InstantiationException | IllegalAccessException e) {
-                throw new DialoguerException("Unable to load analyser", e);
-            }
-        } throw new DialoguerException("Unable to load analyser; analyser name not found.");
-    }
-
-    private static Handler getHandler(String handlerName, File handlerSetupJson) {
-        Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.handling.factories");
-
-        Set<Class<? extends HandlerFactory>> foundHandlerFactories = reflections.getSubTypesOf(HandlerFactory.class);
-
-        for (Class<? extends HandlerFactory> klass : foundHandlerFactories){
-            try {
-                HandlerFactory handlerFactory = klass.newInstance();
-                if (handlerFactory.getName().equals(handlerName)) {
-                    return handlerFactory.readJson(handlerSetupJson);
-                }
-            } catch (IOException | InstantiationException | IllegalAccessException e) {
-                throw new DialoguerException("Unable to load handler", e);
-            }
-        } throw new DialoguerException("Unable to load handler; handler name not found.");
     }
 
     private static class DialoguerException extends RuntimeException{

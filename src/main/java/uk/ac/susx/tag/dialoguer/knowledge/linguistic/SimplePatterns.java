@@ -1,6 +1,5 @@
 package uk.ac.susx.tag.dialoguer.knowledge.linguistic;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
@@ -55,5 +54,13 @@ public class SimplePatterns {
         String strippedOfBotReferences = botReferenceRegex.matcher(strippedOfHesitation).replaceAll("");
         String whitespaceSquashedAndTrimmed = whitespaceRegex.matcher(strippedOfBotReferences).replaceAll(" ").trim();
         return whitespaceSquashedAndTrimmed;
+    }
+
+    public static String[] splitByWhitespace(String text){
+        return whitespaceRegex.split(text);
+    }
+
+    public static String stripPunctuation(String text){
+        return punctuationRegex.matcher(text).replaceAll("");
     }
 }

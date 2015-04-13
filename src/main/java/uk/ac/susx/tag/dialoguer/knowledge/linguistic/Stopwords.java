@@ -1,8 +1,5 @@
 package uk.ac.susx.tag.dialoguer.knowledge.linguistic;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 

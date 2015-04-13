@@ -8,14 +8,15 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.simple.Cancellation
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Created with IntelliJ IDEA.
+ * Try to detemine whether the user is attempting to cancel a dialogue.
+ *
+ * Produces the default cancel intent. See Intent documentation.
+ *
  * User: Andrew D. Robertson
  * Date: 31/03/2015
  * Time: 10:52

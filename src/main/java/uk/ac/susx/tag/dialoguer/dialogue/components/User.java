@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
+ * Data about the user. Including geo data. This is present on the Dialogue object as current user data, and present
+ * in the Dialogue's message history as historical user data.
+ *
  * User: Andrew D. Robertson
  * Date: 16/03/2015
  * Time: 15:19

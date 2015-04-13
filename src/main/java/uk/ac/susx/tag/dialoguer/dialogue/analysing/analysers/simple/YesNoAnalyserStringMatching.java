@@ -9,14 +9,17 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
+ * Tries to determine whether the using is yes/no-ing or confirming if the Handler has indicated that it is expecting
+ * such a response.
+ *
+ * Uses the default yes/no intents. See Intent documentation.
+ *
  * Created by Andrew D. Robertson on 12/04/2015.
  */
 public class YesNoAnalyserStringMatching extends Analyser {

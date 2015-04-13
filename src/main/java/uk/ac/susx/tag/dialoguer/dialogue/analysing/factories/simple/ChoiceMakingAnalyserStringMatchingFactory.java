@@ -7,12 +7,6 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Andrew D. Robertson
- * Date: 13/04/2015
- * Time: 11:30
- */
 public class ChoiceMakingAnalyserStringMatchingFactory implements AnalyserFactory{
 
     @Override
