@@ -1,11 +1,12 @@
-package uk.ac.susx.tag.dialoguer.dialogue.analisers;
+package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -14,20 +15,15 @@ import java.util.List;
  * Date: 17/03/2015
  * Time: 14:18
  */
-public class TagAnalyser implements Analyser {
+public class TagAnalyser extends Analyser {
     @Override
     public List<Intent> analise(String message, Dialogue dialogue) {
         return null;
     }
 
     @Override
-    public String getName() {
-        return "tag";
-    }
-
-    @Override
-    public Analyser readJson(InputStream json) throws IOException {
-        return null;
+    public AnalyserFactory getFactory() {
+        return null;//TODO
     }
 
     @Override

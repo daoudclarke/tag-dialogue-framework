@@ -1,14 +1,15 @@
-package uk.ac.susx.tag.dialoguer.dialogue.analisers.simple;
+package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.simple;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import uk.ac.susx.tag.dialoguer.dialogue.analisers.Analyser;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.simple.CancellationAnalyserStringMatchingFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +20,7 @@ import java.util.Set;
  * Date: 31/03/2015
  * Time: 10:52
  */
-public class CancellationAnalyserStringMatching implements Analyser {
+public class CancellationAnalyserStringMatching extends Analyser {
 
     // When a message wholly consists of any of these phrases, it is immediately considered a cancellation message
     public static Set<String> cancellationPhrases = Sets.newHashSet(
@@ -56,13 +57,8 @@ public class CancellationAnalyserStringMatching implements Analyser {
     }
 
     @Override
-    public String getName() {
-        return "simple_cancel";
-    }
-
-    @Override
-    public Analyser readJson(InputStream json) throws IOException {
-        return new CancellationAnalyserStringMatching();
+    public AnalyserFactory getFactory() {
+        return new CancellationAnalyserStringMatchingFactory();
     }
 
     @Override

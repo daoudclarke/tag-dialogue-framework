@@ -36,11 +36,8 @@ public class Dialogue {
  ***********************************************/
 
     public String peekTopFocus() { return questionFocusStack.get(questionFocusStack.size()-1);}
-
     public String popTopFocus() { return questionFocusStack.remove(questionFocusStack.size()-1);}
-
     public void pushFocus(String newTopFocus) { questionFocusStack.add(newTopFocus); }
-
     public void clearFocusStack() { questionFocusStack.clear();}
 
 /***********************************************
@@ -60,12 +57,10 @@ public class Dialogue {
     public void setStates(List<String> states){
         this.states = states;
     }
-
     public void setState(String state){
         this.states = Lists.newArrayList(state);
     }
     public List<String> getStates(){ return states; }
-
     public void clearStates() { states.clear(); }
 
 /***********************************************
@@ -74,15 +69,12 @@ public class Dialogue {
     public void putToWorkingMemory(String key, String dataValue) {
         workingMemory.put(key, dataValue);
     }
-
     public String getFromWorkingMemory(String key) {
         return workingMemory.get(key);
     }
-
     public String getStrippedText(){
         return getFromWorkingMemory("stripped");
     }
-
     public String getStrippedNoStopwordsText(){
         return getFromWorkingMemory("strippedNoStopwords");
     }

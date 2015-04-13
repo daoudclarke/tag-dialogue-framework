@@ -1,8 +1,9 @@
-package uk.ac.susx.tag.dialoguer.dialogue.analisers;
+package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.WitAiAnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
@@ -22,7 +23,7 @@ import java.util.Map;
  * Date: 17/03/2015
  * Time: 14:17
  */
-public class WitAiAnalyser implements Analyser {
+public class WitAiAnalyser extends Analyser {
 
     private static final String witApi = "https://api.wit.ai/message";
 
@@ -58,15 +59,8 @@ public class WitAiAnalyser implements Analyser {
     }
 
     @Override
-    public String getName() {
-        return "wit.ai";
-    }
-
-    @Override
-    public Analyser readJson(InputStream json) throws IOException {
-        try (JsonReader r = new JsonReader(new InputStreamReader(json, "UTF-8"))) {
-            return new Gson().fromJson(r, WitAiAnalyser.class);
-        }
+    public AnalyserFactory getFactory() {
+        return new WitAiAnalyserFactory();
     }
 
     public static WitAiResponse queryAPI(String message,  List<String> states, String serverAccessToken, Client client){

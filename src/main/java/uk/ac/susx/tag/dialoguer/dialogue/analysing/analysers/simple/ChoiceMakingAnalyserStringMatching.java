@@ -1,23 +1,22 @@
-package uk.ac.susx.tag.dialoguer.dialogue.analisers.simple;
+package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.simple;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
-import uk.ac.susx.tag.dialoguer.dialogue.analisers.Analyser;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.simple.ChoiceMakingAnalyserStringMatchingFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Numbers;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
-import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,7 +24,7 @@ import java.util.stream.IntStream;
  * Date: 31/03/2015
  * Time: 17:03
  */
-public class ChoiceMakingAnalyserStringMatching  implements Analyser {
+public class ChoiceMakingAnalyserStringMatching  extends Analyser {
 
     private double choiceFraction;
 
@@ -111,13 +110,8 @@ public class ChoiceMakingAnalyserStringMatching  implements Analyser {
     }
 
     @Override
-    public String getName() {
-        return "simple_choice";
-    }
-
-    @Override
-    public Analyser readJson(InputStream json) throws IOException {
-        return new ChoiceMakingAnalyserStringMatching(0.5);
+    public AnalyserFactory getFactory() {
+        return new ChoiceMakingAnalyserStringMatchingFactory();
     }
 
     @Override

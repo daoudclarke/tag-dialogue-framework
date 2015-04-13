@@ -1,21 +1,28 @@
 package uk.ac.susx.tag.dialoguer;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
-import uk.ac.susx.tag.dialoguer.dialogue.analisers.Analyser;
-import uk.ac.susx.tag.dialoguer.dialogue.analisers.simple.CancellationAnalyserStringMatching;
-import uk.ac.susx.tag.dialoguer.dialogue.analisers.simple.ChoiceMakingAnalyserStringMatching;
+import com.google.gson.stream.JsonWriter;
+import org.reflections.Reflections;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
-import uk.ac.susx.tag.dialoguer.dialogue.handlers.Handler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +35,11 @@ import java.util.Set;
  * Definition includes:
  *
  * --------- Setup -----------------------------------
+ *
+ * handler  : {
+ *     name : string name of the handler
+ *     path : path to JSON file definition for handler
+ * }
  *
  * analyser : {
  *     name : string name of analyser
@@ -102,19 +114,26 @@ import java.util.Set;
  */
 public class Dialoguer {
 
-    private static final Random random = new Random();
-    private static final Gson gson = new Gson();
-
-
-    private Analyser cancellationAnalyser;
-    private Analyser choiceMakingAnalyser;
+    public static final Random random = new Random();
+    public static final Gson gson = new GsonBuilder()
+                                        .registerTypeAdapter(Analyser.class, new AnalyserAdaptor().nullSafe()) // Custom deserialisation for analysers
+                                        .registerTypeAdapter(Handler.class, new HandlerAdaptor().nullSafe())   // Custom deserialisation for handlers
+                                        .create();
 
     private Handler handler;
-    private Analyser analyser;
+    private List<Analyser> analysers;
 
     private Map<String, Set<String>> necessarySlotsPerIntent;
     private Map<String, String> humanReadableSlotNames;
-    private HashMap<String, List<String>> responseTemplates;
+    private Map<String, List<String>> responseTemplates;
+
+    private Dialoguer(){
+        handler = null;
+        analysers = new ArrayList<>();
+        necessarySlotsPerIntent = new HashMap<>();
+        humanReadableSlotNames = new HashMap<>();
+        responseTemplates = new HashMap<>();
+    }
 
     public Dialogue interpret(String message, Dialogue dialogue){
 
@@ -131,20 +150,16 @@ public class Dialoguer {
         return dialogue;
     }
 
-    //TODO: simple analyser for user uncertainty
+    public static Dialoguer loadJson(String dialoguerDefinition) {
+        return gson.fromJson(dialoguerDefinition, Dialoguer.class);
+    }
 
-    public static Dialoguer loadJSON(File dialoguerDefinition) throws FileNotFoundException, UnsupportedEncodingException {
-        //TODO, this won't work, we'll need to do custom serialisation for the analiser and handler. Should only reference by name
-        return gson.fromJson(new JsonReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8")), Dialoguer.class);
+    public static Dialoguer loadJson(File dialoguerDefinition) throws FileNotFoundException, UnsupportedEncodingException {
+        return gson.fromJson(new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8"))), Dialoguer.class);
     }
 
     private String getHumanReadableSlotNameIfPresent(String slotName){
         return humanReadableSlotNames.containsKey(slotName) ? humanReadableSlotNames.get(slotName) : slotName;
-    }
-
-    private static class NecessarySlotData {
-        private Map<String, Set<String>> necessarySlotsPerIntent;
-        private Map<String, String> humanReadableSlotNames;
     }
 
     private String fillTemplateWithResponse(Response r){
@@ -156,6 +171,85 @@ public class Dialoguer {
                 return r.fillTemplate(alternatives.get(random.nextInt(alternatives.size())));
         }
         throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
+    }
+
+    public static class HandlerAdaptor extends TypeAdapter<Handler> {
+        public void write(JsonWriter out, Handler value) throws IOException {
+            throw new UnsupportedOperationException("Cannot be written");
+        }
+
+        public Handler read(JsonReader in) throws IOException {
+            String handlerName = null;
+            String handlerPath = null;
+
+            in.beginObject();
+            while (in.hasNext()){
+                String name = in.nextName();
+                switch (name){
+                    case "name": handlerName = in.nextString(); break;
+                    case "path": handlerPath = in.nextString(); break;
+                }
+            } in.endObject();
+
+            if (handlerName==null) throw new DialoguerException("No handler name found");
+            return getHandler(handlerName, handlerPath == null ? null : new File(handlerPath));
+        }
+    }
+
+    public static class AnalyserAdaptor extends TypeAdapter<Analyser> {
+        public void write(JsonWriter out, Analyser value) throws IOException {
+            throw new UnsupportedOperationException("Cannot be written.");
+        }
+        public Analyser read(JsonReader in) throws IOException {
+            String analyserName = null;
+            String analyserPath = null;
+
+            in.beginObject();
+            while (in.hasNext()){
+                String name = in.nextName();
+                switch (name){
+                    case "name": analyserName = in.nextString(); break;
+                    case "path": analyserPath = in.nextString(); break;
+                }
+            } in.endObject();
+
+            if (analyserName==null) throw new DialoguerException("No analyser name found");
+            return getAnalyser(analyserName, analyserPath==null? null : new File(analyserPath));
+        }
+    }
+
+    private static Analyser getAnalyser(String analyserName, File analyserSetupJson) {
+        Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.analysing.factories");
+
+        Set<Class<? extends AnalyserFactory>> foundAnalyserFactories = reflections.getSubTypesOf(AnalyserFactory.class);
+
+        for (Class<? extends AnalyserFactory> klass : foundAnalyserFactories){
+            try {
+                AnalyserFactory analyserFactory = klass.newInstance();
+                if (analyserFactory.getName().equals(analyserName)) {
+                    return analyserFactory.readJson(analyserSetupJson);
+                }
+            } catch (IOException | InstantiationException | IllegalAccessException e) {
+                throw new DialoguerException("Unable to load analyser", e);
+            }
+        } throw new DialoguerException("Unable to load analyser; analyser name not found.");
+    }
+
+    private static Handler getHandler(String handlerName, File handlerSetupJson) {
+        Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.handling.factories");
+
+        Set<Class<? extends HandlerFactory>> foundHandlerFactories = reflections.getSubTypesOf(HandlerFactory.class);
+
+        for (Class<? extends HandlerFactory> klass : foundHandlerFactories){
+            try {
+                HandlerFactory handlerFactory = klass.newInstance();
+                if (handlerFactory.getName().equals(handlerName)) {
+                    return handlerFactory.readJson(handlerSetupJson);
+                }
+            } catch (IOException | InstantiationException | IllegalAccessException e) {
+                throw new DialoguerException("Unable to load handler", e);
+            }
+        } throw new DialoguerException("Unable to load handler; handler name not found.");
     }
 
     private static class DialoguerException extends RuntimeException{
