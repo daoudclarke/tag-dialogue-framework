@@ -7,7 +7,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Created with IntelliJ IDEA.
+ * Collection of English stopwords. Obtained from NLTK.
+ *
+ * There is a convenience stripping function that also takes care of normalising the remaining whitespace.
+ *
  * User: Andrew D. Robertson
  * Date: 31/03/2015
  * Time: 16:29

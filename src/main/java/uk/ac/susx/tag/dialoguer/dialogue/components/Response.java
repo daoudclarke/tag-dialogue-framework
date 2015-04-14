@@ -1,6 +1,5 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,7 @@ import java.util.regex.Pattern;
  * this will introduce consistency, and improve the performance of the choice analyser.
  *
  * If you wish to put the dialogue in different states after a response, then these states should also be specified as
- * new states.
+ * new states. Otherwise don't specify the states (or set as null) and the current states will be left as they are.
  *
  * The methods prefixed with "build" are helper methods which generate the default responses for certain common conditions.
  *
@@ -39,13 +38,18 @@ public class Response {
     private static final Pattern templateVariableRegex = Pattern.compile("\\{(.+?)\\}");
 
     private static final String defaultConfirmCancelResponseId = "confirm_cancellation";
+    private static final String defaultAutoQueryResponseId = "auto_query";
 
     private String responseName;
     private Map<String, String> responseVariables;
     private List<String> newStates;
 
     public Response(String responseName) {
-        this(responseName, new HashMap<>(), new ArrayList<>());
+        this(responseName, new HashMap<>(), null);
+    }
+
+    public Response(String responseName, Map<String, String> responseVariables){
+        this(responseName, responseVariables, null);
     }
 
     public Response(String responseName, List<String> newStates){
@@ -69,11 +73,14 @@ public class Response {
     public Map<String, String> getResponseVariables() {
         return responseVariables;
     }
+
+    public void setResponseName(String responseName) { this.responseName = responseName; }
+    public void setResponseVariables(Map<String, String> responseVariables) { this.responseVariables = responseVariables;}
+
+    public boolean areNewStates() { return newStates != null; }
     public List<String> getNewStates() {
         return newStates;
     }
-    public void setResponseName(String responseName) { this.responseName = responseName; }
-    public void setResponseVariables(Map<String, String> responseVariables) { this.responseVariables = responseVariables;}
     public void setNewStates(List<String> newStates) { this.newStates = newStates; }
 
     /**
@@ -104,6 +111,11 @@ public class Response {
     }
     public static Response buildCancellationResponse(Map<String, String> responseVariables, List<String> newStates){
         return new Response(defaultConfirmCancelResponseId, responseVariables, newStates);
+    }
+
+    public static Response buildAutoQueryResponse(String query){
+        return new Response(defaultAutoQueryResponseId)
+                .addResponseVariable("query", query);
     }
 
     public static class ResponseException extends RuntimeException {

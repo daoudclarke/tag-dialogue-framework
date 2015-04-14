@@ -4,11 +4,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.gson.GsonBuilder;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -102,6 +102,14 @@ public class Intent {
 /**********************************************
  * Slot management
  **********************************************/
+
+    public static boolean areSlotsFilled(List<Intent> intents, Map<String, Set<String>> necessarySlotsPerIntent){
+        for (Intent i : intents){
+            if (!i.areSlotsFilled(necessarySlotsPerIntent.get(i.getName())))
+                return false;
+        } return true;
+    }
+
     public Set<String> getUnfilledSlotNames(Set<String> requiredSlotNames){
         return Sets.difference(requiredSlotNames, slots.keySet());
     }

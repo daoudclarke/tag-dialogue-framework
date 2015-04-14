@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
+ * Knowledge about how different ways of expressing numbers relate to actual integer types.
+ *
  * Created by Andrew D. Robertson on 11/04/2015.
  */
 public class Numbers {
@@ -58,6 +60,9 @@ public class Numbers {
 
     public static final Pattern ordinalSuffixRegex = Pattern.compile("(th|st|rd|nd)\\b");
 
+    /**
+     * Attempt to interpret a string as a number
+     */
     public static int parseNumber(String number){
         try{
             return Integer.parseInt(number);
@@ -70,6 +75,10 @@ public class Numbers {
         }
     }
 
+    /**
+     * Given a string that maybe be a number, convert it to a string that could easily be parsed into an Integer if
+     * possible, otherwise leave it how it is.
+     */
     public static String convertIfNumber(String number){
         try {
             return Integer.toString(parseNumber(number));
@@ -95,7 +104,6 @@ public class Numbers {
                 return i + "th";
             default:
                 return i + suffixes[i % 10];
-
         }
     }
 }

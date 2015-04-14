@@ -1,13 +1,9 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
 import com.google.common.collect.Lists;
-import com.google.gson.GsonBuilder;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -55,12 +51,17 @@ import java.util.stream.Collectors;
 public class Dialogue {
 
     private String id;
-    private List<Intent> intents;
+
+    private List<Intent> intents;              // Pertinent user intents, still requiring attention by the handler
+    private AutoQueryTracker autoQueryTracker; // Track status of auto-queries for necessary slots on intents
+
     private Map<String, String> workingMemory; // Data about the current dialogue, e.g. partially filled slots that could be useful for subsequent intents
     private List<String> states;               // States the dialogue is actually IN. Think: all the states passed to a single Wit.Ai query
     private List<String> questionFocusStack;   // IDs/Names of questions that the Handler wants to queue for asking the user
+
     private List<String> choices;     // Choices currently presented to the user (remember to clear it in the handler if you no longer expect to user to answer them)
     private boolean requestingYesNo;  // Whether or not the system is currently requesting a Yes/No answer
+
     private List<Message> history;    // Log of the user and system messages in chronological order (oldest first) (including user data)
     private User user;                // Data about the user with which we're interacting
 
@@ -75,6 +76,8 @@ public class Dialogue {
         history = new ArrayList<>();
         user = null;
     }
+
+    public String getId() { return id; }
 
 /***********************************************
  * Intent management
@@ -159,6 +162,41 @@ public class Dialogue {
         return history.stream()
                 .filter(Message::isUserMessage)
                 .collect(Collectors.toList());
+    }
+
+
+/***********************************************
+ * Auto-querying management
+ ***********************************************/
+    public void trackNewAutoQueryList(List<Intent> intents, Map<String, Set<String>> necessarySlotsPerIntent){
+
+    }
+
+    public void fillAutoRequest(String userMessage){
+        //TODO
+    }
+
+    public boolean isExpectingAutoRequestResponse(){
+        return false;
+    }
+
+    public boolean areIntentsSatisfied(){
+        return false;
+    }
+
+    public List<Intent> popAutoQueriedIntents(){
+        return null;
+    }
+
+    public String getNextAutoQuery(){
+        return null;
+    }
+
+    public static class AutoQueryTracker {
+        public List<Intent> autoQueries;
+        public List<Set<String>> necessarySlotsPerIntent;
+        public String lastAutoRequestedSlotName;
+        public int currentIntent;
     }
 
 /***********************************************

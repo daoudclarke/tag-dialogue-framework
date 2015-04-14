@@ -3,42 +3,36 @@ package uk.ac.susx.tag.dialoguer;
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import org.reflections.Reflections;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
 import uk.ac.susx.tag.dialoguer.utils.JsonUtils;
-import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * The definition of a Dialoguer task.
  *
  * Should be in a JSON file. Should be a large JSON object, with all the following properties.
+ * So all of the following properties appear inside one set of curly braces.
+ *
+ * I.e. the skeleton looks like:
+ *
+ * {
+ *   handler : {}
+ *   analysers : []
+ *   responseTemplates : {}
+ *   necessarySlotsPerIntent: {}
+ *   humanReadableSlotNames: {}
+ * }
  *
  * Definition includes:
  *
@@ -60,7 +54,7 @@ import java.util.stream.Collectors;
  *
  * Available responses are defined in a JSON object:
  *
- *   responses : {
+ *   responseTemplates : {
  *     responseName1 : {
  *       templates : [string, alternative_1, alternative2, ...]
  *     },
@@ -89,16 +83,15 @@ import java.util.stream.Collectors;
  *   You can specify a mapping between slot names and a more human-readable portion. If so, this is the phrase
  *   that will be used when automatically querying the user about that slot.
  *
- *   {
- *      requiredSlots : {
- *         intentName1 : [ requiredSlot1, requiredSlot2, ...],
- *         intentName2 : [ requiredSlot1, requiredSlot2, ...],
- *         ...
- *      },
- *      humanReadableSlotNames : {
- *          slotName1 : readableSlotName1,
- *          slotName2 : readableSlotName2,
- *          ...
+ *   necessarySlotsPerIntent : {
+*       intentName1 : [ requiredSlot1, requiredSlot2, ...],
+*       intentName2 : [ requiredSlot1, requiredSlot2, ...],
+*       ...
+ *   },
+ *   humanReadableSlotNames : {
+ *      slotName1 : readableSlotName1,
+ *      slotName2 : readableSlotName2,
+ *      ...
  *      }
  *   }
  *
@@ -144,20 +137,42 @@ public class Dialoguer {
         // Add the new user message to the dialogue object
         dialogue.addNewUserMessage(message, user);
 
-        // Let each analysers decide on the intents which the user is trying to convey
-        List<Intent> intents = analysers.stream()
-                                   .map((analyser) -> analyser.analise(message, dialogue)) // Get list of predicted intents for each analyser
-                                   .flatMap((listOfIntents) -> listOfIntents.stream())     // Flatten each list so we get one intent at a time
-                                   .collect(Collectors.toList());                          // Join all of the intents into one big list
+        Response r;
 
-        // Ask the handler for a response to these intents
-        Response r = handler.handle(intents, dialogue);
+        // If dialogue was waiting for auto query response
+        if (dialogue.isExpectingAutoRequestResponse()){
+            // Then fill the appropriate slot on the awaiting intent
+            dialogue.fillAutoRequest(message);
+
+            // If all waiting intents are now complete pass the the finished intents to the handler for an appropriate response
+            if (dialogue.areIntentsSatisfied())
+                r = handler.handle(dialogue.popAutoQueriedIntents(), dialogue);
+            else // Otherwise build the next auto query
+                r = Response.buildAutoQueryResponse(dialogue.getNextAutoQuery());
+        } else {
+            // Let each analysers decide on the intents which the user is trying to convey
+            List<Intent> intents = analysers.stream()
+                    .map((analyser) -> analyser.analise(message, dialogue)) // Get list of predicted intents for each analyser
+                    .flatMap((listOfIntents) -> listOfIntents.stream())     // Flatten each list so we get one intent at a time
+                    .collect(Collectors.toList());                          // Join all of the intents into one big list
+
+            // If all the necessary slots for the intents are filled
+            if (Intent.areSlotsFilled(intents, necessarySlotsPerIntent)){
+                // Ask the handler for a response to these intents
+                r = handler.handle(intents, dialogue);
+            // otherwise track intents and produce autoquery
+            } else {
+                dialogue.trackNewAutoQueryList(intents, necessarySlotsPerIntent);
+                r = Response.buildAutoQueryResponse(dialogue.getNextAutoQuery());
+            }
+        }
 
         // Add the response to the dialogue object
         dialogue.addNewSystemMessage(fillTemplateWithResponse(r));
 
-        // Extract the new states from the response and put the dialogue in those states
-        dialogue.setStates(r.getNewStates());
+        // Extract the new states from the response if there is one and put the dialogue in those states
+        if (r.areNewStates())
+            dialogue.setStates(r.getNewStates());
 
         // Return the updated dialogue
         return dialogue;
