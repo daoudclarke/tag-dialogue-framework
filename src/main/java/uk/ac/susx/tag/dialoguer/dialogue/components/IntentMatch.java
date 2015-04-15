@@ -8,7 +8,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
- * Created with IntelliJ IDEA.
+ * Represents an Intent matched with a set of necessary slots.
+ *
+ * Tracks which necessary slots still need filling.
+ *
  * User: Andrew D. Robertson
  * Date: 15/04/2015
  * Time: 09:44

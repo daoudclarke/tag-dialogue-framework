@@ -217,8 +217,10 @@ public class Dialoguer implements AutoCloseable {
         return gson.fromJson(dialoguerDefinition, Dialoguer.class);
     }
 
-    public static Dialoguer loadJson(File dialoguerDefinition) throws FileNotFoundException, UnsupportedEncodingException {
-        return gson.fromJson(new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8"))), Dialoguer.class);
+    public static Dialoguer loadJson(File dialoguerDefinition) throws IOException {
+        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8")))) {
+            return gson.fromJson(r, Dialoguer.class);
+        }
     }
 
     /**

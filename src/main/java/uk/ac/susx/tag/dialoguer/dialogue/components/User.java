@@ -17,13 +17,13 @@ public class User {
     private double latitude = 0.0;
     private double longitude = 0.0;
     private double uncertaintyRadius = 0.0; // in Metres
-    private Map<String, Object> attributes;
+    private Map<String, String> attributes;
 
     public User(){
         this(new HashMap<>());
     }
 
-    public User(Map<String, Object> attributes) {
+    public User(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 
@@ -31,7 +31,7 @@ public class User {
         this(latitude, longitude, uncertaintyRadius, new HashMap<>());
     }
 
-    public User(double latitude, double longitude, double uncertaintyRadius, Map<String, Object> attributes) {
+    public User(double latitude, double longitude, double uncertaintyRadius, Map<String, String> attributes) {
         this.locationData = true;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -71,19 +71,19 @@ public class User {
         this.uncertaintyRadius = uncertaintyRadius;
     }
 
-    public Map<String, Object> getAttributes() {
+    public Map<String, String> getAttributes() {
         return attributes;
     }
 
-    public <T> T getAttribute(String name){
-        return (T)attributes.get(name);
+    public String getAttribute(String name){
+        return attributes.get(name);
     }
 
     public boolean hasAttribute(String name){
         return attributes.containsKey(name);
     }
 
-    public void setAttributes(Map<String, Object> attributes) {
+    public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 }

@@ -35,11 +35,11 @@ import java.util.regex.Pattern;
  */
 public class Response {
 
-    private static final Pattern templateVariableRegex = Pattern.compile("\\{(.+?)\\}");
-
     public static final String defaultConfirmCancelResponseId = "confirm_cancellation";
     public static final String defaultCompletionResponseId = "confirm_complete";
     public static final String defaultAutoQueryResponseId = "auto_query";
+
+    private static final Pattern templateVariableRegex = Pattern.compile("\\{(.+?)\\}");
 
     private String responseName;
     private Map<String, String> responseVariables;

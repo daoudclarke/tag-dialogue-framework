@@ -3,13 +3,26 @@ package uk.ac.susx.tag.dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
+ * Most high-level class. The main entry point into the dialogueing system is the getResponse() method
+ * which takes a message, user info and an Id, maps it to the appropriate dialogue and uses the Dialoguer
+ * to produce a response from the system.
+ *
+ * Tracks incomplete dialogues and handles logging.
+ *
+ * It is possible to register a CompletedDialogueHandler, which will be given a chance to play with Dialogue objects
+ * when they are completed, just before they get untracked and forgotten (or logged).
+ *
+ *
  * User: Andrew D. Robertson
  * Date: 17/03/2015
  * Time: 14:13
@@ -22,6 +35,14 @@ public class DialogueTracker implements AutoCloseable {
     private Duration trackingTimeLimit;
     private boolean logDialogues;
     private CompletedDialogueHandler cdHandler;
+
+    public DialogueTracker(String jsonDefinition){
+        this(Dialoguer.loadJson(jsonDefinition));
+    }
+
+    public DialogueTracker(File jsonDefinition) throws IOException {
+        this(Dialoguer.loadJson(jsonDefinition));
+    }
 
     public DialogueTracker(Dialoguer dialoguer){
         this.dialoguer = dialoguer;
