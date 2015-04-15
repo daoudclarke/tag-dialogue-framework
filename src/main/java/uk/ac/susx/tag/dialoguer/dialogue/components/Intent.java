@@ -63,9 +63,19 @@ import java.util.Set;
  */
 public class Intent {
 
+    // Default intents names that may have default behaviour
+    public static final String nullChoice = "null_choice";
+    public static final String noChoice = "no_choice";
+    public static final String choice = "choice";
+    public static final String no = "no";
+    public static final String yes = "yes";
+    public static final String cancel = "cancel";
+    public static final String cancelAutoQuery = "cancel_auto_query";
+
     private String name;
     private String text;
     private Multimap<String, Slot> slots;
+
 
     public Intent(String name) {
         this(name, "");
@@ -103,6 +113,10 @@ public class Intent {
  * Slot management
  **********************************************/
 
+    public IntentMatch getIntentMatch(Set<String> requiredSlotNames){
+        return new IntentMatch(this, requiredSlotNames);
+    }
+
     public static boolean areSlotsFilled(List<Intent> intents, Map<String, Set<String>> necessarySlotsPerIntent){
         for (Intent i : intents){
             if (!i.areSlotsFilled(necessarySlotsPerIntent.get(i.getName())))
@@ -110,7 +124,7 @@ public class Intent {
         } return true;
     }
 
-    public Set<String> getUnfilledSlotNames(Set<String> requiredSlotNames){
+    public Sets.SetView<String> getUnfilledSlotNames(Set<String> requiredSlotNames){
         return Sets.difference(requiredSlotNames, slots.keySet());
     }
 
@@ -147,26 +161,18 @@ public class Intent {
 /**********************************************
  * Default intents
  **********************************************/
-    public static Intent buildNullChoiceIntent(String userMessage){
-        return new Intent("null_choice", userMessage);
-    }
-
-    public static Intent buildChoiceIntent(String userMessage, int choiceNumber){
-        return new Intent("choice", userMessage)
-                     .fillSlot("choice", Integer.toString(choiceNumber), 0, 0);
-    }
-
+    public static Intent buildNullChoiceIntent(String userMessage){ return new Intent(nullChoice, userMessage);}
     public static Intent buildNoChoiceIntent(String userMessage){
-        return new Intent("no_choice", userMessage);
+        return new Intent(noChoice, userMessage);
     }
-
-    public static Intent buildCancelIntent(String userMessage){
-        return new Intent("cancel", userMessage);
+    public static Intent buildCancelIntent(String userMessage){ return new Intent(cancel, userMessage); }
+    public static Intent buildNoIntent(String userMessage) { return new Intent(no, userMessage);}
+    public static Intent buildYesIntent(String userMessage) { return new Intent(yes, userMessage); }
+    public static Intent buildCancelAutoQueryIntent(String userMessage) { return new Intent(cancelAutoQuery, userMessage);}
+    public static Intent buildChoiceIntent(String userMessage, int choiceNumber){
+        return new Intent(choice, userMessage)
+                .fillSlot("choice", Integer.toString(choiceNumber), 0, 0);
     }
-
-    public static Intent buildNoIntent(String userMessage) { return new Intent("no", userMessage);}
-
-    public static Intent buildYesIntent(String userMessage) { return new Intent("yes", userMessage); }
 
 /**********************************************
  * Utility

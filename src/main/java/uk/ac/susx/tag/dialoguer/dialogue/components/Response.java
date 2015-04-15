@@ -37,8 +37,9 @@ public class Response {
 
     private static final Pattern templateVariableRegex = Pattern.compile("\\{(.+?)\\}");
 
-    private static final String defaultConfirmCancelResponseId = "confirm_cancellation";
-    private static final String defaultAutoQueryResponseId = "auto_query";
+    public static final String defaultConfirmCancelResponseId = "confirm_cancellation";
+    public static final String defaultCompletionResponseId = "confirm_complete";
+    public static final String defaultAutoQueryResponseId = "auto_query";
 
     private String responseName;
     private Map<String, String> responseVariables;
@@ -106,6 +107,10 @@ public class Response {
         return filledTemplate.toString();
     }
 
+/****************************************************************
+ * Default responses
+ ****************************************************************/
+
     public static Response buildCancellationResponse(){
         return new Response(defaultConfirmCancelResponseId);
     }
@@ -116,6 +121,14 @@ public class Response {
     public static Response buildAutoQueryResponse(String query){
         return new Response(defaultAutoQueryResponseId)
                 .addResponseVariable("query", query);
+    }
+
+    public static Response buildCompletionResponse(){
+        return new Response(defaultCompletionResponseId);
+    }
+
+    public static Response buildCompletionResponse(Map<String, String> responseVariables, List<String> newStates){
+        return new Response(defaultCompletionResponseId, responseVariables, newStates);
     }
 
     public static class ResponseException extends RuntimeException {

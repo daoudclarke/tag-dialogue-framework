@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -7,6 +8,7 @@ import com.google.gson.stream.JsonReader;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
+import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
@@ -110,6 +112,7 @@ public class Dialoguer {
                                         .registerTypeAdapter(Handler.class, new JsonUtils.HandlerAdaptor().nullSafe())   // Custom deserialisation for handlers
                                         .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonSerializer())
                                         .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonDeserializer())
+                                        .registerTypeAdapter(ImmutableSet.class, JsonUtils.immutableSetJsonDeserializer())
                                         .create();
 
     private Handler handler;
@@ -129,53 +132,85 @@ public class Dialoguer {
 
     public Dialogue interpret(String message, User user, Dialogue dialogue){
 
-        // Cache some simple string processing of the user message in the working memory of the dialogue object
+        // 0. Cache some simple string processing of the user message in the working memory of the dialogue object
         String stripped = SimplePatterns.stripAll(message);
         dialogue.putToWorkingMemory("stripped", stripped);
         dialogue.putToWorkingMemory("strippedNoStopwords", Stopwords.removeStopwords(stripped));
 
-        // Add the new user message to the dialogue object
+        // 1. Add the new user message to the dialogue object
         dialogue.addNewUserMessage(message, user);
 
-        Response r;
+        Response r; // To be filled with system response
 
-        // If dialogue was waiting for auto query response
-        if (dialogue.isExpectingAutoRequestResponse()){
-            // Then fill the appropriate slot on the awaiting intent
-            dialogue.fillAutoRequest(message);
+        // 2. Determine user intent (largely ignored if we're auto-querying, see below)
+        List<Intent> intents = analysers.stream()
+                .map((analyser) -> analyser.analise(message, dialogue)) // Get list of predicted intents for each analyser
+                .flatMap((listOfIntents) -> listOfIntents.stream())     // Flatten each list so we get one intent at a time
+                .collect(Collectors.toList());                          // Join all of the intents into one big list
 
-            // If all waiting intents are now complete pass the the finished intents to the handler for an appropriate response
-            if (dialogue.areIntentsSatisfied())
-                r = handler.handle(dialogue.popAutoQueriedIntents(), dialogue);
-            else // Otherwise build the next auto query
-                r = Response.buildAutoQueryResponse(dialogue.getNextAutoQuery());
+        // 3. Check to see if there is a cancellation intent, short-circuiting and finishing the dialogue
+        if (isCancellationPresent(intents)){
+
+            // 4. Complete and cancel dialogue
+            dialogue.complete();
+            r = Response.buildCancellationResponse();
         } else {
-            // Let each analysers decide on the intents which the user is trying to convey
-            List<Intent> intents = analysers.stream()
-                    .map((analyser) -> analyser.analise(message, dialogue)) // Get list of predicted intents for each analyser
-                    .flatMap((listOfIntents) -> listOfIntents.stream())     // Flatten each list so we get one intent at a time
-                    .collect(Collectors.toList());                          // Join all of the intents into one big list
+            // 5. If dialogue was waiting for auto query response
+            if (dialogue.isExpectingAutoRequestResponse()){
 
-            // If all the necessary slots for the intents are filled
-            if (Intent.areSlotsFilled(intents, necessarySlotsPerIntent)){
-                // Ask the handler for a response to these intents
-                r = handler.handle(intents, dialogue);
-            // otherwise track intents and produce autoquery
-            } else {
-                dialogue.trackNewAutoQueryList(intents, necessarySlotsPerIntent);
-                r = Response.buildAutoQueryResponse(dialogue.getNextAutoQuery());
+                // 6. If any of the analysers decided that it was appropriate to short-circuit the auto-query process
+                if (isCancelAutoQueryPresent(intents)){
+
+                    // 7. Add all incomplete/complete intents being tracked to the intents list
+                    intents.addAll(dialogue.popAutoQueriedIntents());
+
+                    // 8. Let the handler deal with the intents
+                    r = handleNewIntents(intents, dialogue, false);
+                }
+                // 13. Otherwise fill the appropriate slot on the awaiting intent
+                else {
+                    dialogue.fillAutoRequest(message);
+
+                    // 14. If all waiting intents are now complete, pass the the finished intents to the handler for an appropriate response (ignoring the other intents found by analysers)
+                    if (dialogue.areFilledIntentsReady())
+                        r = handler.handle(dialogue.popAutoQueriedIntents(), dialogue);
+
+                    // 15. Otherwise build the next auto query
+                    else r = Response.buildAutoQueryResponse(getHumanReadableSlotNameIfPresent(dialogue.getNextAutoQuery()));
+                }
             }
+            // 16. Otherwise pay attention to what the analysers decide on the intents that the user is trying to convey, let handler deal so long as necessary slots are filled
+            else r = handleNewIntents(intents, dialogue, true);
         }
 
-        // Add the response to the dialogue object
+        // 17. Add the response to the dialogue object
         dialogue.addNewSystemMessage(fillTemplateWithResponse(r));
 
-        // Extract the new states from the response if there is one and put the dialogue in those states
+        // 18. Extract the new states from the response if there is one and put the dialogue in those states
         if (r.areNewStates())
             dialogue.setStates(r.getNewStates());
 
         // Return the updated dialogue
         return dialogue;
+    }
+
+    private Response handleNewIntents(List<Intent> intents, Dialogue dialogue, boolean autoQueryTracking){
+        // 9. Find which necessary slots are not filled
+        List<IntentMatch> intentMatches = intents.stream()
+                .map(intent -> intent.getIntentMatch(necessarySlotsPerIntent.get(intent.getName())))
+                .collect(Collectors.toList());
+
+        // 10. If all the necessary slots for the intents are filled, and the analysers haven't disabled auto-querying
+        if (!autoQueryTracking || IntentMatch.areSlotsFilled(intentMatches)){
+
+            // 11. Ask the handler for a response to these intents
+            return handler.handle(intents, dialogue);
+        }
+        // 12. otherwise track intents and produce auto query
+        else {
+            dialogue.trackNewAutoQueryList(intentMatches);
+            return Response.buildAutoQueryResponse(getHumanReadableSlotNameIfPresent(dialogue.getNextAutoQuery()));
+        }
     }
 
     public static Dialoguer loadJson(String dialoguerDefinition) {
@@ -184,6 +219,20 @@ public class Dialoguer {
 
     public static Dialoguer loadJson(File dialoguerDefinition) throws FileNotFoundException, UnsupportedEncodingException {
         return gson.fromJson(new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8"))), Dialoguer.class);
+    }
+
+    /**
+     * Return true if one of the intents is the default cancel intent
+     */
+    private boolean isCancellationPresent(List<Intent> intents){
+        return intents.stream().anyMatch((intent) -> intent.getName().equals(Intent.cancel));
+    }
+
+    /**
+     * Return true if one of the intents is the default cancel auto query intent
+     */
+    private boolean isCancelAutoQueryPresent(List<Intent> intents){
+        return intents.stream().anyMatch((intent) -> intent.getName().equals(Intent.cancelAutoQuery));
     }
 
     private String getHumanReadableSlotNameIfPresent(String slotName){
@@ -197,6 +246,10 @@ public class Dialoguer {
                 return r.fillTemplate(alternatives.get(0));
             else
                 return r.fillTemplate(alternatives.get(random.nextInt(alternatives.size())));
+        } else if (r.getResponseName().equals(Response.defaultConfirmCancelResponseId)) {
+            r.fillTemplate("Cancelled. Thank you!");
+        } else if (r.getResponseName().equals(Response.defaultCompletionResponseId)) {
+            r.fillTemplate("Thanks, goodbye!");
         }
         throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
     }

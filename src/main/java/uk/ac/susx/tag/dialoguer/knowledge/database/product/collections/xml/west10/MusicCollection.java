@@ -4,9 +4,9 @@ import com.google.common.base.CaseFormat;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import uk.ac.susx.tag.parcel.api.datastructures.Merchant;
-import uk.ac.susx.tag.parcel.api.datastructures.Product;
-import uk.ac.susx.tag.parcel.api.productdata.collections.xml.RecordBasedXMLCollection;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.Merchant;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.Product;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.collections.xml.RecordBasedXMLCollection;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -21,7 +21,7 @@ import java.util.*;
  * Date: 17/09/2014
  * Time: 15:26
  */
-public class MusicCollection extends RecordBasedXMLCollection{
+public class MusicCollection extends RecordBasedXMLCollection {
 
     private Merchant merchant;
 

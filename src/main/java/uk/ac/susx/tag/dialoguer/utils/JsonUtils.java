@@ -1,6 +1,7 @@
 package uk.ac.susx.tag.dialoguer.utils;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
@@ -18,9 +19,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Utilities that make Gson able to better handle the datatypes in this project during JSON (de|se)rialisation.
+ * Utilities that make Gson able to better handle the datatypes in this project during JSON (de)serialisation.
  *
  * Generally most of this functionality is encoded within the public static gson instance on the Dialoguer class.
  *
@@ -35,6 +37,21 @@ import java.util.Map;
  * Time: 17:18
  */
 public class JsonUtils {
+
+
+/***************************************************************
+ * Support for deserialisation of guava's ImmutableSet
+ *************************************************************/
+
+    public static JsonDeserializer<ImmutableSet<?>> immutableSetJsonDeserializer(){
+        // see: http://stackoverflow.com/questions/7706772/deserializing-immutablelist-using-gson
+        return (json, typeOfT, context) -> {
+            final TypeToken<ImmutableSet<?>> immutableSetToken = (TypeToken<ImmutableSet<?>>) TypeToken.of(typeOfT);
+            final TypeToken<? super ImmutableSet<?>> setToken = immutableSetToken.getSupertype(Set.class);
+            final Set<?> set = context.deserialize(json, setToken.getType());
+            return ImmutableSet.copyOf(set);
+        };
+    }
 
 /***************************************************************
  * Support for deserialisation and serialisation of guava's multimaps

@@ -4,16 +4,20 @@ import com.google.common.base.CaseFormat;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import uk.ac.susx.tag.parcel.api.datastructures.Merchant;
-import uk.ac.susx.tag.parcel.api.datastructures.Product;
-import uk.ac.susx.tag.parcel.api.productdata.collections.xml.RecordBasedXMLCollection;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.Merchant;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.Product;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.collections.xml.RecordBasedXMLCollection;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.

@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * NOTE TO DEVS: This class MUST be serialisable and deserialisable using Dialoguer.gson
+ *
  * Class representing the ongoing dialogue with a user.
  *
  * Any information that must be persistent throughout that dialogue (like choices presented to the user, or user's
@@ -51,6 +53,7 @@ import java.util.stream.Collectors;
 public class Dialogue {
 
     private String id;
+    private boolean isComplete;
 
     private List<Intent> intents;              // Pertinent user intents, still requiring attention by the handler
     private AutoQueryTracker autoQueryTracker; // Track status of auto-queries for necessary slots on intents
@@ -67,7 +70,9 @@ public class Dialogue {
 
     public Dialogue(String id) {
         this.id = id;
+        isComplete = false;
         intents = new ArrayList<>();
+        autoQueryTracker = new AutoQueryTracker();
         workingMemory = new HashMap<>();
         states = new ArrayList<>();
         questionFocusStack = new ArrayList<>();
@@ -78,6 +83,10 @@ public class Dialogue {
     }
 
     public String getId() { return id; }
+
+    public void complete() { isComplete = true; }
+    public void setComplete(boolean isComplete) { this.isComplete = isComplete; }
+    public boolean isComplete() { return isComplete; }
 
 /***********************************************
  * Intent management
@@ -169,34 +178,64 @@ public class Dialogue {
  * Auto-querying management
  ***********************************************/
     public void trackNewAutoQueryList(List<Intent> intents, Map<String, Set<String>> necessarySlotsPerIntent){
+        autoQueryTracker.intents = intents.stream()
+                                    .map(intent -> intent.getIntentMatch(necessarySlotsPerIntent.get(intent.getName())))
+                                    .collect(Collectors.toList());
+        autoQueryTracker.currentIntentIndex = 0;
+    }
 
+    public void trackNewAutoQueryList(List<IntentMatch> intentMatches){
+        autoQueryTracker.intents = intentMatches;
+        autoQueryTracker.currentIntentIndex = 0;
     }
 
     public void fillAutoRequest(String userMessage){
-        //TODO
+        autoQueryTracker.getCurrentIntent().fillNextNecessarySlot(userMessage);
     }
 
     public boolean isExpectingAutoRequestResponse(){
-        return false;
+        if (!intents.isEmpty()){
+            while (autoQueryTracker.currentIntentIndex < autoQueryTracker.intents.size()){
+                if (!autoQueryTracker.getCurrentIntent().areSlotsFilled()){
+                    return true;
+                } else {
+                    autoQueryTracker.currentIntentIndex++;
+                }
+            } return false;
+        } return false;
     }
 
-    public boolean areIntentsSatisfied(){
-        return false;
+    public boolean areFilledIntentsReady(){
+        return !autoQueryTracker.intents.isEmpty() && autoQueryTracker.currentIntentIndex >= autoQueryTracker.intents.size();
     }
 
     public List<Intent> popAutoQueriedIntents(){
-        return null;
+        List<Intent> autoQueriedIntents = autoQueryTracker.intents.stream()
+                                              .map(IntentMatch::getIntent)
+                                              .collect(Collectors.toList());
+        autoQueryTracker.reset();
+        return autoQueriedIntents;
     }
 
     public String getNextAutoQuery(){
-        return null;
+        return autoQueryTracker.getCurrentIntent().peekNextNecessarySlot();
     }
 
+
     public static class AutoQueryTracker {
-        public List<Intent> autoQueries;
-        public List<Set<String>> necessarySlotsPerIntent;
-        public String lastAutoRequestedSlotName;
-        public int currentIntent;
+        public List<IntentMatch> intents = new ArrayList<>(); // Track status of auto-queries for necessary slots on intents
+        public int currentIntentIndex = 0;
+
+        public IntentMatch getCurrentIntent() {
+            if (intents.isEmpty())
+                throw new NoSuchElementException();
+            else return intents.get(currentIntentIndex);
+        }
+
+        public void reset(){
+            intents.clear();
+            currentIntentIndex = 0;
+        }
     }
 
 /***********************************************
