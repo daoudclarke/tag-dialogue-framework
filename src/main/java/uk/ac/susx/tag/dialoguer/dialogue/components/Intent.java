@@ -20,42 +20,7 @@ import java.util.Set;
  *
  * There can be multiple values for a single slot type.
  *
- * There are a number of default intents:
- *
- * ----User wishes to cancel----:
- *
- *  {
- *    name = "cancel"
- *    slots = {}
- *  }
- *
- * ----User is making a choice----:
- *
- *  {
- *    name = "choice"
- *    slots = {
- *        choice_index = <integer>
- *    }
- *  }
- *
- * ----User is explicitly rejecting a list of choices----:
- *  {
- *      name = "null_choice"
- *      slots = {}
- *  }
- *
- * ----User wishes to say yes or confirm--------------:
- *
- *  {
- *      name = "yes"
- *      slots = {}
- *  }
- *
- * ---User wishes to say no or decline --------------:
- * {
- *     name = "no"
- *     slots = {}
- * }
+ * There are a number of default intents. See the public static fields.
  *
  * User: Andrew D. Robertson
  * Date: 16/03/2015
@@ -64,13 +29,13 @@ import java.util.Set;
 public class Intent {
 
     // Default intents names that may have default behaviour
-    public static final String nullChoice = "null_choice";
-    public static final String noChoice = "no_choice";
-    public static final String choice = "choice";
-    public static final String no = "no";
-    public static final String yes = "yes";
-    public static final String cancel = "cancel";
-    public static final String cancelAutoQuery = "cancel_auto_query";
+    public static final String nullChoice = "null_choice"; // User is explicitly rejecting a list of choices
+    public static final String noChoice = "no_choice";     // User is ignoring the presented choices
+    public static final String choice = "choice";     //User is making a choice. The choice will be in the "choice" slot.
+    public static final String no = "no";             //User wishes to say no or decline or is ignoring a request for confirmation
+    public static final String yes = "yes";           //User wishes to say yes or confirm
+    public static final String cancel = "cancel";     //User wishes to cancel
+    public static final String cancelAutoQuery = "cancel_auto_query";  // User message implies that we should cancel auto-querying
 
     private String name;
     private String text;
@@ -181,10 +146,11 @@ public class Intent {
         return Lists.newArrayList(this);
     }
 
+    /**
+     * Return true if an intent with name=*name* is in *intents*.
+     */
     public static boolean isPresent(String name, List<Intent> intents){
-        for (Intent i : intents){
-            if (i.isName(name)) return true;
-        } return false;
+        return intents.stream().anyMatch(i -> i.isName(name));
     }
 
     @Override

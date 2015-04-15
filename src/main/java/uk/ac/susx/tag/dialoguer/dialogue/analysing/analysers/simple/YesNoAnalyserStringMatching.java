@@ -66,7 +66,7 @@ public class YesNoAnalyserStringMatching extends Analyser {
                 dialogue.setRequestingYesNo(false);
                 return Intent.buildYesIntent(message).toList();
             } else {
-                return new ArrayList<>();
+                return Intent.buildNoIntent(message).toList();
             }
         } else return new ArrayList<>();
     }

@@ -27,7 +27,10 @@ import java.util.stream.Collectors;
  *   intents            : the list of intents the user has expressed that are still pertinent to the dialogue Handler. Intents that
  *                        it has yet to act upon or needs to keep track of.
  *
- *   autoQueryTracker   : Tracks intents with unfilled necessary slots, allowing the Dialoguer to auto query/fill them
+ *   autoQueryTracker   : Tracks intents with unfilled necessary slots, allowing the Dialoguer to auto query/fill them. The analysers
+ *                        will get a look at the user response before the autoquerier does. So if you want to stop the auto-querying
+ *                        mechanic after a particular user message, then have your Analyser make a "cancel_auto_querying" intent
+ *                        by using Intent.buildCancelAutoQueryIntent()
  *
  *   workingMemory      : A mapping of extra useful information for the current dialogue state, that will be available for
  *                        any subsequent analysis. This could track entities or variables outside of intents that the system
@@ -98,7 +101,7 @@ public class Dialogue {
  ***********************************************/
     public List<Intent> getCurrentIntents() { return intents; }
     public void addToCurrentIntents(Intent i) { intents.add(i); }
-    public void addToCurrentIntents(List<Intent> intents){ intents.addAll(intents); }
+    public void addToCurrentIntents(List<Intent> intents){ this.intents.addAll(intents); }
     public void clearCurrentIntents() { intents.clear(); }
     public void replaceCurrentIntents(List<Intent> intents){ this.intents = intents; }
 
@@ -118,37 +121,23 @@ public class Dialogue {
     public void clearChoices(){ choices.clear(); }
     public List<String> getChoices() { return choices; }
     public boolean isRequestingYesNo() { return requestingYesNo; }
-    public void setRequestingYesNo(boolean requestingYesNo){
-        this.requestingYesNo = requestingYesNo;
-    }
+    public void setRequestingYesNo(boolean requestingYesNo){ this.requestingYesNo = requestingYesNo; }
 
 /***********************************************
  * State management
  ***********************************************/
-    public void setStates(List<String> states){
-        this.states = states;
-    }
-    public void setState(String state){
-        this.states = Lists.newArrayList(state);
-    }
+    public void setStates(List<String> states){ this.states = states; }
+    public void setState(String state){ this.states = Lists.newArrayList(state); }
     public List<String> getStates(){ return states; }
     public void clearStates() { states.clear(); }
 
 /***********************************************
  * Working memory management
  ***********************************************/
-    public void putToWorkingMemory(String key, String dataValue) {
-        workingMemory.put(key, dataValue);
-    }
-    public String getFromWorkingMemory(String key) {
-        return workingMemory.get(key);
-    }
-    public String getStrippedText(){
-        return getFromWorkingMemory("stripped");
-    }
-    public String getStrippedNoStopwordsText(){
-        return getFromWorkingMemory("strippedNoStopwords");
-    }
+    public void putToWorkingMemory(String key, String dataValue) { workingMemory.put(key, dataValue);}
+    public String getFromWorkingMemory(String key) { return workingMemory.get(key); }
+    public String getStrippedText(){ return getFromWorkingMemory("stripped"); }
+    public String getStrippedNoStopwordsText(){ return getFromWorkingMemory("strippedNoStopwords"); }
 
 /***********************************************
  * Message management
@@ -169,13 +158,21 @@ public class Dialogue {
         } return null;
     }
 
+    public Message getLastMessage(){
+        return history.isEmpty()? null : history.get(history.size()-1);
+    }
+
     public User getUserData(){ return user; }
     public List<Message> getMessageHistory(){ return history; }
-    public int getCurrentMessageNumber(){return history.size(); }
+    public int getCurrentMessageNumber(){ return history.size(); }
     public List<Message> getUserMessageHistory(){
         return history.stream()
                 .filter(Message::isUserMessage)
                 .collect(Collectors.toList());
+    }
+
+    public boolean isLastMessageByUser() {
+        return !history.isEmpty() && getLastMessage().isUserMessage();
     }
 
 
@@ -251,17 +248,7 @@ public class Dialogue {
  ***********************************************/
 
     @Override
-    public String toString(){
-        return Dialoguer.gson.toJson(this);
-    }
+    public String toString(){ return Dialoguer.gson.toJson(this); }
 
-    public static void main(String[] args){
-        Dialogue d = new Dialogue("id");
 
-        d.trackNewAutoQueryList(new Intent("intentname").fillSlot("slot1", "value1").getIntentMatch(Sets.newHashSet("slot1", "slot2", "slot3")).toList());
-
-        d.complete();
-
-        System.out.println(d);
-    }
 }

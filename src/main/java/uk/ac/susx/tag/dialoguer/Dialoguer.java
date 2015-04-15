@@ -104,7 +104,7 @@ import java.util.stream.Collectors;
  * Date: 16/03/2015
  * Time: 15:28
  */
-public class Dialoguer {
+public class Dialoguer implements AutoCloseable {
 
     public static final Random random = new Random();
     public static final Gson gson = new GsonBuilder().setPrettyPrinting()
@@ -225,14 +225,14 @@ public class Dialoguer {
      * Return true if one of the intents is the default cancel intent
      */
     private boolean isCancellationPresent(List<Intent> intents){
-        return intents.stream().anyMatch((intent) -> intent.getName().equals(Intent.cancel));
+        return intents.stream().anyMatch((intent) -> intent.isName(Intent.cancel));
     }
 
     /**
      * Return true if one of the intents is the default cancel auto query intent
      */
     private boolean isCancelAutoQueryPresent(List<Intent> intents){
-        return intents.stream().anyMatch((intent) -> intent.getName().equals(Intent.cancelAutoQuery));
+        return intents.stream().anyMatch((intent) -> intent.isName(Intent.cancelAutoQuery));
     }
 
     private String getHumanReadableSlotNameIfPresent(String slotName){
@@ -252,6 +252,13 @@ public class Dialoguer {
             r.fillTemplate("Thanks, goodbye!");
         }
         throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
+    }
+
+    @Override
+    public void close() throws Exception {
+        handler.close();
+        for (Analyser a : analysers)
+            a.close();
     }
 
     private static class DialoguerException extends RuntimeException{

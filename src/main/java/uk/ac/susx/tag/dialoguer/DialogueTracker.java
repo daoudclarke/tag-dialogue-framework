@@ -14,33 +14,66 @@ import java.util.Map;
  * Date: 17/03/2015
  * Time: 14:13
  */
-public class DialogueTracker {
+public class DialogueTracker implements AutoCloseable {
 
     private Dialoguer dialoguer;
     private Map<String, Dialogue> dialogues;
     private Map<String, LocalDateTime> lastUpdated;
-    private Duration trackedTimeLimit;
+    private Duration trackingTimeLimit;
+    private boolean logDialogues;
+    private CompletedDialogueHandler cdHandler;
 
     public DialogueTracker(Dialoguer dialoguer){
         this.dialoguer = dialoguer;
         this.dialogues = new HashMap<>();
+        lastUpdated = new HashMap<>();
+        trackingTimeLimit = Duration.ofDays(1);
+        logDialogues = false;
+        cdHandler = null;
+    }
+
+    public void registerCompletedDialogueHandler(CompletedDialogueHandler h){
+        cdHandler = h;
+    }
+
+    public void removeTrackingTimeLimit(){
+        trackingTimeLimit = null;
+    }
+
+    public void setTrackingTimeLimit(Duration d){
+        trackingTimeLimit = d;
     }
 
     public String getResponse(String dialogueId, String userMessage, User userData){
-        if (isTracked(dialogueId, trackedTimeLimit)){
-            lastUpdated.put(dialogueId, LocalDateTime.now());
-
-        }
-        return null;
+        return getResponse(dialogueId, userMessage, userData, trackingTimeLimit);
     }
 
-    public void untrackDialogue(String id){
+    public String getResponse(String dialogueId, String userMessage, User userData, Duration trackedTimeLimit){
+        Dialogue d;
+        if (isTracked(dialogueId, trackedTimeLimit)){
+            d = dialoguer.interpret(userMessage, userData, dialogues.get(dialogueId));
+        } else {
+            d = dialoguer.interpret(userMessage, userData, new Dialogue(dialogueId));
+        }
+        lastUpdated.put(dialogueId, LocalDateTime.now());
+        dialogues.put(dialogueId, d);
+        if (d.isComplete()) {
+            if (logDialogues)
+                log(dialogueId);
+            if (cdHandler != null)
+                cdHandler.handle(d);
+            unTrackDialogue(dialogueId);
+        }
+        return d.isLastMessageByUser()? null : d.getLastMessage().getText();
+    }
+
+    public void unTrackDialogue(String id){
         dialogues.remove(id);
         lastUpdated.remove(id);
     }
 
     public boolean isTracked(String dialogueId) {
-        return isTracked(dialogueId, null);
+        return isTracked(dialogueId, trackingTimeLimit);
     }
 
     public boolean isTracked(String dialogueId, Duration timeLimit){
@@ -51,12 +84,31 @@ public class DialogueTracker {
         return isTracked(dialogueID, Duration.ofHours(timeLimitInHours));
     }
 
+    public boolean isTrackedNoTimeLimit(String dialogueId){
+        return isTracked(dialogueId, null);
+    }
+
     public boolean isTimeSinceLastUpdateLessThan(Duration d, String dialogueId){
         Duration timeSinceLastUpdate = Duration.between(lastUpdated.get(dialogueId), LocalDateTime.now()).abs();
         return timeSinceLastUpdate.compareTo(d) < 0;
     }
 
     public void log(String dialogueId){
-        //TODO
+        // TODO
+    }
+
+    public void logAll(){
+        // TODO
+    }
+
+    @Override
+    public void close() throws Exception {
+        dialoguer.close();
+        if (logDialogues)
+            logAll();
+    }
+
+    public static interface CompletedDialogueHandler {
+        public void handle(Dialogue d);
     }
 }
