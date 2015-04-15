@@ -1,6 +1,7 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 
 import java.util.*;
@@ -21,8 +22,12 @@ import java.util.stream.Collectors;
  *   id                 : the ID of this dialogue. This is what the DialogueTracker pays attention to in order to match new messages
  *                        to this dialogue. A sensible value for this could be the user's twitter handle for example.
  *
+ *   isComplete         : whether this dialogue has been marked as complete. It is mostly the duty of the Dialoguer or Handler to decide this.
+ *
  *   intents            : the list of intents the user has expressed that are still pertinent to the dialogue Handler. Intents that
  *                        it has yet to act upon or needs to keep track of.
+ *
+ *   autoQueryTracker   : Tracks intents with unfilled necessary slots, allowing the Dialoguer to auto query/fill them
  *
  *   workingMemory      : A mapping of extra useful information for the current dialogue state, that will be available for
  *                        any subsequent analysis. This could track entities or variables outside of intents that the system
@@ -177,24 +182,25 @@ public class Dialogue {
 /***********************************************
  * Auto-querying management
  ***********************************************/
-    public void trackNewAutoQueryList(List<Intent> intents, Map<String, Set<String>> necessarySlotsPerIntent){
-        autoQueryTracker.intents = intents.stream()
-                                    .map(intent -> intent.getIntentMatch(necessarySlotsPerIntent.get(intent.getName())))
-                                    .collect(Collectors.toList());
-        autoQueryTracker.currentIntentIndex = 0;
-    }
-
     public void trackNewAutoQueryList(List<IntentMatch> intentMatches){
         autoQueryTracker.intents = intentMatches;
         autoQueryTracker.currentIntentIndex = 0;
     }
 
+    /**
+     * Check isExpectingAutoRequestResponse is true before calling.
+     * This will fill the slot of the intent expecting its value with the text of the user message.
+     */
     public void fillAutoRequest(String userMessage){
         autoQueryTracker.getCurrentIntent().fillNextNecessarySlot(userMessage);
     }
 
+    /**
+     * Return true if there is an intent awaiting the fill of a necessary slot.
+     * Will return false if there are no intents being tracked, or if all tracked intents are filled.
+     */
     public boolean isExpectingAutoRequestResponse(){
-        if (!intents.isEmpty()){
+        if (!autoQueryTracker.intents.isEmpty()){
             while (autoQueryTracker.currentIntentIndex < autoQueryTracker.intents.size()){
                 if (!autoQueryTracker.getCurrentIntent().areSlotsFilled()){
                     return true;
@@ -205,10 +211,9 @@ public class Dialogue {
         } return false;
     }
 
-    public boolean areFilledIntentsReady(){
-        return !autoQueryTracker.intents.isEmpty() && autoQueryTracker.currentIntentIndex >= autoQueryTracker.intents.size();
-    }
-
+    /**
+     * Get and remove all tracked intents in whatever state they are.
+     */
     public List<Intent> popAutoQueriedIntents(){
         List<Intent> autoQueriedIntents = autoQueryTracker.intents.stream()
                                               .map(IntentMatch::getIntent)
@@ -217,11 +222,14 @@ public class Dialogue {
         return autoQueriedIntents;
     }
 
+
     public String getNextAutoQuery(){
-        return autoQueryTracker.getCurrentIntent().peekNextNecessarySlot();
+        if (isExpectingAutoRequestResponse())
+            return autoQueryTracker.getCurrentIntent().peekNextNecessarySlot();
+        else throw new NoSuchElementException();
     }
 
-
+    // Basic structure allowing easy tracking of IntentMatches
     public static class AutoQueryTracker {
         public List<IntentMatch> intents = new ArrayList<>(); // Track status of auto-queries for necessary slots on intents
         public int currentIntentIndex = 0;
@@ -245,5 +253,15 @@ public class Dialogue {
     @Override
     public String toString(){
         return Dialoguer.gson.toJson(this);
+    }
+
+    public static void main(String[] args){
+        Dialogue d = new Dialogue("id");
+
+        d.trackNewAutoQueryList(new Intent("intentname").fillSlot("slot1", "value1").getIntentMatch(Sets.newHashSet("slot1", "slot2", "slot3")).toList());
+
+        d.complete();
+
+        System.out.println(d);
     }
 }

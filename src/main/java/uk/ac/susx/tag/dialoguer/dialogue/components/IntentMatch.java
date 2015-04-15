@@ -1,6 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import java.util.HashSet;
 import java.util.List;
@@ -62,6 +62,10 @@ public class IntentMatch {
 
     public static boolean areSlotsFilled(List<IntentMatch> intentMatches){
         return intentMatches.stream().allMatch(IntentMatch::areSlotsFilled);
+    }
+
+    public List<IntentMatch> toList(){
+        return Lists.newArrayList(this);
     }
 
     private void readyNextSlot(){

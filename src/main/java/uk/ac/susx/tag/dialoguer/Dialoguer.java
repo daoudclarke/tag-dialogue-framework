@@ -172,7 +172,7 @@ public class Dialoguer {
                     dialogue.fillAutoRequest(message);
 
                     // 14. If all waiting intents are now complete, pass the the finished intents to the handler for an appropriate response (ignoring the other intents found by analysers)
-                    if (dialogue.areFilledIntentsReady())
+                    if (!dialogue.isExpectingAutoRequestResponse())
                         r = handler.handle(dialogue.popAutoQueriedIntents(), dialogue);
 
                     // 15. Otherwise build the next auto query
