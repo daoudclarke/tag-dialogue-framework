@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,6 +77,10 @@ public class Dialogue {
 
     private List<Message> history;    // Log of the user and system messages in chronological order (oldest first) (including user data)
     private User user;                // Data about the user with which we're interacting
+
+    private Dialogue(){
+        this("*UNDEFINED*"); // This allows Gson to use default values upon deserialisation.
+    }
 
     public Dialogue(String id) {
         this.id = id;
@@ -249,6 +255,5 @@ public class Dialogue {
 
     @Override
     public String toString(){ return Dialoguer.gson.toJson(this); }
-
 
 }

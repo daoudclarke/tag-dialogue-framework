@@ -117,7 +117,6 @@ public class Dialoguer implements AutoCloseable {
                                         .registerTypeAdapter(ImmutableSet.class, JsonUtils.immutableSetJsonDeserializer()) // Custom deserialisation for immutableset
                                         .registerTypeAdapter(Pattern.class, new JsonUtils.PatternAdaptor().nullSafe())
                                         .create();
-
     private Handler handler;
     private List<Analyser> analysers;
 

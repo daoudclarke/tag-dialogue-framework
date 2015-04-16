@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer;
 
+import javassist.bytecode.stackmap.TypeData;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 
@@ -11,6 +12,10 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Most high-level class. The main entry point into the dialogueing system is the getResponse() method
@@ -28,6 +33,15 @@ import java.util.Map;
  * Time: 14:13
  */
 public class DialogueTracker implements AutoCloseable {
+
+    private static final Logger logger = Logger.getLogger(DialogueTracker.class.getName());
+    static {
+        try {
+            FileHandler f = new FileHandler("dialogues.txt");
+            f.setFormatter(new SimpleFormatter());
+            logger.addHandler(f);
+        } catch (IOException e) { e.printStackTrace(); }
+    }
 
     private Dialoguer dialoguer;
     private Map<String, Dialogue> dialogues;
@@ -115,11 +129,12 @@ public class DialogueTracker implements AutoCloseable {
     }
 
     public void log(String dialogueId){
-        // TODO
+        logger.log(Level.INFO, dialogues.get(dialogueId).toString());
     }
 
     public void logAll(){
-        // TODO
+        for (Dialogue d : dialogues.values())
+            logger.log(Level.INFO, d.toString());
     }
 
     @Override
