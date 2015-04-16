@@ -116,7 +116,7 @@ public class Dialoguer implements AutoCloseable {
                                         .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonDeserializer())       // Custom deserialisation for multimap
                                         .registerTypeAdapter(ImmutableSet.class, JsonUtils.immutableSetJsonDeserializer()) // Custom deserialisation for immutableset
                                         .registerTypeAdapter(Pattern.class, new JsonUtils.PatternAdaptor().nullSafe())
-            .create();
+                                        .create();
 
     private Handler handler;
     private List<Analyser> analysers;
@@ -226,9 +226,31 @@ public class Dialoguer implements AutoCloseable {
         }
     }
 
+    /**
+     * Read an arbitrary object from a JSON file using the Dialoguer's custom Gson instance.
+     */
     public static <T> T readFromJsonFile(File json, Class<T> klazz) throws IOException {
         try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(json), "UTF8")))) {
             return gson.fromJson(r, klazz);
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        handler.close();
+        for (Analyser a : analysers)
+            a.close();
+    }
+
+    private static class DialoguerException extends RuntimeException{
+        public DialoguerException(String msg) {
+            super(msg);
+        }
+        public DialoguerException(Throwable cause){
+            super(cause);
+        }
+        public DialoguerException(String msg, Throwable cause){
+            super(msg, cause);
         }
     }
 
@@ -263,24 +285,5 @@ public class Dialoguer implements AutoCloseable {
             r.fillTemplate("Thanks, goodbye!");
         }
         throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
-    }
-
-    @Override
-    public void close() throws Exception {
-        handler.close();
-        for (Analyser a : analysers)
-            a.close();
-    }
-
-    private static class DialoguerException extends RuntimeException{
-        public DialoguerException(String msg) {
-            super(msg);
-        }
-        public DialoguerException(Throwable cause){
-            super(cause);
-        }
-        public DialoguerException(String msg, Throwable cause){
-            super(msg, cause);
-        }
     }
 }

@@ -1,11 +1,9 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.factories;
 
-import org.reflections.Reflections;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
 
 /**
  * It is the responsibility of the AnalyserFactory to be able to create a new instance of a specific type of Analyser,
@@ -17,7 +15,14 @@ import java.util.Set;
  */
 public interface AnalyserFactory {
 
+    /**
+     * Open the file. Expect that it is in JSON format. So use Gson to deserialise it.
+     * Create and return an instance of the appropriate Analyser, with the settings in the JSON file.
+     */
     Analyser readJson(File json) throws IOException;
 
+    /**
+     * Return a simple name for this type of analysis.
+     */
     String getName();
 }
