@@ -1,7 +1,7 @@
-package uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.simple;
+package uk.ac.susx.tag.dialoguer.dialogue.analysing.factories;
 
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.simple.YesNoAnalyserStringMatching;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.YesNoAnalyserStringMatching;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 
 import java.io.File;

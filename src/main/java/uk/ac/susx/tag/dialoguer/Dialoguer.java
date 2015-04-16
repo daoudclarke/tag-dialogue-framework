@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -18,6 +19,7 @@ import uk.ac.susx.tag.dialoguer.utils.JsonUtils;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -110,10 +112,11 @@ public class Dialoguer implements AutoCloseable {
     public static final Gson gson = new GsonBuilder().setPrettyPrinting()
                                         .registerTypeAdapter(Analyser.class, new JsonUtils.AnalyserAdaptor().nullSafe()) // Custom deserialisation for analysers
                                         .registerTypeAdapter(Handler.class, new JsonUtils.HandlerAdaptor().nullSafe())   // Custom deserialisation for handlers
-                                        .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonSerializer())
-                                        .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonDeserializer())
-                                        .registerTypeAdapter(ImmutableSet.class, JsonUtils.immutableSetJsonDeserializer())
-                                        .create();
+                                        .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonSerializer())         // Custom serialisation for multimap
+                                        .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonDeserializer())       // Custom deserialisation for multimap
+                                        .registerTypeAdapter(ImmutableSet.class, JsonUtils.immutableSetJsonDeserializer()) // Custom deserialisation for immutableset
+                                        .registerTypeAdapter(Pattern.class, new JsonUtils.PatternAdaptor().nullSafe())
+            .create();
 
     private Handler handler;
     private List<Analyser> analysers;
@@ -220,6 +223,12 @@ public class Dialoguer implements AutoCloseable {
     public static Dialoguer loadJson(File dialoguerDefinition) throws IOException {
         try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8")))) {
             return gson.fromJson(r, Dialoguer.class);
+        }
+    }
+
+    public static <T> T readFromJsonFile(File json, Class<T> klazz) throws IOException {
+        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(json), "UTF8")))) {
+            return gson.fromJson(r, klazz);
         }
     }
 

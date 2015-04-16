@@ -34,7 +34,7 @@ import java.util.*;
  */
 public class ProductMongoDB implements AutoCloseable {
 
-    private static final String dbName = "parcel";
+    private String dbName = "parcel";
     private static final String productCollection = "products";
     private static final String merchantCollection = "merchants";
 
@@ -42,15 +42,16 @@ public class ProductMongoDB implements AutoCloseable {
 
     // ----- Constructors -------------
     public ProductMongoDB() throws UnknownHostException {
-        this("localhost", 27017);
+        this("localhost", 27017, "parcel");
     }
 
-    public ProductMongoDB(MongoClient client){
+    public ProductMongoDB(MongoClient client, String dbName){
+        this.dbName = dbName;
         this.client = client;
     }
 
-    public ProductMongoDB(String hostname, int port) throws UnknownHostException {
-        this(new MongoClient(new ServerAddress(hostname, port)));
+    public ProductMongoDB(String hostname, int port, String dbName) throws UnknownHostException {
+        this(new MongoClient(new ServerAddress(hostname, port)), dbName);
     }
 
     // ----- DB tables ----------------
@@ -61,7 +62,6 @@ public class ProductMongoDB implements AutoCloseable {
     private DBCollection getProducts(){
         return client.getDB(dbName).getCollection(productCollection);
     }
-
     // --------------------------------
 
     public List<Product> productQuery(String textQuery) {
@@ -221,10 +221,11 @@ public class ProductMongoDB implements AutoCloseable {
         return results;
     }
 
-    public Iterator<Product> allProducts() {
 
+    public Iterator<Product> allProducts() {
         try (final DBCursor cursor = getProducts().find()) {
-            final Iterator<Product> itr = new Iterator<Product>() {
+
+            return new Iterator<Product>() {
                 @Override
                 public boolean hasNext() {
                     return cursor.hasNext();
@@ -238,8 +239,6 @@ public class ProductMongoDB implements AutoCloseable {
                 @Override
                 public void remove() {}
             };
-
-            return itr;
         }
     }
 
@@ -266,6 +265,9 @@ public class ProductMongoDB implements AutoCloseable {
         return p==null? null: convertProduct(p);
     }
 
+    /**
+     * Given a list of Product IDs, get a list of the corresponding products.
+     */
     public List<Product> getProductList(List<String> ids){
         List<Product> products = new ArrayList<>();
         for(String id: ids){
@@ -273,9 +275,11 @@ public class ProductMongoDB implements AutoCloseable {
 
         }
         return products;
-
     }
 
+    /**
+     * Given a list of Merchant Ids, get a list of the corresponding merchants.
+     */
     public List<Merchant> getMerchantList(List<String> ids){
         List<Merchant> merchants = new ArrayList<>();
         for(String id:ids){

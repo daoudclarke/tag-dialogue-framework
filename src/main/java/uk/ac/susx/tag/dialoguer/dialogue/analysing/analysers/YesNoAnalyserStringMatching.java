@@ -1,10 +1,10 @@
-package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.simple;
+package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.simple.YesNoAnalyserStringMatchingFactory;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.YesNoAnalyserStringMatchingFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;

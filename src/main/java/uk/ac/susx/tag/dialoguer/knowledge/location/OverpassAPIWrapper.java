@@ -48,12 +48,10 @@ public class OverpassAPIWrapper implements AutoCloseable {
     }
 
     public class ResultsWrapper {
-
         public String version;
         public String generator;
         public Map<String, String> osm3s;
         public List<ResultsElement> elements;
-
     }
 
     /**

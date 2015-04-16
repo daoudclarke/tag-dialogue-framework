@@ -5,7 +5,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
@@ -20,6 +23,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Utilities that make Gson able to better handle the datatypes in this project during JSON (de)serialisation.
@@ -37,6 +41,22 @@ import java.util.Set;
  * Time: 17:18
  */
 public class JsonUtils {
+
+
+/***************************************************************
+ * Support for (de)serialisation compiled regex patterns
+ *************************************************************/
+
+    public static class PatternAdaptor extends TypeAdapter<Pattern> {
+        @Override
+        public void write(JsonWriter out, Pattern value) throws IOException {
+            out.value(value.pattern());
+        }
+        @Override
+        public Pattern read(JsonReader in) throws IOException {
+            return Pattern.compile(in.nextString());
+        }
+    }
 
 
 /***************************************************************

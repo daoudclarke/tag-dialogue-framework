@@ -31,10 +31,10 @@ public class Intent {
     // Default intents names that may have default behaviour
     public static final String nullChoice = "null_choice"; // User is explicitly rejecting a list of choices
     public static final String noChoice = "no_choice";     // User is ignoring the presented choices
-    public static final String choice = "choice";     //User is making a choice. The choice will be in the "choice" slot.
-    public static final String no = "no";             //User wishes to say no or decline or is ignoring a request for confirmation
-    public static final String yes = "yes";           //User wishes to say yes or confirm
-    public static final String cancel = "cancel";     //User wishes to cancel
+    public static final String choice = "choice";          //User is making a choice. The choice will be in the "choice" slot.
+    public static final String no = "no";                  //User wishes to say no or decline or is ignoring a request for confirmation
+    public static final String yes = "yes";                //User wishes to say yes or confirm
+    public static final String cancel = "cancel";          //User wishes to cancel
     public static final String cancelAutoQuery = "cancel_auto_query";  // User message implies that we should cancel auto-querying
 
     private String name;
@@ -107,6 +107,7 @@ public class Intent {
     public Collection<Slot> getSlotByType(String slotType){ return slots.get(slotType);}
     public Multimap<String, Slot> getSlots() { return slots; }
     public void setSlots(Multimap<String, Slot> slots) { this.slots = slots; }
+    public boolean isAnySlotFilled() { return !slots.isEmpty(); }
 
     public static class Slot {
 

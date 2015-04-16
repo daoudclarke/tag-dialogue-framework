@@ -1,12 +1,10 @@
-package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.simple;
+package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.simple.ChoiceMakingAnalyserStringMatchingFactory;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.ChoiceMakingAnalyserStringMatchingFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Numbers;
