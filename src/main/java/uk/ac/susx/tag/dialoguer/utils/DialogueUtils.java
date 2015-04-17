@@ -174,7 +174,7 @@ public class DialogueUtils {
 
     public static void main(String[] args) throws IOException {
 
-        new MarkovChainModel(simpleCorpusReader(new File("J:\\pg48711.txt")), 2).interactiveTest();
+        new MarkovChainModel(simpleCorpusReader(new File("J:\\corporateipsumtest.txt")), 2).interactiveTest();
 
 
     }

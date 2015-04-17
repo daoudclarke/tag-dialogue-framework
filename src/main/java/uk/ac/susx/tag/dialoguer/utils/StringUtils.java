@@ -51,8 +51,8 @@ public class StringUtils {
     }
     public static class Detokeniser {
 
-        private static Set<String> noSpaceBefore = Sets.newHashSet(",", ".", ";", ":", ")", "}", "]");
-        private static Set<String> noSpaceAfter = Sets.newHashSet("(", "[", "{");
+        private static Set<String> noSpaceBefore = Sets.newHashSet(",", ".", ";", ":", ")", "}", "]", "-");
+        private static Set<String> noSpaceAfter = Sets.newHashSet("(", "[", "{", "-");
 
         public String dektokenise(List<String> tokens){
             if (tokens.isEmpty()) return "";
