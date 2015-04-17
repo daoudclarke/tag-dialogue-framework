@@ -92,11 +92,25 @@
             <version>2.12.3</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.googlecode.clearnlp</groupId>
+            <artifactId>clearnlp</artifactId>
+            <version>1.4.2</version>
+        </dependency>
+
+
 
     </dependencies>
 
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -123,11 +137,6 @@
             </plugin>
         </plugins>
 
-       <!--  <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-        </resources> -->
 
     </build>
 

@@ -1,23 +1,11 @@
 package uk.ac.susx.tag.dialoguer.utils;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.reflect.TypeParameter;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.google.common.collect.Sets;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -29,6 +17,8 @@ import java.util.stream.IntStream;
  * Time: 17:24
  */
 public class StringUtils {
+
+
 
     public static Pattern buildDisjunctionWithWordBoundaries(Iterable<String> items){
         return Pattern.compile("("+Joiner.on("|").join(
@@ -53,4 +43,29 @@ public class StringUtils {
     public static String numberList(List<String> choices){
         return numberList(choices, "\n");
     }
+
+
+    private static Detokeniser d = new Detokeniser();
+    public static String detokenise(List<String> tokens){
+        return d.dektokenise(tokens);
+    }
+    public static class Detokeniser {
+
+        private static Set<String> noSpaceBefore = Sets.newHashSet(",", ".", ";", ":", ")", "}", "]");
+        private static Set<String> noSpaceAfter = Sets.newHashSet("(", "[", "{");
+
+        public String dektokenise(List<String> tokens){
+            if (tokens.isEmpty()) return "";
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(tokens.get(0));
+            for (int i = 1; i < tokens.size(); i++){
+                if (!noSpaceAfter.contains(tokens.get(i-1)) && !noSpaceBefore.contains(tokens.get(i))){
+                    sb.append(" ");
+                }
+                sb.append(tokens.get(i));
+            } return sb.toString();
+        }
+    }
+
 }
