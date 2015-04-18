@@ -3,6 +3,7 @@ package uk.ac.susx.tag.dialoguer.knowledge.linguistic;
 import com.google.common.collect.Lists;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -62,5 +63,45 @@ public class SimplePatterns {
 
     public static String stripPunctuation(String text){
         return punctuationRegex.matcher(text).replaceAll("");
+    }
+
+    public static boolean isPunctuation(String text) {
+        return punctuationRegex.matcher(text).matches();
+    }
+
+    public static double uppercaseFraction(List<String> tokens){
+        int uppercaseCount = 0;
+        for (String token : tokens){
+            if (org.apache.commons.lang3.StringUtils.isAllUpperCase(token))
+                uppercaseCount++;
+        } return uppercaseCount / (double) tokens.size();
+    }
+
+    public static double puncFraction(List<String> tokens){
+        int puncCount = 0;
+        for (String token : tokens)
+            if (isPunctuation(token))
+                puncCount++;
+        return puncCount / (double)tokens.size();
+    }
+
+    public static int alphaCount(List<String> tokens){
+        return (int)tokens.stream().filter(org.apache.commons.lang3.StringUtils::isAlpha).count();
+    }
+
+    public static boolean isJunkSentence(List<String> tokens){
+        if (tokens.isEmpty())
+            return true;
+        if (tokens.size() < 4)
+            return true;
+        if (SimplePatterns.isPunctuation(tokens.get(0)))
+            return true;
+        if (puncFraction(tokens) >= 3.5)
+            return true;
+        if (uppercaseFraction(tokens) >= 3.5)
+            return true;
+        if (alphaCount(tokens) < tokens.size()/2 )
+            return true;
+        return false;
     }
 }

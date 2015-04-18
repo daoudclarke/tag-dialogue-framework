@@ -2,12 +2,14 @@ package uk.ac.susx.tag.dialoguer.utils;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import com.google.common.io.Resources;
 import com.googlecode.clearnlp.engine.EngineGetter;
 import com.googlecode.clearnlp.reader.AbstractReader;
 import com.googlecode.clearnlp.segmentation.AbstractSegmenter;
 import com.googlecode.clearnlp.tokenization.AbstractTokenizer;
+import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 
 import java.io.*;
 import java.util.*;
@@ -100,11 +102,11 @@ public class DialogueUtils {
             this.ngramOrder = ngramOrder;
         }
 
-        public String generateSentence(){
+        public List<String> generateSentence(){
             return generateSentence(Integer.MAX_VALUE);
         }
 
-        public String generateSentence(int tokenLimit){
+        public List<String> generateSentence(int tokenLimit){
             List<String> sentence = new ArrayList<>();
             LinkedList<String> ngram = new LinkedList<>();
 
@@ -118,7 +120,22 @@ public class DialogueUtils {
                 ngram.removeFirst();
                 ngram.addLast(token);
             }
-            return StringUtils.detokenise(sentence);
+            return sentence;
+        }
+
+        public String generateSentence(int charLimit, int tries){
+            String sentence;
+            List<String> tokens;
+            int timesTried = 0;
+            do {
+                tokens = generateSentence();
+                sentence = StringUtils.detokenise(tokens);
+
+            } while (timesTried < tries
+                       && sentence.length() > charLimit
+                       && SimplePatterns.puncFraction(tokens)>= 0.35
+                       && tokens.size() < 4);
+            return sentence;
         }
 
         public void interactiveTest(){
@@ -130,7 +147,7 @@ public class DialogueUtils {
                         int limit = Integer.parseInt(input.trim());
                         System.out.print("\r"+generateSentence(limit));
                     } catch (NumberFormatException e){
-                        System.out.print("\r"+generateSentence());
+                        System.out.print("\r"+generateSentence(144, 30));
                     }
                 }
             }catch(IOException io){ io.printStackTrace();}
@@ -168,14 +185,30 @@ public class DialogueUtils {
 
 
         try (final BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(corpus), "UTF-8"))) {
-            return segmenter.getSentences(r);
+            Iterator<List<String>> sentences = segmenter.getSentences(r).iterator();
+            return () -> new Iterator<List<String>>() {
+                public boolean hasNext() {
+                    return sentences.hasNext();
+                }
+                public List<String> next() {
+                    while(hasNext()){
+                        List<String> sentence = sentences.next();
+                        if (!SimplePatterns.isJunkSentence(sentence)){
+                            return sentence;
+                        }
+                    } throw new NoSuchElementException();
+                }
+            };
         }
     }
 
     public static void main(String[] args) throws IOException {
 
-        new MarkovChainModel(simpleCorpusReader(new File("J:\\corporateipsumtest.txt")), 2).interactiveTest();
-
-
+        new MarkovChainModel(
+                Iterables.concat(
+                    simpleCorpusReader(new File("J:\\Corpora\\art_history.txt")),
+                    simpleCorpusReader(new File("J:\\Corpora\\test.txt"))
+                ),
+        2).interactiveTest();
     }
 }
