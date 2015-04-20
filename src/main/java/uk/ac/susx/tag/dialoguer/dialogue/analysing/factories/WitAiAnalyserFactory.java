@@ -2,6 +2,7 @@ package uk.ac.susx.tag.dialoguer.dialogue.analysing.factories;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.WitAiAnalyser;
 
@@ -22,9 +23,7 @@ public class WitAiAnalyserFactory implements AnalyserFactory {
 
     @Override
     public Analyser readJson(File json) throws IOException {
-        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(json), "UTF-8")))) {
-            return new Gson().fromJson(r, WitAiAnalyser.class);
-        }
+        return Dialoguer.readFromJsonFile(json, WitAiAnalyser.class);
     }
 
     @Override

@@ -125,7 +125,7 @@ public class JsonUtils {
 
             if (handlerName==null) throw new IOException("No handler name found");
             try {
-                return Handler.getHandler(handlerName, handlerPath == null ? null : new File(handlerPath));
+                return Handler.getHandler(handlerName, (handlerPath == null || handlerPath.equals("")) ? null : new File(handlerPath));
             } catch (IllegalAccessException | InstantiationException e) {
                 throw new IOException(e);
             }
@@ -154,7 +154,7 @@ public class JsonUtils {
 
             if (analyserName==null) throw new IOException("No analyser name found");
             try {
-                return Analyser.getAnalyser(analyserName, analyserPath==null? null : new File(analyserPath));
+                return Analyser.getAnalyser(analyserName, (analyserPath==null || analyserPath.equals(""))? null : new File(analyserPath));
             } catch (IllegalAccessException | InstantiationException e){
                 throw new IOException(e);
             }
