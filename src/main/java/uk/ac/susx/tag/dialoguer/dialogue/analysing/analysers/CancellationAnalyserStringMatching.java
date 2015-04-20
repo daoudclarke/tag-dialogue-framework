@@ -51,7 +51,7 @@ public class CancellationAnalyserStringMatching extends Analyser {
     }
 
     @Override
-    public List<Intent> analise(String message, Dialogue d) {
+    public List<Intent> analyse(String message, Dialogue d) {
         return isCancellation(d)? Intent.buildCancelIntent(message).toList() : new ArrayList<>();
     }
 

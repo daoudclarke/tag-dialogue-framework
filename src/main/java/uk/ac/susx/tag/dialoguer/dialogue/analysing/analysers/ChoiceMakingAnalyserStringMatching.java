@@ -112,7 +112,7 @@ public class ChoiceMakingAnalyserStringMatching  extends Analyser {
     }
 
     @Override
-    public List<Intent> analise(String message, Dialogue d) {
+    public List<Intent> analyse(String message, Dialogue d) {
         if (d.isChoicesPresented()){
             if (isNullChoice(d)){
                 return Intent.buildNullChoiceIntent(message).toList();

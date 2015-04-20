@@ -47,7 +47,7 @@ public class PatternFindingAnalyser extends Analyser {
     }
 
     @Override
-    public List<Intent> analise(String message, Dialogue dialogue) {
+    public List<Intent> analyse(String message, Dialogue dialogue) {
         Matcher m = regex.matcher(dialogue.getStrippedText());
 
         Intent i = new Intent(intentName, dialogue.getStrippedText());

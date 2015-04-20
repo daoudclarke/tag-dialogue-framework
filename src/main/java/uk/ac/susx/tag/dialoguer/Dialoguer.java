@@ -146,7 +146,7 @@ public class Dialoguer implements AutoCloseable {
 
         // 2. Determine user intent (largely ignored if we're auto-querying, see below)
         List<Intent> intents = analysers.stream()
-                .map((analyser) -> analyser.analise(message, dialogue)) // Get list of predicted intents for each analyser
+                .map((analyser) -> analyser.analyse(message, dialogue)) // Get list of predicted intents for each analyser
                 .flatMap((listOfIntents) -> listOfIntents.stream())     // Flatten each list so we get one intent at a time
                 .collect(Collectors.toList());                          // Join all of the intents into one big list
 
