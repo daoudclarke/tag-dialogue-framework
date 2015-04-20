@@ -31,10 +31,10 @@ import java.util.stream.Collectors;
  * I.e. the skeleton looks like:
  *
  * {
- *   handler : {}
- *   analysers : []
- *   responseTemplates : {}
- *   necessarySlotsPerIntent: {}
+ *   handler : {},
+ *   analysers : [],
+ *   responseTemplates : {},
+ *   necessarySlotsPerIntent: {},
  *   humanReadableSlotNames: {}
  * }
  *

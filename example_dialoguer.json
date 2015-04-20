@@ -1,0 +1,32 @@
+{
+    "handler" : {
+        "name" : "",
+        "path" : "",
+    },
+    "analysers" : [
+        {"name" : "simple_cancel"},
+        {"name" : "simple_choice"},
+        {"name" : "simple_yes_no"},
+        {
+            "name" : "wit.ai",
+            "path" : "/path/to/analyser/json/file.json"
+        }
+    ],
+    "humanReadableSlotNames" : {
+        "product_query" : "product query",
+        "phone_number"  : "phone number",
+    },
+    "necessarySlotsPerIntent" : {
+        "buy_general" : ["product_query"]
+    },
+    "responseTemplates" : {
+        "confirm_cancellation" : [
+            "Cancelled. Thanks.",
+            "Cancelled. Bye!"
+        ],
+        "confirm_completion" : [
+            "Completed. Thanks.",
+            "Completed. Bye!"
+        ]
+    }
+}

@@ -11,7 +11,7 @@ public class YesNoAnalyserStringMatchingFactory implements AnalyserFactory{
 
     @Override
     public String getName() {
-        return "yes_no_simple";
+        return "simple_yes_no";
     }
 
     @Override
