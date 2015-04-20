@@ -1,0 +1,41 @@
+{
+    "handler" : {
+        "name" : "paypal_checkin",
+        "path" : ""
+    },
+    "analysers" : [
+        {"name" : "simple_cancel"},
+        {"name" : "simple_choice"},
+        {"name" : "simple_yes_no"},
+        {
+            "name" : "wit.ai",
+            "path" : "paypal_checkin_wit_config.json"
+        }
+    ],
+    "humanReadableSlotNames" : {
+        "product_query" : "product query",
+        "phone_number"  : "phone number"
+    },
+    "necessarySlotsPerIntent" : {
+        "buy_general" : ["product_query"]
+    },
+    "responseTemplates" : {
+        "confirm_cancellation" : [
+            "Cancelled. Thanks.",
+            "Cancelled. Bye!"
+        ],
+        "confirm_completion" : [
+            "Completed. Thanks.",
+            "Completed. Bye!"
+        ],
+        "confirm_product_purchase" : [
+            "Are you sure you want to buy {product_name}?"
+        ],
+        "choices" : [
+            "Do you want: {choices}"
+        ],
+        "requestLocation" : [
+            "Where would you like to check in?"
+        ]
+    }
+}
