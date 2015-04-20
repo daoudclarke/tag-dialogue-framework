@@ -28,7 +28,8 @@ public class IntentMatch {
 
     public IntentMatch(Intent intent, Set<String> necessarySlots) {
         this.intent = intent;
-        this.necessarySlotsRemaining = copyAndTrimFilledSlots(intent, necessarySlots);
+        this.necessarySlotsRemaining = necessarySlots==null? new HashSet<>() : copyAndTrimFilledSlots(intent, necessarySlots);
+        this.nextSlotRequired = null;
         readyNextSlot();
     }
 
@@ -72,7 +73,8 @@ public class IntentMatch {
     }
 
     private void readyNextSlot(){
-        necessarySlotsRemaining.remove(nextSlotRequired);
+        if (nextSlotRequired != null)
+            necessarySlotsRemaining.remove(nextSlotRequired);
         if (!necessarySlotsRemaining.isEmpty()) {
             nextSlotRequired = necessarySlotsRemaining.iterator().next();
         }
