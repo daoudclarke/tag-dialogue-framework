@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
  */
 public class Response {
 
+    // Default responses
     public static final String defaultConfirmCancelResponseId = "confirm_cancellation";
     public static final String defaultCompletionResponseId = "confirm_complete";
     public static final String defaultAutoQueryResponseId = "auto_query";

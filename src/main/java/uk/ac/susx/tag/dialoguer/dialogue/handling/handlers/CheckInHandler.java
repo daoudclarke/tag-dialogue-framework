@@ -15,6 +15,7 @@ import java.util.List;
  * Time: 11:28
  */
 public class CheckInHandler extends Handler {
+
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
         return null; // Return response ID here
