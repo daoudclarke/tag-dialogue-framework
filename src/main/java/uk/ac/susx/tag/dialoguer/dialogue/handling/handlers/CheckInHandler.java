@@ -16,6 +16,8 @@ import java.util.List;
  */
 public class CheckInHandler extends Handler {
 
+    public static final String checkinIntent = "check_in";
+
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
         return null; // Return response ID here

@@ -27,6 +27,12 @@
         "confirm_completion" : [
             "Completed. Thanks.",
             "Completed. Bye!"
+        ],
+        "confirm_product_purchase" : [
+            "Are you sure you want to buy {product_name}?"
+        ],
+        "choices" : [
+            "Do you want: {choices}"
         ]
     }
 }
