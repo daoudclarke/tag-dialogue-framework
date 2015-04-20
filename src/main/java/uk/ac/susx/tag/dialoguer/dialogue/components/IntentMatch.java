@@ -75,9 +75,8 @@ public class IntentMatch {
     private void readyNextSlot(){
         if (nextSlotRequired != null)
             necessarySlotsRemaining.remove(nextSlotRequired);
-        if (!necessarySlotsRemaining.isEmpty()) {
+        if (!necessarySlotsRemaining.isEmpty())
             nextSlotRequired = necessarySlotsRemaining.iterator().next();
-        }
         else nextSlotRequired = null;
     }
 
