@@ -40,7 +40,7 @@ public class WitAiAnalyser extends Analyser {
     }
 
     @Override
-    public List<Intent> analise(String message, Dialogue dialogue) {
+    public List<Intent> analyse(String message, Dialogue dialogue) {
         WitAiResponse r = queryAPI(message, dialogue.getStates(), serverAccessToken, client);
 
         WitAiResponse.Outcome o = r.getMostLikelyOutcome();

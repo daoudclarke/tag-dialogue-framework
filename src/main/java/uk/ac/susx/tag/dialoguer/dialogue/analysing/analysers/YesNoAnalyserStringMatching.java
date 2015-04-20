@@ -56,7 +56,7 @@ public class YesNoAnalyserStringMatching extends Analyser {
     }
 
     @Override
-    public List<Intent> analise(String message, Dialogue dialogue) {
+    public List<Intent> analyse(String message, Dialogue dialogue) {
         if (dialogue.isRequestingYesNo()){
             String text = dialogue.getStrippedText();
             if (isNo(text)){

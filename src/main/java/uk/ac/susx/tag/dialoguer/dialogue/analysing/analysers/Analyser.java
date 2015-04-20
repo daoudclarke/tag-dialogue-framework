@@ -26,7 +26,7 @@ public abstract class Analyser implements AutoCloseable {
     /**
      * Perform analysis of latest message, forming a list of intents the user is trying to express
      */
-    public abstract List<Intent> analise(String message, Dialogue dialogue);
+    public abstract List<Intent> analyse(String message, Dialogue dialogue);
 
     /**
      * Return a new instance of the factory which can create this analyser
