@@ -299,8 +299,9 @@ public class Dialoguer implements AutoCloseable {
             r.fillTemplate("Cancelled. Thank you!");
         } else if (r.getResponseName().equals(Response.defaultCompletionResponseId)) {
             r.fillTemplate("Thanks, goodbye!");
+        } else if (r.getResponseName().equals(Response.defaultAutoQueryResponseId)) {
+            r.fillTemplate("Please specify {query}.");
         }
         throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
     }
-
 }
