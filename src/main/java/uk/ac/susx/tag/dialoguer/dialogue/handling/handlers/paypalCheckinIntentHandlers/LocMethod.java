@@ -1,20 +1,19 @@
-package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntents;
+package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers;
 
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-
-import com.google.common.collect.Multimap;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 
 import java.util.*;
 
 /**
  * Created by juliewe on 21/04/2015.
  */
-public class LocMethod implements IntentMethod{
+public class LocMethod implements Handler.IntentHandler {
 
     public static final String locationSlot="local_search_query";
-    public static Response execute(Intent i, Dialogue d){
+    public Response handle(Intent i, Dialogue d){
         //we think that the user message has some information about location
         //we also need to consider the user's geolocation information
 

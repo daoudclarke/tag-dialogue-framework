@@ -14,13 +14,13 @@
     ],
     "humanReadableSlotNames" : {
         "local_search_query" : "location",
-        "yes_no" : "yes or no",
+        "yes_no" : "yes or no"
     },
     "necessarySlotsPerIntent" : {
-        "confirm", ["yes_no"],
+        "confirm" : ["yes_no"],
         "loc" : ["local_search_query"],
-        "confirm_loc", ["yes_no","local_search_query"],
-        "check_in_loc", ["local_search_query"]
+        "confirm_loc" : ["yes_no","local_search_query"],
+        "check_in_loc" : ["local_search_query"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : [
