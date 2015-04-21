@@ -13,13 +13,14 @@
         }
     ],
     "humanReadableSlotNames" : {
-        "product_query" : "product query",
-        "phone_number"  : "phone number",
-        "wit/local_search_query" : "location"
+        "local_search_query" : "location",
+        "yes_no" : "yes or no",
     },
     "necessarySlotsPerIntent" : {
-        "buy_general" : ["product_query"],
-        "loc" : ["wit/local_search_query"]
+        "confirm", ["yes_no"],
+        "loc" : ["local_search_query"],
+        "confirm_loc", ["yes_no","local_search_query"],
+        "check_in_loc", ["local_search_query"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : [
@@ -30,23 +31,17 @@
             "Completed. Thanks.",
             "Completed. Bye!"
         ],
-        "confirm_product_purchase" : [
-            "Are you sure you want to buy {product_name}?"
-        ],
-        "choices" : [
-            "Do you want: {choices}"
-        ],
-        "requestLocation" : [
+        "request_location" : [
             "Where would you like to check in?"
         ],
         "unknown" : [
             "I don't know how to handle that request."
             ],
-        "confirmLocation" : [
-            "Please confirm that you wish to check in at:"
+        "confirm_location" : [
+            "Please confirm that you wish to check in at {local_search_query}"
             ],
         "auto_query" : [
-            "I didn't catch that. Please try again."
+            "Please specify {query}"
             ]
 
     }

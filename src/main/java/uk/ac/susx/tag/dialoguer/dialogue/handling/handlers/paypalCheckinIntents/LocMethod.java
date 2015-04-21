@@ -6,14 +6,14 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
 import com.google.common.collect.Multimap;
 
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Created by juliewe on 21/04/2015.
  */
 public class LocMethod implements IntentMethod{
 
-    public static final String locationSlot="wit/local_search_query";
+    public static final String locationSlot="local_search_query";
     public static Response execute(Intent i, Dialogue d){
         //we think that the user message has some information about location
         //we also need to consider the user's geolocation information
@@ -21,8 +21,20 @@ public class LocMethod implements IntentMethod{
         //Multimap<String, Intent.Slot> slots = i.getSlots();
 
         Collection<Intent.Slot> locations = i.getSlotByType(locationSlot);
+        String location_string="";
+        int count=0;
         for(Intent.Slot location: locations){
-            System.out.println(location.name+" : "+location.value);
+            //System.out.println(location.name+" : "+location.value);
+            if (count>0){location_string+=", ";}
+            location_string+=location.value;
+            count++;
         }
-        return new Response("confirmLocation");}
+
+        List<String> newStates = new ArrayList<>();
+        newStates.add("confirm_loc");
+
+        Map<String, String> responseVariables = new HashMap<>();
+        responseVariables.put(locationSlot, location_string);
+        d.putToWorkingMemory(locationSlot,location_string);
+        return new Response("confirm_location",responseVariables,newStates);}
 }

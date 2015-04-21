@@ -44,7 +44,7 @@ public class PaypalCheckinHandler extends Handler{
 
         /*NEED TO IMPLEMENT THIS!*/
 
-        System.err.println("Using PaypalCheckinHandler");
+        //System.err.println("Using PaypalCheckinHandler");
         Intent myintent = intents.get(0);
         String intent = myintent.getName();
         Response r;
@@ -71,7 +71,7 @@ public class PaypalCheckinHandler extends Handler{
                 r=IntentMethod.execute(myintent,dialogue);
         }
 
-        System.err.println(r.getResponseName());
+        //System.err.println(r.getResponseName());
         return r; // Return response ID here
     }
 

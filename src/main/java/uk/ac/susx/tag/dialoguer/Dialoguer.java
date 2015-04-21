@@ -212,7 +212,7 @@ public class Dialoguer implements AutoCloseable {
 
     private Response handleNewIntents(List<Intent> intents, Dialogue dialogue, boolean autoQueryTracking){
 
-        System.err.println("First intent found: "+intents.get(0).getName());
+        //System.err.println("First intent found: "+intents.get(0).getName());
         // 9. Find which necessary slots are not filled
         List<IntentMatch> intentMatches = intents.stream()
                 .map(intent -> intent.getIntentMatch(necessarySlotsPerIntent.get(intent.getName())))
@@ -222,7 +222,7 @@ public class Dialoguer implements AutoCloseable {
         if (!autoQueryTracking || IntentMatch.areSlotsFilled(intentMatches)){
 
             // 11. Ask the handler for a response to these intents
-            System.err.println("Will ask the handler for a response");
+            //System.err.println("Will ask the handler for a response");
             return handler.handle(intents, dialogue);
         }
         // 12. otherwise track intents and produce auto query
