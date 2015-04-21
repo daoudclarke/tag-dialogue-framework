@@ -87,7 +87,7 @@ public class DialogueTracker implements AutoCloseable {
         if (isTracked(dialogueId, trackedTimeLimit)){
             d = dialoguer.interpret(userMessage, userData, dialogues.get(dialogueId));
         } else {
-            d = dialoguer.interpret(userMessage, userData, new Dialogue(dialogueId));
+            d = dialoguer.interpret(userMessage, userData, dialoguer.startNewDialogue(dialogueId));
         }
         lastUpdated.put(dialogueId, LocalDateTime.now());
         dialogues.put(dialogueId, d);

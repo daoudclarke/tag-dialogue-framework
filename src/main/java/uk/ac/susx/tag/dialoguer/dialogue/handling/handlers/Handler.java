@@ -33,6 +33,12 @@ public abstract class Handler implements AutoCloseable {
     public abstract Response handle(List<Intent> intents, Dialogue dialogue);
 
     /**
+     * This is called by the Dialoguer at the initiation of a new user Dialogue, in order to obtain the initial state
+     * of the Dialogue object for this particular dialogue task.
+     */
+    public abstract Dialogue getNewDialogue(String dialogueId);
+
+    /**
      * The handler must be able to provide a new instance of the type of HandlerFactory that can produce this type
      * of handler.
      */
