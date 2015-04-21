@@ -296,9 +296,4 @@ public class Dialoguer implements AutoCloseable {
         }
         throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
     }
-
-
-    public static void main(String[] args){
-        System.out.println();
-    }
 }
