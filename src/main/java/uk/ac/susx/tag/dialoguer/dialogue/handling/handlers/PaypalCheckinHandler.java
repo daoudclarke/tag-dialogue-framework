@@ -5,13 +5,12 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.PaypalCheckinHandlerFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.IntentMethod;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.ConfirmMethod;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.CheckinMethod;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.CheckinLocMethod;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.ConfirmMethod;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.ConfirmLocMethod;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.LocMethod;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.QuitMethod;
+
 
 
 import java.util.List;
@@ -29,15 +28,15 @@ public class PaypalCheckinHandler extends Handler{
     public static final String loc = "loc";
     public static final String confirm = "confirm";
     public static final String quit = "quit";
+    public static final String yes = "yes";
+    public static final String no = "no";
 
     public PaypalCheckinHandler(){
         super.registerIntentHandler(quit, (i, d) -> {
             return new Response("confirm_cancellation");
                   });
-        super.registerIntentHandler(confirm, (i,d) -> {
-            return new Response("confirm_completion");
-
-        });
+        super.registerIntentHandler(confirm, new ConfirmMethod());
+        super.registerIntentHandler(yes,new ConfirmMethod());
         super.registerIntentHandler(checkinIntent,new CheckinMethod());
         super.registerIntentHandler(loc,new LocMethod());
         super.registerIntentHandler(checkinLoc,new CheckinLocMethod());
