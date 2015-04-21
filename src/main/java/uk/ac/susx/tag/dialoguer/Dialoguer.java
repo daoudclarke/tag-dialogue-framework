@@ -132,6 +132,10 @@ public class Dialoguer implements AutoCloseable {
         responseTemplates = new HashMap<>();
     }
 
+    public Dialogue startNewDialogue(String dialogueId){
+        return handler.getNewDialogue(dialogueId);
+    }
+
     public Dialogue interpret(String message, User user, Dialogue dialogue){
 
         // 0. Cache some simple string processing of the user message in the working memory of the dialogue object

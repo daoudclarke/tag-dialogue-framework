@@ -204,11 +204,13 @@ public class DialogueUtils {
 
     public static void main(String[] args) throws IOException {
 
-        new MarkovChainModel(
-                Iterables.concat(
-                    simpleCorpusReader(new File("J:\\Corpora\\art_history.txt")),
-                    simpleCorpusReader(new File("J:\\Corpora\\test.txt"))
-                ),
-        2).interactiveTest();
+//        new MarkovChainModel(
+//                Iterables.concat(
+//                    simpleCorpusReader(new File("J:\\Corpora\\art_history.txt")),
+//                    simpleCorpusReader(new File("J:\\Corpora\\test.txt"))
+//                ),
+//        2).interactiveTest();
+
+        new MarkovChainModel(simpleCorpusReader(new File("/Volumes/LocalDataHD/scpbox/tweets.txt")), 2).interactiveTest();
     }
 }
