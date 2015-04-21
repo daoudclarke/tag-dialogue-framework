@@ -282,18 +282,22 @@ public class Dialoguer implements AutoCloseable {
 
     private String fillTemplateWithResponse(Response r){
         List<String> alternatives = responseTemplates.get(r.getResponseName());
+        // If the user has defined an appropriate template in the Dialoguer JSON config file, use it.
         if (alternatives != null){
             if (alternatives.size() == 1)
                 return r.fillTemplate(alternatives.get(0));
             else
                 return r.fillTemplate(alternatives.get(random.nextInt(alternatives.size())));
-        } else if (r.getResponseName().equals(Response.defaultConfirmCancelResponseId)) {
-            r.fillTemplate("Cancelled. Thank you!");
-        } else if (r.getResponseName().equals(Response.defaultCompletionResponseId)) {
-            r.fillTemplate("Thanks, goodbye!");
-        } else if (r.getResponseName().equals(Response.defaultAutoQueryResponseId)) {
-            r.fillTemplate("Please specify {query}.");
         }
-        throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
+        // Otherwise see if it's a default response that we can handle.
+        else if (r.getResponseName().equals(Response.defaultConfirmCancelResponseId)) {
+            return r.fillTemplate("Cancelled. Thank you!");
+        } else if (r.getResponseName().equals(Response.defaultCompletionResponseId)) {
+            return r.fillTemplate("Thanks, goodbye!");
+        } else if (r.getResponseName().equals(Response.defaultAutoQueryResponseId)) {
+            return r.fillTemplate("Please specify {query}.");
+        }
+        // Otherwise give up
+        else throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
     }
 }

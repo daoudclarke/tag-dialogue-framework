@@ -127,7 +127,6 @@ public class Response {
     public static Response buildCompletionResponse(){
         return new Response(defaultCompletionResponseId);
     }
-
     public static Response buildCompletionResponse(Map<String, String> responseVariables, List<String> newStates){
         return new Response(defaultCompletionResponseId, responseVariables, newStates);
     }
