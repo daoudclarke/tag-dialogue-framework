@@ -16,9 +16,18 @@ import java.util.List;
  */
 public class CheckInHandler extends Handler {
 
+    public CheckInHandler(){
+        super.registerIntentHandler("test", (i, d) -> new Response("testresponse"));
+    }
+
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
         return null; // Return response ID here
+    }
+
+    @Override
+    public Dialogue getNewDialogue(String dialogueId) {
+        return null;
     }
 
     @Override

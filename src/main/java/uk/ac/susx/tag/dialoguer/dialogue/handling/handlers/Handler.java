@@ -8,8 +8,11 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 /**
  * It is the function of the Handler to determine what response to give to a user's intents, and what side-effects to
@@ -20,6 +23,8 @@ import java.util.Set;
  * Time: 15:00
  */
 public abstract class Handler implements AutoCloseable {
+
+    private Map<String, IntentHandler> intentHandlers = new HashMap<>();
 
     /**
      * Given a list of new intents, and the dialogue thusfar, determine the response to give.
@@ -43,6 +48,30 @@ public abstract class Handler implements AutoCloseable {
      * of handler.
      */
     public abstract HandlerFactory getFactory();
+
+    public static interface IntentHandler {
+        public Response handle(Intent i, Dialogue d);
+    }
+
+    protected void registerIntentHandler(String intentName, IntentHandler h){
+        intentHandlers.put(intentName, h);
+    }
+
+    protected Response applyIntentHandler(Intent intent, Dialogue d){
+        if (intentHandlers.containsKey(intent.getName())){
+            return intentHandlers.get(intent.getName()).handle(intent, d);
+        } else return null;
+    }
+
+    protected Map<Integer, Response> applyIntentHandlers(List<Intent> intents, Dialogue d){
+        Map<Integer, Response> intentIndexToResponse = new HashMap<>();
+        for (int i = 0; i < intents.size(); i++){
+            Intent intent = intents.get(i);
+            if (intentHandlers.containsKey(intent.getName())){
+                intentIndexToResponse.put(i, intentHandlers.get(intent.getName()).handle(intent, d));
+            }
+        } return intentIndexToResponse;
+    }
 
 
     /**
