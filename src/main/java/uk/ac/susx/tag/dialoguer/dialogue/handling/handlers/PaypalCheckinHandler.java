@@ -57,41 +57,9 @@ public class PaypalCheckinHandler extends Handler{
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
+        System.err.println(intents.get(0).getName());
+        return applyIntentHandler(intents.get(0),dialogue); //probably not safe just to consider first intent.  Probably should apply all intent handlers or search intents first to find best one
 
-        return applyIntentHandler(intents.get(0),dialogue);
-
-
-        /*NEED TO IMPLEMENT THIS!*/
-
-        //System.err.println("Using PaypalCheckinHandler");
-//        Intent myintent = intents.get(0);
-//        String intent = myintent.getName();
-//        Response r;
-//        switch(intent) {
-//            case checkinIntent:
-//                r=CheckinMethod.execute(myintent, dialogue);
-//                break;
-//            case loc:
-//                r = LocMethod.execute(myintent,dialogue);
-//                break;
-//            case confirmLoc:
-//                r = ConfirmLocMethod.execute(myintent,dialogue);
-//                break;
-//            case confirm:
-//                r = ConfirmMethod.execute(myintent,dialogue);
-//                break;
-//            case quit:
-//                r= QuitMethod.execute(myintent,dialogue);
-//                break;
-//            case checkinLoc:
-//                r=CheckinLocMethod.execute(myintent,dialogue);
-//                break;
-//            default:
-//                r=IntentMethod.execute(myintent,dialogue);
-//        }
-
-        //System.err.println(r.getResponseName());
-        //return r; // Return response ID here
     }
 
     @Override

@@ -42,6 +42,9 @@
             ],
         "auto_query" : [
             "Please specify {query}"
+            ],
+        "repeat_request_location" : [
+            "I can't find a nearby merchant matching {local_search_query}.  Please respecify your location."
             ]
 
     }

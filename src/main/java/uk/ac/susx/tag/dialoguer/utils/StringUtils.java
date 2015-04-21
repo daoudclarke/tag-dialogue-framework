@@ -68,4 +68,20 @@ public class StringUtils {
         }
     }
 
+
+    public static String phrasejoin(Iterable<String> items){
+        String res="";
+        for(String item:items){
+            res+=" \""+item+"\" ";
+        }
+        return res;
+    }
+
+    public static String join(Iterable<String> items){
+        String res="";
+        for(String item:items){
+            res+=" "+item+" ";
+        }
+        return res;
+    }
 }
