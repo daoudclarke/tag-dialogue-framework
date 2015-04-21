@@ -94,6 +94,10 @@ public class Dialogue {
         requestingYesNo = false;
         history = new ArrayList<>();
         user = null;
+
+        states.add("initial"); // this is a hack for paypalCheckin which needs to be removed
+
+
     }
 
     public String getId() { return id; }

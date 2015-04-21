@@ -36,6 +36,9 @@
         ],
         "requestLocation" : [
             "Where would you like to check in?"
-        ]
+        ],
+        "unknown" : [
+            "I don't know how to handle that request."
+            ]
     }
 }
