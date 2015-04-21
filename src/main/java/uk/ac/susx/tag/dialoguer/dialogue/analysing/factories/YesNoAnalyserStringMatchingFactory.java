@@ -15,7 +15,7 @@ public class YesNoAnalyserStringMatchingFactory implements AnalyserFactory{
     }
 
     @Override
-    public Analyser readJson(File json) throws IOException {
+    public Analyser readJson(String resourcePath) throws IOException {
         return new YesNoAnalyserStringMatching();
     }
 }

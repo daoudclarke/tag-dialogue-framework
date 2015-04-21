@@ -104,7 +104,7 @@ public abstract class Handler implements AutoCloseable {
     /**
      * Get a new instance of a handler with a specified name, using the setup file given.
      */
-    public static Handler getHandler(String handlerName, File handlerSetupJson) throws IOException, IllegalAccessException, InstantiationException {
+    public static Handler getHandler(String handlerName, String handlerSetupJson) throws IOException, IllegalAccessException, InstantiationException {
         Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.handling.factories");
 
         Set<Class<? extends HandlerFactory>> foundHandlerFactories = reflections.getSubTypesOf(HandlerFactory.class);

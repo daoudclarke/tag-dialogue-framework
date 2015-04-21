@@ -1,13 +1,9 @@
 package uk.ac.susx.tag.dialoguer;
 
-import javassist.bytecode.stackmap.TypeData;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -50,12 +46,8 @@ public class DialogueTracker implements AutoCloseable {
     private boolean logDialogues;
     private CompletedDialogueHandler cdHandler;
 
-    public DialogueTracker(String jsonDefinition){
-        this(Dialoguer.loadJson(jsonDefinition));
-    }
-
-    public DialogueTracker(File jsonDefinition) throws IOException {
-        this(Dialoguer.loadJson(jsonDefinition));
+    public DialogueTracker(String resourcePath) throws IOException {
+        this(Dialoguer.loadDialoguerFromJsonResourceOrFile(resourcePath));
     }
 
     public DialogueTracker(Dialoguer dialoguer){

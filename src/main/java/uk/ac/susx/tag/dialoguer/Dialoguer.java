@@ -2,6 +2,7 @@ package uk.ac.susx.tag.dialoguer;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
@@ -21,7 +22,6 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * The definition of a Dialoguer task.
@@ -224,22 +224,45 @@ public class Dialoguer implements AutoCloseable {
         }
     }
 
-    public static Dialoguer loadJson(String dialoguerDefinition) {
-        return gson.fromJson(dialoguerDefinition, Dialoguer.class);
+    public static Dialoguer loadDialoguerFromJsonResourceOrFile(String dialoguerDefinition) throws IOException {
+        return readObjectFromJsonResourceOrFile(dialoguerDefinition, Dialoguer.class);
     }
 
-    public static Dialoguer loadJson(File dialoguerDefinition) throws IOException {
-        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8")))) {
-            return gson.fromJson(r, Dialoguer.class);
+    /**
+     * Read an arbitrary object from a JSON file using the Dialoguer's custom Gson instance.
+     *
+     * DEPRECATED WARNING: use the more general purpose readObjectFromJsonResourceOrFile() method.
+     */
+    @Deprecated
+    public static <T> T readFromJsonFile(File json, Class<T> klazz) throws IOException {
+        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(json), "UTF8")))) {
+            return gson.fromJson(r, klazz);
         }
     }
 
     /**
      * Read an arbitrary object from a JSON file using the Dialoguer's custom Gson instance.
+     *
+     * The aim is for JSON files to be able to specify paths to resources, and have them easily be found wherever they
+     * may be. So whereas readFromJsonFile() only supported proper paths to actual files, this method will be extended to
+     * have more power.
+     *
+     * It currently searches for the resource using the resource path in 2 ways:
+     *
+     *   1. A path to a normal file
+     *   2. A path to a resource in the classpath
      */
-    public static <T> T readFromJsonFile(File json, Class<T> klazz) throws IOException {
-        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(json), "UTF8")))) {
+    public static <T> T readObjectFromJsonResourceOrFile(String resourcePath, Class<T> klazz) throws IOException{
+        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(getResourceOrFileStream(resourcePath), "UTF8")))) {
             return gson.fromJson(r, klazz);
+        }
+    }
+
+    public static InputStream getResourceOrFileStream(String resourcePath) throws IOException {
+        try {
+            return Resources.getResource(resourcePath).openStream();
+        } catch (IllegalArgumentException e){
+            return new FileInputStream(new File(resourcePath));
         }
     }
 

@@ -15,7 +15,7 @@ public class CancellationAnalyserStringMatchingFactory implements AnalyserFactor
     }
 
     @Override
-    public Analyser readJson(File json) throws IOException {
+    public Analyser readJson(String resourcePath) throws IOException {
         return new CancellationAnalyserStringMatching();
     }
 }

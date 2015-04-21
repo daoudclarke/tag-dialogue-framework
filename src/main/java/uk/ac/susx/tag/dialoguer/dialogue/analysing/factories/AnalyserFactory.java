@@ -19,7 +19,7 @@ public interface AnalyserFactory {
      * Open the file. Expect that it is in JSON format. So use Gson to deserialise it.
      * Create and return an instance of the appropriate Analyser, with the settings in the JSON file.
      */
-    Analyser readJson(File json) throws IOException;
+    Analyser readJson(String resourcePath) throws IOException;
 
     /**
      * Return a simple name for this type of analysis.

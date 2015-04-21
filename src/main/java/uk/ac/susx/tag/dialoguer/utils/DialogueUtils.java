@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +41,6 @@ import java.util.stream.Collectors;
  * Time: 15:32
  */
 public class DialogueUtils {
-
 
     /**
      * Given a multiset of elements (basically a set that allows multiples and tracks their frequency),
@@ -104,7 +104,7 @@ public class DialogueUtils {
             for (List<String> sentence : corpusSentences){
 
                 if (count % 1000 == 0)
-                    System.out.print("\rSentences complete: "+ count);
+                    System.out.print("\rSentences complete: " + count);
 
                 ngram.clear();
                 // Represent the beginning of a sentence with empty strings
@@ -267,6 +267,8 @@ public class DialogueUtils {
     }
 
 
+
+
     public static void main(String[] args) throws IOException {
 
 //        new MarkovChainModel(
@@ -276,7 +278,9 @@ public class DialogueUtils {
 //                ),
 //        2).interactiveTest();
 
-        new MarkovChainModel(tweetPerLineReader(new File("/Volumes/LocalDataHD/scpbox/xaa")), 3).interactiveTest();
+//        new MarkovChainModel(tweetPerLineReader(new File("/Volumes/LocalDataHD/scpbox/xaa")), 3).interactiveTest();
+
+        System.out.println(Resources.getResource("test"));
 
     }
 }

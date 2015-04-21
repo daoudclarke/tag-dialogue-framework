@@ -104,13 +104,19 @@ public class ChoiceMakingAnalyserStringMatching  extends Analyser {
     }
 
     /**
-     * Given a list of choices that were presented to the user, and the user response, determine whether or not
-     * the user response was in fact making a choice.
+     * If the stripped message is equal to any of the null choice messages, it is a null choice.
      */
     public static boolean isNullChoice(Dialogue d){
         return nullChoicePhrases.contains(d.getFromWorkingMemory("stripped"));
     }
 
+    /**
+     * If a choice has been presented to the user (the Dialogue's "choices" field is non-empty):
+     *   If the user explicitly rejected the choices, return "null_choice" intent
+     *   Otherwise, if the user selected a choice, return a "choice" intent, with a slot detailing the choice
+     *   Otherwise, return a "no_choice" intent
+     * Otherwise return no intents
+     */
     @Override
     public List<Intent> analyse(String message, Dialogue d) {
         if (d.isChoicesPresented()){
