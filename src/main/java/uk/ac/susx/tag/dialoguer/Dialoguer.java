@@ -21,6 +21,7 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * The definition of a Dialoguer task.
@@ -149,10 +150,14 @@ public class Dialoguer implements AutoCloseable {
         Response r; // To be filled with system response
 
         // 2. Determine user intent (largely ignored if we're auto-querying, see below)
-        List<Intent> intents = analysers.stream()
-                .map((analyser) -> analyser.analyse(message, dialogue)) // Get list of predicted intents for each analyser
-                .flatMap((listOfIntents) -> listOfIntents.stream())     // Flatten each list so we get one intent at a time
-                .collect(Collectors.toList());                          // Join all of the intents into one big list
+        List<Intent> intents = new ArrayList<>();
+        for (int i = 0; i < analysers.size(); i++){
+            Analyser analyser = analysers.get(i);
+            List<Intent> analysis = analyser.analyse(message, dialogue);
+            for (Intent intent : analysis)
+                intent.setSource(i);  // Source of the intent is the position of the analyser that produced it in the array of analysers
+            intents.addAll(analysis);
+        }
 
         // 3. Check to see if there is a cancellation intent, short-circuiting and finishing the dialogue
         if (isCancellationPresent(intents)){
@@ -290,5 +295,10 @@ public class Dialoguer implements AutoCloseable {
             r.fillTemplate("Please specify {query}.");
         }
         throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
+    }
+
+
+    public static void main(String[] args){
+        System.out.println();
     }
 }

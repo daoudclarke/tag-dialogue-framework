@@ -40,6 +40,7 @@ public class Intent {
     private String name;
     private String text;
     private Multimap<String, Slot> slots;
+    private int source;
 
 
     public Intent(String name) {
@@ -54,6 +55,7 @@ public class Intent {
         this.name = name;
         this.text = text;
         this.slots = slots;
+        this.source = -1;
     }
 
     public String getName() {
@@ -73,6 +75,12 @@ public class Intent {
     public void setText(String text) {
         this.text = text;
     }
+
+    public void setSource(int analyserNumber){
+        source = analyserNumber;
+    }
+
+    public int getSource() { return source; }
 
 /**********************************************
  * Slot management

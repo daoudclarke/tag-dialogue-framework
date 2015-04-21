@@ -2,7 +2,6 @@ package uk.ac.susx.tag.dialoguer.utils;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import com.google.common.io.Resources;
 import com.googlecode.clearnlp.engine.EngineGetter;
@@ -11,8 +10,20 @@ import com.googlecode.clearnlp.segmentation.AbstractSegmenter;
 import com.googlecode.clearnlp.tokenization.AbstractTokenizer;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Random;
+import java.util.TreeMap;
 
 /**
  * Utilities for aspects of dialogue management.
@@ -22,6 +33,7 @@ import java.util.*;
  * Time: 15:32
  */
 public class DialogueUtils {
+
 
     /**
      * Given a multiset of elements (basically a set that allows multiples and tracks their frequency),

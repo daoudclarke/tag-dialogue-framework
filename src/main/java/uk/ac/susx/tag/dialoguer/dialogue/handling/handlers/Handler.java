@@ -50,7 +50,7 @@ public abstract class Handler implements AutoCloseable {
     public abstract HandlerFactory getFactory();
 
     public static interface IntentHandler {
-        public Response handle(Intent i, Dialogue d);
+        public Response handle(Intent intent, Dialogue dialogue);
     }
 
     protected void registerIntentHandler(String intentName, IntentHandler h){
