@@ -181,12 +181,12 @@ public class Dialoguer implements AutoCloseable {
 
                     // 14. If all waiting intents are now complete, pass the the finished intents to the handler for an appropriate response (ignoring the other intents found by analysers)
                     if (!dialogue.isExpectingAutoRequestResponse()) {
-                        System.err.println("Is expecting auto request response");
+                        //System.err.println("Is expecting auto request response");
                         r = handler.handle(dialogue.popAutoQueriedIntents(), dialogue);
                     }
                     // 15. Otherwise build the next auto query
                     else {
-                        System.err.println("Building the auto query ");
+                        //System.err.println("Building the auto query ");
                         r = Response.buildAutoQueryResponse(getHumanReadableSlotNameIfPresent(dialogue.getNextAutoQuery()));
                     }
                 }

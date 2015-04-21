@@ -18,6 +18,13 @@ public class CheckInHandler extends Handler {
 
     public static final String checkinIntent = "check_in";
 
+
+    @Override
+    public Dialogue getNewDialogue(String dialogueId){
+        Dialogue d = new Dialogue(dialogueId);
+        return d;
+    }
+
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
         return null; // Return response ID here

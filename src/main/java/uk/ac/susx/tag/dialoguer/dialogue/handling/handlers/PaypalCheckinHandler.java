@@ -30,35 +30,45 @@ public class PaypalCheckinHandler extends Handler{
     public static final String confirm = "confirm";
     public static final String quit = "quit";
 
+
+    @Override
+    public Dialogue getNewDialogue(String dialogueId){
+        Dialogue d = new Dialogue(dialogueId);
+        d.setState("initial");
+        return d;
+    }
+
+
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
 
         /*NEED TO IMPLEMENT THIS!*/
 
         System.err.println("Using PaypalCheckinHandler");
-        String intent = intents.get(0).getName();
+        Intent myintent = intents.get(0);
+        String intent = myintent.getName();
         Response r;
         switch(intent) {
             case checkinIntent:
-                r=CheckinMethod.execute(dialogue);
+                r=CheckinMethod.execute(myintent, dialogue);
                 break;
             case loc:
-                r = LocMethod.execute(dialogue);
+                r = LocMethod.execute(myintent,dialogue);
                 break;
             case confirmLoc:
-                r = ConfirmLocMethod.execute(dialogue);
+                r = ConfirmLocMethod.execute(myintent,dialogue);
                 break;
             case confirm:
-                r = ConfirmMethod.execute(dialogue);
+                r = ConfirmMethod.execute(myintent,dialogue);
                 break;
             case quit:
-                r= QuitMethod.execute(dialogue);
+                r= QuitMethod.execute(myintent,dialogue);
                 break;
             case checkinLoc:
-                r=CheckinLocMethod.execute(dialogue);
+                r=CheckinLocMethod.execute(myintent,dialogue);
                 break;
             default:
-                r=IntentMethod.execute(dialogue);
+                r=IntentMethod.execute(myintent,dialogue);
         }
 
         System.err.println(r.getResponseName());

@@ -14,10 +14,12 @@
     ],
     "humanReadableSlotNames" : {
         "product_query" : "product query",
-        "phone_number"  : "phone number"
+        "phone_number"  : "phone number",
+        "wit/local_search_query" : "location"
     },
     "necessarySlotsPerIntent" : {
-        "buy_general" : ["product_query"]
+        "buy_general" : ["product_query"],
+        "loc" : ["wit/local_search_query"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : [
@@ -39,6 +41,13 @@
         ],
         "unknown" : [
             "I don't know how to handle that request."
+            ],
+        "confirmLocation" : [
+            "Please confirm that you wish to check in at:"
+            ],
+        "auto_query" : [
+            "I didn't catch that. Please try again."
             ]
+
     }
 }
