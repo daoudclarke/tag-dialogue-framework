@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
 
 /**
  * It is the function of the Handler to determine what response to give to a user's intents, and what side-effects to
- * perform (e.g. product search/purchase).
+ * perform (e.g. product search/purchase) as a result of those intents.
  *
  * User: Andrew D. Robertson
  * Date: 16/03/2015
@@ -49,20 +49,40 @@ public abstract class Handler implements AutoCloseable {
      */
     public abstract HandlerFactory getFactory();
 
+
+    /**
+     * Interface defining something which can take an intent and current dialogue, and produce an appropriate response
+     * with no other information.
+     *
+     * These can be registered with the handler in a no-args constructor of a subclassing Handler using the
+     * registerIntentHandler method. They are registered with the name of the intent that they can handle.
+     *
+     * From the handle method of the Handler you can make calls to the applyIntentHandler methods, to farm out the
+     * processing of Intents to the IntentHandlers.
+     */
     public static interface IntentHandler {
         public Response handle(Intent intent, Dialogue dialogue);
     }
 
+    /**
+     * see IntentHandler interface comments.
+     */
     protected void registerIntentHandler(String intentName, IntentHandler h){
         intentHandlers.put(intentName, h);
     }
 
+    /**
+     * see IntentHandler interface comments.
+     */
     protected Response applyIntentHandler(Intent intent, Dialogue d){
         if (intentHandlers.containsKey(intent.getName())){
             return intentHandlers.get(intent.getName()).handle(intent, d);
         } else return null;
     }
 
+    /**
+     * see IntentHandler interface comments.
+     */
     protected Map<Integer, Response> applyIntentHandlers(List<Intent> intents, Dialogue d){
         Map<Integer, Response> intentIndexToResponse = new HashMap<>();
         for (int i = 0; i < intents.size(); i++){
