@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Represents an intent of the user. An intent has a name, and potentially text associated with it (optional).
@@ -160,6 +161,25 @@ public class Intent {
      */
     public static boolean isPresent(String name, List<Intent> intents){
         return intents.stream().anyMatch(i -> i.isName(name));
+    }
+
+    /**
+     * Get first intent from *intents* which has the source specified.
+     * If no such intent, then return null.
+     */
+    public static Intent getFirstIntentFromSource(int source, List<Intent> intents){
+        return intents.stream()
+                .filter(i -> i.getSource() == source)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Create a new list from those elements in *intents* which have the source specified.
+     * Empty list will be returned if there are no such intents.
+     */
+    public static List<Intent> getAllIntentsFromSource(int source, List<Intent> intents){
+        return intents.stream().filter(i -> i.getSource() == source).collect(Collectors.toList());
     }
 
     @Override
