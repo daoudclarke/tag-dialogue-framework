@@ -39,7 +39,7 @@ public abstract class Analyser implements AutoCloseable {
     /**
      * Find and build analyser with a given name, and json setup file.
      */
-    public static Analyser getAnalyser(String analyserName, File analyserSetupJson) throws IllegalAccessException, InstantiationException, IOException {
+    public static Analyser getAnalyser(String analyserName, String analyserSetupJson) throws IllegalAccessException, InstantiationException, IOException {
         Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.analysing.factories");
 
         Set<Class<? extends AnalyserFactory>> foundAnalyserFactories = reflections.getSubTypesOf(AnalyserFactory.class);

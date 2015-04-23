@@ -1,6 +1,6 @@
 {
     "handler" : {
-        "name" : "check_in",
+        "name" : "test",
         "path" : ""
     },
     "analysers" : [

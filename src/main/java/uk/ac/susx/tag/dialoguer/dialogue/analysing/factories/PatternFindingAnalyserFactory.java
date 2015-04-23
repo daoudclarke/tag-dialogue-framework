@@ -4,7 +4,6 @@ import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.PatternFindingAnalyser;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -16,8 +15,8 @@ import java.io.IOException;
 public class PatternFindingAnalyserFactory implements AnalyserFactory{
 
     @Override
-    public Analyser readJson(File json) throws IOException {
-        return Dialoguer.readFromJsonFile(json, PatternFindingAnalyser.class);
+    public Analyser readJson(String resourcePath) throws IOException {
+        return Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, PatternFindingAnalyser.class);
     }
 
     @Override

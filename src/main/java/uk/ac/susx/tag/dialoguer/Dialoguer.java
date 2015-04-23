@@ -2,6 +2,7 @@ package uk.ac.susx.tag.dialoguer;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
@@ -149,10 +150,14 @@ public class Dialoguer implements AutoCloseable {
         Response r; // To be filled with system response
 
         // 2. Determine user intent (largely ignored if we're auto-querying, see below)
-        List<Intent> intents = analysers.stream()
-                .map((analyser) -> analyser.analyse(message, dialogue)) // Get list of predicted intents for each analyser
-                .flatMap((listOfIntents) -> listOfIntents.stream())     // Flatten each list so we get one intent at a time
-                .collect(Collectors.toList());                          // Join all of the intents into one big list
+        List<Intent> intents = new ArrayList<>();
+        for (int i = 0; i < analysers.size(); i++){
+            Analyser analyser = analysers.get(i);
+            List<Intent> analysis = analyser.analyse(message, dialogue);
+            for (Intent intent : analysis)
+                intent.setSource(i);  // Source of the intent is the position of the analyser that produced it in the array of analysers
+            intents.addAll(analysis);
+        }
 
         // 3. Check to see if there is a cancellation intent, short-circuiting and finishing the dialogue
         if (isCancellationPresent(intents)){
@@ -232,22 +237,45 @@ public class Dialoguer implements AutoCloseable {
         }
     }
 
-    public static Dialoguer loadJson(String dialoguerDefinition) {
-        return gson.fromJson(dialoguerDefinition, Dialoguer.class);
+    public static Dialoguer loadDialoguerFromJsonResourceOrFile(String dialoguerDefinition) throws IOException {
+        return readObjectFromJsonResourceOrFile(dialoguerDefinition, Dialoguer.class);
     }
 
-    public static Dialoguer loadJson(File dialoguerDefinition) throws IOException {
-        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(dialoguerDefinition), "UTF8")))) {
-            return gson.fromJson(r, Dialoguer.class);
+    /**
+     * Read an arbitrary object from a JSON file using the Dialoguer's custom Gson instance.
+     *
+     * DEPRECATED WARNING: use the more general purpose readObjectFromJsonResourceOrFile() method.
+     */
+    @Deprecated
+    public static <T> T readFromJsonFile(File json, Class<T> klazz) throws IOException {
+        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(json), "UTF8")))) {
+            return gson.fromJson(r, klazz);
         }
     }
 
     /**
      * Read an arbitrary object from a JSON file using the Dialoguer's custom Gson instance.
+     *
+     * The aim is for JSON files to be able to specify paths to resources, and have them easily be found wherever they
+     * may be. So whereas readFromJsonFile() only supported proper paths to actual files, this method will be extended to
+     * have more power.
+     *
+     * It currently searches for the resource using the resource path in 2 ways:
+     *
+     *   1. A path to a normal file
+     *   2. A path to a resource in the classpath
      */
-    public static <T> T readFromJsonFile(File json, Class<T> klazz) throws IOException {
-        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(json), "UTF8")))) {
+    public static <T> T readObjectFromJsonResourceOrFile(String resourcePath, Class<T> klazz) throws IOException{
+        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(getResourceOrFileStream(resourcePath), "UTF8")))) {
             return gson.fromJson(r, klazz);
+        }
+    }
+
+    public static InputStream getResourceOrFileStream(String resourcePath) throws IOException {
+        try {
+            return Resources.getResource(resourcePath).openStream();
+        } catch (IllegalArgumentException e){
+            return new FileInputStream(new File(resourcePath));
         }
     }
 
@@ -290,18 +318,22 @@ public class Dialoguer implements AutoCloseable {
 
     private String fillTemplateWithResponse(Response r){
         List<String> alternatives = responseTemplates.get(r.getResponseName());
+        // If the user has defined an appropriate template in the Dialoguer JSON config file, use it.
         if (alternatives != null){
             if (alternatives.size() == 1)
                 return r.fillTemplate(alternatives.get(0));
             else
                 return r.fillTemplate(alternatives.get(random.nextInt(alternatives.size())));
-        } else if (r.getResponseName().equals(Response.defaultConfirmCancelResponseId)) {
-            r.fillTemplate("Cancelled. Thank you!");
-        } else if (r.getResponseName().equals(Response.defaultCompletionResponseId)) {
-            r.fillTemplate("Thanks, goodbye!");
-        } else if (r.getResponseName().equals(Response.defaultAutoQueryResponseId)) {
-            r.fillTemplate("Please specify {query}.");
         }
-        throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
+        // Otherwise see if it's a default response that we can handle.
+        else if (r.getResponseName().equals(Response.defaultConfirmCancelResponseId)) {
+            return r.fillTemplate("Cancelled. Thank you!");
+        } else if (r.getResponseName().equals(Response.defaultCompletionResponseId)) {
+            return r.fillTemplate("Thanks, goodbye!");
+        } else if (r.getResponseName().equals(Response.defaultAutoQueryResponseId)) {
+            return r.fillTemplate("Please specify {query}.");
+        }
+        // Otherwise give up
+        else throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
     }
 }

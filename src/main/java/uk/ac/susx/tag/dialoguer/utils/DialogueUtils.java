@@ -2,17 +2,36 @@ package uk.ac.susx.tag.dialoguer.utils;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.io.Resources;
 import com.googlecode.clearnlp.engine.EngineGetter;
 import com.googlecode.clearnlp.reader.AbstractReader;
 import com.googlecode.clearnlp.segmentation.AbstractSegmenter;
 import com.googlecode.clearnlp.tokenization.AbstractTokenizer;
+import uk.ac.susx.tag.classificationframework.datastructures.Instance;
+import uk.ac.susx.tag.classificationframework.featureextraction.inference.FeatureInferrer;
+import uk.ac.susx.tag.classificationframework.featureextraction.pipelines.FeatureExtractionPipeline;
+import uk.ac.susx.tag.classificationframework.featureextraction.pipelines.PipelineBuilder;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Random;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * Utilities for aspects of dialogue management.
@@ -81,7 +100,12 @@ public class DialogueUtils {
 
             LinkedList<String> ngram = new LinkedList<>();
 
+            int count = 0;
             for (List<String> sentence : corpusSentences){
+
+                if (count % 1000 == 0)
+                    System.out.print("\rSentences complete: " + count);
+
                 ngram.clear();
                 // Represent the beginning of a sentence with empty strings
                 for (int i = 0; i < ngramOrder; i++)
@@ -97,6 +121,8 @@ public class DialogueUtils {
                     ngram.removeFirst();
                     ngram.addLast("");
                 }
+
+                count++;
             }
             model = createModel(counts);
             this.ngramOrder = ngramOrder;
@@ -202,6 +228,47 @@ public class DialogueUtils {
         }
     }
 
+    public static Iterable<List<String>> tweetPerLineReader(File corpus) throws IOException {
+        PipelineBuilder pb = new PipelineBuilder();
+        List<PipelineBuilder.Option> options = Lists.newArrayList(
+                new PipelineBuilder.Option("tokeniser", ImmutableMap.of("type", "cmuTokeniseOnly",
+                        "filter_punctuation", "true",
+                        "normalise_urls", "true",
+                        "lower_case", "true")),
+                new PipelineBuilder.Option("unigrams", true));
+        FeatureExtractionPipeline p = pb.build(options);
+
+        return new Iterable<List<String>>() {
+            final BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(corpus), "UTF-8"));
+            String line = r.readLine();
+
+            @Override
+            public Iterator<List<String>> iterator() {
+                return new Iterator<List<String>>() {
+                    public boolean hasNext() { return line != null; }
+                    public List<String> next() {
+                        List<String> tokens = p.extractUnindexedFeatures(new Instance("",line,"")).stream()
+                                            .map(FeatureInferrer.Feature::value)
+                                            .filter((t) -> (!t.equals("HTTPLINK")))
+                                            .filter((t) -> (!t.startsWith("@")))
+                                            .collect(Collectors.toList());
+
+                        try {
+                            line = r.readLine();
+                        } catch (IOException e) {
+                            line = null;
+                            try { r.close();
+                            } catch (IOException e1) { e1.printStackTrace(); }
+                        } return tokens;
+                    }
+                };
+            }
+        };
+    }
+
+
+
+
     public static void main(String[] args) throws IOException {
 
 //        new MarkovChainModel(
@@ -211,6 +278,9 @@ public class DialogueUtils {
 //                ),
 //        2).interactiveTest();
 
-        new MarkovChainModel(simpleCorpusReader(new File("/Volumes/LocalDataHD/scpbox/tweets.txt")), 2).interactiveTest();
+//        new MarkovChainModel(tweetPerLineReader(new File("/Volumes/LocalDataHD/scpbox/xaa")), 3).interactiveTest();
+
+        System.out.println(Resources.getResource("test"));
+
     }
 }
