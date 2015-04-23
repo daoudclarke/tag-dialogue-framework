@@ -36,6 +36,11 @@ import java.util.stream.Collectors;
  */
 public class DialogueUtils {
 
+    // Version for tweets
+    public static List<String> splitByLengthOnTokens(String text, String userName){
+        return splitByLengthOnTokens(text, 140, userName);
+    }
+
     public static List<String> splitByLengthOnTokens(String text, int lengthLimit){
         return splitByLengthOnTokens(text, lengthLimit, "");
     }
