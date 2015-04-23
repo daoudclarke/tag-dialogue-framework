@@ -12,7 +12,7 @@ public class ConfirmMethod implements Handler.IntentHandler {
 
     public Response handle(Intent i, Dialogue d) {
         //perform side effects
-        System.out.println("Contacting paypal for user "+d.getId()+" to checkin at "+d.getFromWorkingMemory("local_search_query")+"....");
+        System.out.println("Contacting paypal for user "+d.getId()+" to checkin at "+d.getFromWorkingMemory("merchantId")+"....");
         //return Response
         return new Response("confirm_completion");
     }

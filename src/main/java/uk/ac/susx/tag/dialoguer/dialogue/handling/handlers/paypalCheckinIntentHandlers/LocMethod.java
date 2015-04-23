@@ -3,10 +3,13 @@ package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentH
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
+import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.Merchant;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
+import java.net.UnknownHostException;
 import java.util.*;
 
 /**
@@ -15,6 +18,10 @@ import java.util.*;
 public class LocMethod implements Handler.IntentHandler {
 
     public static final String locationSlot="local_search_query";
+    public static final int searchradius = 50;
+    public static final int limit = 50;
+    protected ProductMongoDB db;
+
     public Response handle(Intent i, Dialogue d){
         //we think that the user message has some information about location
         //we also need to consider the user's geolocation information
@@ -25,19 +32,22 @@ public class LocMethod implements Handler.IntentHandler {
 
         Collection<Intent.Slot> locations = i.getSlotByType(locationSlot);
         String location_string="";
-        int count=0;
+        ArrayList location_list = new ArrayList<>();
         for(Intent.Slot location: locations){
-            //System.out.println(location.name+" : "+location.value);
-            if (count>0){location_string+=" ";}
-            location_string+=location.value;
-            count++;
+            location_list.add(location.value);
         }
 
-        List<Merchant> possibleMerchants = matchNearbyMerchants(locations);
+        try {
+            db = new ProductMongoDB();
+        }
+        catch(UnknownHostException e){
+            System.err.println("Cannot connect to database host");
+        }
+        List<Merchant> possibleMerchants = matchNearbyMerchants(location_list,db, d.getUserData());
 
         if(possibleMerchants.size()==0){
             newStates.add("confirm_loc");
-            responseVariables.put(locationSlot, location_string);
+            responseVariables.put(locationSlot, StringUtils.join(location_list));
             return new Response("repeat_request_location",responseVariables,newStates);
         } else {
             if(possibleMerchants.size()==1){
@@ -62,8 +72,12 @@ public class LocMethod implements Handler.IntentHandler {
 
     }
 
-    private List<Merchant> matchNearbyMerchants(Collection<Intent.Slot> locations){
+    private List<Merchant> matchNearbyMerchants(List<String> location_list, ProductMongoDB db,User user){
         List<Merchant> merchants = new ArrayList<>();
+        if(db!=null){
+            merchants = db.merchantQueryByLocation(user.getLatitude(),user.getLongitude(),searchradius,limit);
+            merchants.retainAll(db.merchantQuery(StringUtils.phrasejoin(location_list)));
+        }
         return merchants;
     }
 
