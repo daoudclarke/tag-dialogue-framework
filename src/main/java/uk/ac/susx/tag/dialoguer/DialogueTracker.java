@@ -33,7 +33,7 @@ public class DialogueTracker implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(DialogueTracker.class.getName());
     static {
         try {
-            FileHandler f = new FileHandler("dialogues.txt");
+            FileHandler f = new FileHandler("dialogues.log");
             f.setFormatter(new SimpleFormatter());
             logger.addHandler(f);
         } catch (IOException e) { e.printStackTrace(); }
@@ -142,5 +142,9 @@ public class DialogueTracker implements AutoCloseable {
 
     public static interface CompletedDialogueHandler {
         public void handle(Dialogue d);
+    }
+
+    public static void main(String[] args){
+        logger.log(Level.INFO, "this is a test");
     }
 }
