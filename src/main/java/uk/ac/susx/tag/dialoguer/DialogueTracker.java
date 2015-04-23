@@ -143,8 +143,4 @@ public class DialogueTracker implements AutoCloseable {
     public static interface CompletedDialogueHandler {
         public void handle(Dialogue d);
     }
-
-    public static void main(String[] args){
-        logger.log(Level.INFO, "this is a test");
-    }
 }
