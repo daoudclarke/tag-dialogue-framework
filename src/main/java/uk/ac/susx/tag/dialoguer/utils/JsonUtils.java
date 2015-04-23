@@ -112,7 +112,7 @@ public class JsonUtils {
 
         public Handler read(JsonReader in) throws IOException {
             String handlerName = null;
-            String handlerPath = null;
+            String handlerPath = "";
 
             in.beginObject();
             while (in.hasNext()){
@@ -125,7 +125,7 @@ public class JsonUtils {
 
             if (handlerName==null) throw new IOException("No handler name found");
             try {
-                return Handler.getHandler(handlerName, handlerPath);
+                return Handler.getHandler(handlerName, handlerPath.equals("")? null : handlerPath);
             } catch (IllegalAccessException | InstantiationException e) {
                 throw new IOException(e);
             }
@@ -141,7 +141,7 @@ public class JsonUtils {
         }
         public Analyser read(JsonReader in) throws IOException {
             String analyserName = null;
-            String analyserPath = null;
+            String analyserPath = "";
 
             in.beginObject();
             while (in.hasNext()){
@@ -154,7 +154,7 @@ public class JsonUtils {
 
             if (analyserName==null) throw new IOException("No analyser name found");
             try {
-                return Analyser.getAnalyser(analyserName, analyserPath);
+                return Analyser.getAnalyser(analyserName, analyserPath.equals("")? null : analyserPath);
             } catch (IllegalAccessException | InstantiationException e){
                 throw new IOException(e);
             }
