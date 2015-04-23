@@ -179,7 +179,9 @@ public class Intent {
      * Empty list will be returned if there are no such intents.
      */
     public static List<Intent> getAllIntentsFromSource(int source, List<Intent> intents){
-        return intents.stream().filter(i -> i.getSource() == source).collect(Collectors.toList());
+        return intents.stream()
+                .filter(i -> i.getSource() == source)
+                .collect(Collectors.toList());
     }
 
     @Override
