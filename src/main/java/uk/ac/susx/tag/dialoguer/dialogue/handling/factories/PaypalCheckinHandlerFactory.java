@@ -1,7 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.factories;
 
 import uk.ac.susx.tag.dialoguer.Dialoguer;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.CheckInHandler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.PaypalCheckinHandler;
 
@@ -14,11 +13,12 @@ import java.io.IOException;
 public class PaypalCheckinHandlerFactory implements HandlerFactory{
 
     @Override
-    public Handler readJson(File json) throws IOException {
-        if (json == null)
+    public Handler readJson(String json) throws IOException {
+        if (json == null||json.equals(""))
             return new PaypalCheckinHandler();
-        else
-            return Dialoguer.readFromJsonFile(json, PaypalCheckinHandler.class);
+        else {
+            return Dialoguer.readObjectFromJsonResourceOrFile(json, PaypalCheckinHandler.class);
+        }
     }
 
     @Override

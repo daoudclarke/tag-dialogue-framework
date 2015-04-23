@@ -238,6 +238,7 @@ public class Dialoguer implements AutoCloseable {
     }
 
     public static Dialoguer loadDialoguerFromJsonResourceOrFile(String dialoguerDefinition) throws IOException {
+
         return readObjectFromJsonResourceOrFile(dialoguerDefinition, Dialoguer.class);
     }
 
@@ -247,8 +248,8 @@ public class Dialoguer implements AutoCloseable {
      * DEPRECATED WARNING: use the more general purpose readObjectFromJsonResourceOrFile() method.
      */
     @Deprecated
-    public static <T> T readFromJsonFile(File json, Class<T> klazz) throws IOException {
-        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(json), "UTF8")))) {
+    public static <T> T readFromJsonFile(String json, Class<T> klazz) throws IOException {
+        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(new File(json)), "UTF8")))) {
             return gson.fromJson(r, klazz);
         }
     }
@@ -266,12 +267,15 @@ public class Dialoguer implements AutoCloseable {
      *   2. A path to a resource in the classpath
      */
     public static <T> T readObjectFromJsonResourceOrFile(String resourcePath, Class<T> klazz) throws IOException{
+
         try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(getResourceOrFileStream(resourcePath), "UTF8")))) {
             return gson.fromJson(r, klazz);
         }
     }
 
     public static InputStream getResourceOrFileStream(String resourcePath) throws IOException {
+
+
         try {
             return Resources.getResource(resourcePath).openStream();
         } catch (IllegalArgumentException e){

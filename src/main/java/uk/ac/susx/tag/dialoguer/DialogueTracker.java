@@ -3,6 +3,7 @@ package uk.ac.susx.tag.dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -217,7 +218,6 @@ public class DialogueTracker implements AutoCloseable {
             task=args[0];
         }
         String filename=task+"_dialoguer.json";
-        File definitionFile = new File(filename);
 
         //set up test user ... maybe configure this from command line later
         String userId="julie";
@@ -231,7 +231,8 @@ public class DialogueTracker implements AutoCloseable {
         boolean doContinue=true;
 
         try {
-            DialogueTracker myTracker = new DialogueTracker(definitionFile);
+            //System.err.println("Using json file: "+filename);
+            DialogueTracker myTracker = new DialogueTracker(filename);
             while (doContinue){
                 userMessage=userinput.nextLine();
                 if(userMessage.startsWith("end")){
@@ -243,7 +244,7 @@ public class DialogueTracker implements AutoCloseable {
 
         }
         catch(IOException e){
-            System.err.println("Error reading json definition for "+definitionFile.getName());
+            System.err.println("Error reading json definition for "+filename);
             System.exit(1);
         }
     }
