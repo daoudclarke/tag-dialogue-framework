@@ -10,10 +10,12 @@ import com.googlecode.clearnlp.engine.EngineGetter;
 import com.googlecode.clearnlp.reader.AbstractReader;
 import com.googlecode.clearnlp.segmentation.AbstractSegmenter;
 import com.googlecode.clearnlp.tokenization.AbstractTokenizer;
+import sun.java2d.pipe.SpanShapeRenderer;
 import uk.ac.susx.tag.classificationframework.datastructures.Instance;
 import uk.ac.susx.tag.classificationframework.featureextraction.inference.FeatureInferrer;
 import uk.ac.susx.tag.classificationframework.featureextraction.pipelines.FeatureExtractionPipeline;
 import uk.ac.susx.tag.classificationframework.featureextraction.pipelines.PipelineBuilder;
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 
 import java.io.BufferedReader;
@@ -22,15 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +35,32 @@ import java.util.stream.Collectors;
  * Time: 15:32
  */
 public class DialogueUtils {
+
+
+    public List<String> splitByLengthWithPrefix(String text, int lengthLimit, String prefix){
+        throw new UnsupportedOperationException();
+//        List<String> split = new ArrayList<>();
+//        LinkedList<String> tokens = Lists.newLinkedList(Arrays.asList(SimplePatterns.splitByWhitespace(text)));
+//
+//        if (prefix.length() >= lengthLimit || tokens.stream().anyMatch((token) -> (token.length() + prefix.length() +1 > lengthLimit)))
+//            throw new Dialoguer.DialoguerException("Prefix + token length exceeds limit set.");
+//        if (prefix.length() + text.length() + 1 <= lengthLimit)
+//            split.add(prefix + " " + text);
+//        else {
+//            StringBuilder currentSplit = new StringBuilder(prefix);
+//            String nextToken;
+//            while (!tokens.isEmpty()){
+//                nextToken = tokens.pop();
+//                if (currentSplit.length() + nextToken.length() + 1 > lengthLimit){
+//                    split.add(currentSplit.toString());
+//                    currentSplit = new StringBuilder(prefix).append(" ").append(nextToken);
+//                } else {
+//                    currentSplit.append(" ").append(nextToken);
+//                }
+//            }
+//        }
+//        return split;
+    }
 
     /**
      * Given a multiset of elements (basically a set that allows multiples and tracks their frequency),

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -91,6 +92,15 @@ public abstract class Handler implements AutoCloseable {
                 intentIndexToResponse.put(i, intentHandlers.get(intent.getName()).handle(intent, d));
             }
         } return intentIndexToResponse;
+    }
+
+    /**
+     * Return a list that contains those Intents in *intents* that CANNOT be handled by the intent handlers.
+     */
+    protected List<Intent> filterOutHandleableIntents(List<Intent> intents){
+        return intents.stream()
+                .filter(i -> !intentHandlers.containsKey(i.getName()))
+                .collect(Collectors.toList());
     }
 
 

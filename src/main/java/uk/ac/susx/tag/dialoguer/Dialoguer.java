@@ -273,7 +273,7 @@ public class Dialoguer implements AutoCloseable {
             a.close();
     }
 
-    private static class DialoguerException extends RuntimeException{
+    public static class DialoguerException extends RuntimeException{
         public DialoguerException(String msg) {
             super(msg);
         }
