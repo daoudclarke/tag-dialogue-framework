@@ -36,30 +36,50 @@ import java.util.stream.Collectors;
  */
 public class DialogueUtils {
 
+    public static List<String> splitByLengthOnTokens(String text, int lengthLimit){
+        return splitByLengthOnTokens(text, lengthLimit, "");
+    }
 
-    public List<String> splitByLengthWithPrefix(String text, int lengthLimit, String prefix){
-        throw new UnsupportedOperationException();
-//        List<String> split = new ArrayList<>();
-//        LinkedList<String> tokens = Lists.newLinkedList(Arrays.asList(SimplePatterns.splitByWhitespace(text)));
-//
-//        if (prefix.length() >= lengthLimit || tokens.stream().anyMatch((token) -> (token.length() + prefix.length() +1 > lengthLimit)))
-//            throw new Dialoguer.DialoguerException("Prefix + token length exceeds limit set.");
-//        if (prefix.length() + text.length() + 1 <= lengthLimit)
-//            split.add(prefix + " " + text);
-//        else {
-//            StringBuilder currentSplit = new StringBuilder(prefix);
-//            String nextToken;
-//            while (!tokens.isEmpty()){
-//                nextToken = tokens.pop();
-//                if (currentSplit.length() + nextToken.length() + 1 > lengthLimit){
-//                    split.add(currentSplit.toString());
-//                    currentSplit = new StringBuilder(prefix).append(" ").append(nextToken);
-//                } else {
-//                    currentSplit.append(" ").append(nextToken);
-//                }
-//            }
-//        }
-//        return split;
+    /**
+     * Given a piece of text, split it into several strings, ensuring that
+     *      1. Each string has no more characters then *lengthLimit*. (throws exception if this isn't possible) Should be
+     *         fine so long as lengthLimit >= prefix + " " + token , for all tokens
+     *      2. No tokens are split
+     *      3. Each string begins with *prefix* + a space (if prefix is non-empty)
+     *      4. Each string ends with a message number in brackets
+     */
+    public static List<String> splitByLengthOnTokens(String text, int lengthLimit, String prefix){
+        List<String> split = new ArrayList<>();
+        LinkedList<String> tokens = Lists.newLinkedList(Arrays.asList(SimplePatterns.splitByWhitespace(text)));
+        if (tokens.isEmpty())
+            return split;
+
+        // If there's a prefix, put a space between it and the text
+        final String finalPrefix = prefix.equals("")? prefix : prefix + " ";
+
+        if (tokens.stream().anyMatch((token) -> (token.length() + finalPrefix.length() > lengthLimit)))
+            throw new Dialoguer.DialoguerException("Prefix + token length exceeds limit set.");
+        if (finalPrefix.length() + text.length() <= lengthLimit)
+            split.add(finalPrefix + text);
+        else {
+            String nextToken = tokens.pop();
+            StringBuilder currentSplit = new StringBuilder(finalPrefix).append(nextToken);
+            int currentMessageNumber = 1;
+            String currentMessageNumberStr = "(" + Integer.toString(currentMessageNumber) + ")";
+            while (!tokens.isEmpty()){
+                nextToken = tokens.pop();
+                if (currentSplit.length() + 1 + nextToken.length() + currentMessageNumberStr.length()> lengthLimit){
+                    split.add(currentSplit.toString()+currentMessageNumberStr);
+                    currentSplit = new StringBuilder(finalPrefix).append(nextToken);
+                    currentMessageNumber++;
+                    currentMessageNumberStr = "(" + Integer.toString(currentMessageNumber) + ")";
+                } else {
+                    currentSplit.append(" ").append(nextToken);
+                }
+            } if (currentSplit.length()>0)
+                split.add(currentSplit.toString()+currentMessageNumberStr);
+        }
+        return split;
     }
 
     /**
@@ -284,23 +304,5 @@ public class DialogueUtils {
                 };
             }
         };
-    }
-
-
-
-
-    public static void main(String[] args) throws IOException {
-
-//        new MarkovChainModel(
-//                Iterables.concat(
-//                    simpleCorpusReader(new File("J:\\Corpora\\art_history.txt")),
-//                    simpleCorpusReader(new File("J:\\Corpora\\test.txt"))
-//                ),
-//        2).interactiveTest();
-
-//        new MarkovChainModel(tweetPerLineReader(new File("/Volumes/LocalDataHD/scpbox/xaa")), 3).interactiveTest();
-
-        System.out.println(Resources.getResource("test"));
-
     }
 }
