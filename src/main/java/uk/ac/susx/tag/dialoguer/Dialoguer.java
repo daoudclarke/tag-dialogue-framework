@@ -2,6 +2,7 @@ package uk.ac.susx.tag.dialoguer;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -52,6 +53,7 @@ import java.util.stream.Collectors;
  *   {
  *     name: <String name of analyser>,
  *     path: <string path to JSON file definition for handler
+ *     sourceId : <String ID that is given as the source to any intent produced by this analyser. Optional.>
  *   },
  *   ... (as many analysers as you like)...
  * ]
@@ -133,6 +135,15 @@ public class Dialoguer implements AutoCloseable {
         responseTemplates = new HashMap<>();
     }
 
+    public boolean validateAnalyserIds(Set<String> requiredSourceIds){
+        return Sets.difference(
+                  requiredSourceIds,
+                  Sets.newHashSet(analysers.stream()
+                                    .map(Analyser::getSourceId)
+                                    .collect(Collectors.toList())))
+               .isEmpty();
+    }
+
     public Dialogue startNewDialogue(String dialogueId){
         return handler.getNewDialogue(dialogueId);
     }
@@ -151,11 +162,10 @@ public class Dialoguer implements AutoCloseable {
 
         // 2. Determine user intent (largely ignored if we're auto-querying, see below)
         List<Intent> intents = new ArrayList<>();
-        for (int i = 0; i < analysers.size(); i++){
-            Analyser analyser = analysers.get(i);
+        for (Analyser analyser : analysers) {
             List<Intent> analysis = analyser.analyse(message, dialogue);
             for (Intent intent : analysis)
-                intent.setSource(i);  // Source of the intent is the position of the analyser that produced it in the array of analysers
+                intent.setSource(analyser.getSourceId());  // Source of the intent is the position of the analyser that produced it in the array of analysers
             intents.addAll(analysis);
         }
 

@@ -41,7 +41,7 @@ public class Intent {
     private String name;
     private String text;
     private Multimap<String, Slot> slots;
-    private int source;
+    private String source;
 
 
     public Intent(String name) {
@@ -56,7 +56,7 @@ public class Intent {
         this.name = name;
         this.text = text;
         this.slots = slots;
-        this.source = -1;
+        this.source = null;
     }
 
     public String getName() {
@@ -77,11 +77,11 @@ public class Intent {
         this.text = text;
     }
 
-    public void setSource(int analyserNumber){
-        source = analyserNumber;
+    public void setSource(String sourceId){
+        source = sourceId;
     }
 
-    public int getSource() { return source; }
+    public String getSource() { return source; }
 
 /**********************************************
  * Slot management
@@ -167,9 +167,9 @@ public class Intent {
      * Get first intent from *intents* which has the source specified.
      * If no such intent, then return null.
      */
-    public static Intent getFirstIntentFromSource(int source, List<Intent> intents){
+    public static Intent getFirstIntentFromSource(String source, List<Intent> intents){
         return intents.stream()
-                .filter(i -> i.getSource() == source)
+                .filter(i -> i.getSource().equals(source))
                 .findFirst()
                 .orElse(null);
     }
@@ -178,9 +178,9 @@ public class Intent {
      * Create a new list from those elements in *intents* which have the source specified.
      * Empty list will be returned if there are no such intents.
      */
-    public static List<Intent> getAllIntentsFromSource(int source, List<Intent> intents){
+    public static List<Intent> getAllIntentsFromSource(String source, List<Intent> intents){
         return intents.stream()
-                .filter(i -> i.getSource() == source)
+                .filter(i -> i.getSource().equals(source))
                 .collect(Collectors.toList());
     }
 
