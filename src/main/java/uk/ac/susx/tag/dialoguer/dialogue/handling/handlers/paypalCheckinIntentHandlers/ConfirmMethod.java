@@ -5,6 +5,11 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Created by juliewe on 21/04/2015.
  */
@@ -14,9 +19,9 @@ public class ConfirmMethod implements Handler.IntentHandler {
         //perform side effects
         System.out.println("Contacting paypal for user "+d.getId()+" to checkin at "+d.getFromWorkingMemory("merchantId")+"....");
         //return Response
-        d.pushFocus("confirm_completion");
-        return new Response("");
+        return new Response("confirm_completion");
 
     }
+
 }
 

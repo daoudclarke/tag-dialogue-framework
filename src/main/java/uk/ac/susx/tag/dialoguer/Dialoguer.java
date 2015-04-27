@@ -18,7 +18,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.TestHandler;
+//import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.TestHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
 import uk.ac.susx.tag.dialoguer.utils.JsonUtils;
@@ -201,6 +201,9 @@ public class Dialoguer implements AutoCloseable {
         }
 
         // 17. Add the response to the dialogue object
+        if(r==null){
+            System.err.println("Null response");
+        }
         dialogue.addNewSystemMessage(fillTemplateWithResponse(r));
 
         // 18. Extract the new states from the response if there is one and put the dialogue in those states

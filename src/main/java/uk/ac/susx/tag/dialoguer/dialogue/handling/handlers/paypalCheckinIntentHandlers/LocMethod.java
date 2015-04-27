@@ -16,16 +16,37 @@ import java.util.*;
 /**
  * Created by juliewe on 21/04/2015.
  */
-public class LocMethod implements Handler.IntentHandler {
+public class LocMethod implements Handler.ProblemHandler {
 
     public static final String locationSlot="local_search_query";
+    public static final String userSlot="user";
     public static final int searchradius = 50;
     public static final int limit = 50;
+    public static final String confirmLoc = "confirm_loc";
+    public static final String checkinLoc = "check_in_loc";
+    public static final String loc = "loc";
 
-    public Response handle(Intent i, Dialogue d, Object resource){
+
+
+    public boolean isInHandleableState(List<Intent> intents, Dialogue d){
+        ArrayList<String> locIntents = new ArrayList<>();
+        locIntents.add(confirmLoc);
+        locIntents.add(checkinLoc);
+        locIntents.add(loc);
+        boolean response=false;
+        for(Intent i:intents){
+            if (locIntents.contains(i.getName())){
+                response=true;
+            }
+        }
+        return response;
+    }
+
+    public Response handle(List<Intent> intents, Dialogue d, Object resource){
         //we think that the user message has some information about location
-        handleLocation(i,d,resource);
-        return new Response("");
+        System.err.println("Using problem handler: locMethod()");
+        handleLocation(intents.get(0),d,resource); // must actually find correct intent
+        return processStack(d);
 
     }
 
@@ -52,6 +73,7 @@ public class LocMethod implements Handler.IntentHandler {
         if(possibleMerchants.size()==0){
             //newStates.add("confirm_loc");
             //responseVariables.put(locationSlot, StringUtils.join(location_list));
+            System.err.println("No matching merchants");
             if(d.getStates().contains("initial")){
                 d.pushFocus("request_location");
             } else {
@@ -109,6 +131,46 @@ public class LocMethod implements Handler.IntentHandler {
             System.err.println("No database specified");
             return new ArrayList<>();
         }
+    }
+
+    private Response processStack(Dialogue d){
+        String focus="hello";
+        if (!d.isEmptyFocusStack()) {
+            focus = d.popTopFocus();
+        }
+        List<String> newStates = new ArrayList<>();
+        Map<String, String> responseVariables = new HashMap<>();
+        switch(focus){
+            case "confirm_loc":
+                newStates.add(focus);
+                responseVariables.put(locationSlot, d.getFromWorkingMemory("merchantName"));
+                break;
+            case "repeat_request_loc":
+                newStates.add("confirm_loc");
+                responseVariables.put(locationSlot, d.getFromWorkingMemory("location_list"));
+                break;
+            case "request_location":
+                newStates.add("confirm_loc");
+                break;
+            case "hello":
+                newStates.add("initial");
+                responseVariables.put(userSlot,d.getId());
+                break;
+            //case "confirm_completion":
+
+
+
+
+        }
+
+        Response r=  new Response(focus,responseVariables,newStates);
+        if(r==null){
+            System.err.println("No response generated");}
+        else {
+            System.err.println("Generated non-null response");
+        }
+        return r;
+
     }
 
 

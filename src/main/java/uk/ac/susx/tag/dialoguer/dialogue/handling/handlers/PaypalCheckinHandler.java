@@ -40,8 +40,8 @@ public class PaypalCheckinHandler extends Handler{
     public static final String quit = "quit";
     public static final String yes = "yes";
     public static final String no = "no";
-    public static final String locationSlot="local_search_query";
-    public static final String userSlot="user";
+
+
 
 
     public PaypalCheckinHandler(){
@@ -49,11 +49,11 @@ public class PaypalCheckinHandler extends Handler{
         super.registerIntentHandler(confirm, new ConfirmMethod());
         super.registerIntentHandler(yes,new ConfirmMethod());
         super.registerIntentHandler(checkinIntent,new CheckinMethod());
-        super.registerIntentHandler(loc,new LocMethod());
-        super.registerIntentHandler(checkinLoc,new CheckinLocMethod());
-        super.registerIntentHandler(confirmLoc,new ConfirmLocMethod());
+        //super.registerIntentHandler(loc,new LocMethod());
+        //super.registerIntentHandler(checkinLoc,new CheckinLocMethod());
+        //super.registerIntentHandler(confirmLoc,new ConfirmLocMethod());
         super.registerIntentHandler(otherIntent, (i,d, r) -> new Response("unknown"));
-
+        super.registerProblemHandler(new LocMethod());
     }
 
     public void setupDatabase(){
@@ -81,8 +81,12 @@ public class PaypalCheckinHandler extends Handler{
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
         System.err.println(intents.get(0).getName());
-        applyIntentHandler(intents.get(0), dialogue, this.db); //probably not safe just to consider first intent.  Probably should apply all intent handlers or search intents first to find best one
-        return processStack(dialogue);
+        Response r=null;
+        applyFirstProblemHandlerOrNull(intents,dialogue,this.db);
+        if(r==null) {
+            r=applyIntentHandler(intents.get(0), dialogue, this.db);
+        }//probably not safe just to consider first intent.  Probably should apply all intent handlers or search intents first to find best one
+        return r;
     }
 
     @Override
@@ -96,37 +100,6 @@ public class PaypalCheckinHandler extends Handler{
         db.close();
     }
 
-    private Response processStack(Dialogue d){
-        String focus="hello";
-        if (!d.isEmptyFocusStack()) {
-            focus = d.popTopFocus();
-        }
-        List<String> newStates = new ArrayList<>();
-        Map<String, String> responseVariables = new HashMap<>();
-        switch(focus){
-            case "confirm_loc":
-                newStates.add(focus);
-                responseVariables.put(locationSlot, d.getFromWorkingMemory("merchantName"));
-                break;
-            case "repeat_request_loc":
-                newStates.add("confirm_loc");
-                responseVariables.put(locationSlot, d.getFromWorkingMemory("location_list"));
-                break;
-            case "request_location":
-                newStates.add("confirm_loc");
-                break;
-            case "hello":
-                newStates.add("initial");
-                responseVariables.put(userSlot,d.getId());
-                break;
-            //case "confirm_completion":
 
-
-
-
-        }
-        return new Response(focus,responseVariables,newStates);
-
-    }
 
 }
