@@ -17,12 +17,13 @@ public class PaypalCheckinHandlerFactory implements HandlerFactory{
     @Override
     public Handler readJson(String json) throws IOException {
         if (json == null||json.equals(""))
-            return new PaypalCheckinHandler();
+            return new PaypalCheckinHandler("",0,"");
         else {
-
-            return Dialoguer.readObjectFromJsonResourceOrFile(json, PaypalCheckinHandler.class);
+            Map<String, String> config =  Dialoguer.readObjectFromJsonResourceOrFile(json,  new TypeToken<Map<String, String>>(){}.getType());
+            return new PaypalCheckinHandler(config.get("dbHost"), Integer.parseInt(config.get("dbPort")), config.get("dbName"));
         }
-    }
+
+}
 
     @Override
     public String getName() {
