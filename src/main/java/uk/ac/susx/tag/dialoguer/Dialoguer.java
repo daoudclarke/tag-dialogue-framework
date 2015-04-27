@@ -137,15 +137,6 @@ public class Dialoguer implements AutoCloseable {
         responseTemplates = new HashMap<>();
     }
 
-    public boolean validateAnalyserIds(Set<String> requiredSourceIds){
-        return Sets.difference(
-                  requiredSourceIds,
-                  Sets.newHashSet(analysers.stream()
-                                    .map(Analyser::getSourceId)
-                                    .collect(Collectors.toList())))
-               .isEmpty();
-    }
-
     public Dialogue startNewDialogue(String dialogueId){
         return handler.getNewDialogue(dialogueId);
     }
@@ -173,18 +164,17 @@ public class Dialoguer implements AutoCloseable {
 
         // 3. Check to see if there is a cancellation intent, short-circuiting and finishing the dialogue
         if (isCancellationPresent(intents)){
-            //System.err.println("Cancellation present");
+
             // 4. Complete and cancel dialogue
             dialogue.complete();
             r = Response.buildCancellationResponse();
         } else {
-            //System.err.println("No cancellation present");
             // 5. If dialogue was waiting for auto query response
             if (dialogue.isExpectingAutoRequestResponse()){
-                //System.err.println("Expecting Auto Request Response");
+
                 // 6. If any of the analysers decided that it was appropriate to short-circuit the auto-query process
                 if (isCancelAutoQueryPresent(intents)){
-                    //System.err.println("CancelAutoQuery present");
+
                     // 7. Add all incomplete/complete intents being tracked to the intents list
                     intents.addAll(dialogue.popAutoQueriedIntents());
 
@@ -193,30 +183,21 @@ public class Dialoguer implements AutoCloseable {
                 }
                 // 13. Otherwise fill the appropriate slot on the awaiting intent
                 else {
-                    //System.err.println("No cancelautoquery present");
                     dialogue.fillAutoRequest(message);
 
                     // 14. If all waiting intents are now complete, pass the the finished intents to the handler for an appropriate response (ignoring the other intents found by analysers)
-                    if (!dialogue.isExpectingAutoRequestResponse()) {
-                        //System.err.println("Is expecting auto request response");
+                    if (!dialogue.isExpectingAutoRequestResponse())
                         r = handler.handle(dialogue.popAutoQueriedIntents(), dialogue);
-                    }
+
                     // 15. Otherwise build the next auto query
-                    else {
-                        //System.err.println("Building the auto query ");
-                        r = Response.buildAutoQueryResponse(getHumanReadableSlotNameIfPresent(dialogue.getNextAutoQuery()));
-                    }
+                    else r = Response.buildAutoQueryResponse(getHumanReadableSlotNameIfPresent(dialogue.getNextAutoQuery()));
                 }
             }
             // 16. Otherwise pay attention to what the analysers decide on the intents that the user is trying to convey, let handler deal so long as necessary slots are filled
-            else {
-                //System.err.println("Letting handlers do with specialised intents");
-                r = handleNewIntents(intents, dialogue, true);
-            }
+            else r = handleNewIntents(intents, dialogue, true);
         }
 
         // 17. Add the response to the dialogue object
-        //System.err.println("Adding response to dialogue object");
         dialogue.addNewSystemMessage(fillTemplateWithResponse(r));
 
         // 18. Extract the new states from the response if there is one and put the dialogue in those states
@@ -228,8 +209,6 @@ public class Dialoguer implements AutoCloseable {
     }
 
     private Response handleNewIntents(List<Intent> intents, Dialogue dialogue, boolean autoQueryTracking){
-
-        //System.err.println("First intent found: "+intents.get(0).getName());
         // 9. Find which necessary slots are not filled
         List<IntentMatch> intentMatches = intents.stream()
                 .map(intent -> intent.getIntentMatch(necessarySlotsPerIntent.get(intent.getName())))
@@ -239,7 +218,6 @@ public class Dialoguer implements AutoCloseable {
         if (!autoQueryTracking || IntentMatch.areSlotsFilled(intentMatches)){
 
             // 11. Ask the handler for a response to these intents
-            //System.err.println("Will ask the handler for a response");
             return handler.handle(intents, dialogue);
         }
         // 12. otherwise track intents and produce auto query
@@ -250,7 +228,6 @@ public class Dialoguer implements AutoCloseable {
     }
 
     public static Dialoguer loadDialoguerFromJsonResourceOrFile(String dialoguerDefinition) throws IOException {
-
         return readObjectFromJsonResourceOrFile(dialoguerDefinition, Dialoguer.class);
     }
 
@@ -260,8 +237,8 @@ public class Dialoguer implements AutoCloseable {
      * DEPRECATED WARNING: use the more general purpose readObjectFromJsonResourceOrFile() method.
      */
     @Deprecated
-    public static <T> T readFromJsonFile(String json, Class<T> klazz) throws IOException {
-        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(new File(json)), "UTF8")))) {
+    public static <T> T readFromJsonFile(File json, Class<T> klazz) throws IOException {
+        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(json), "UTF8")))) {
             return gson.fromJson(r, klazz);
         }
     }
@@ -279,12 +256,18 @@ public class Dialoguer implements AutoCloseable {
      *   2. A path to a resource in the classpath
      */
     public static <T> T readObjectFromJsonResourceOrFile(String resourcePath, Class<T> klazz) throws IOException{
-
         try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(getResourceOrFileStream(resourcePath), "UTF8")))) {
             return gson.fromJson(r, klazz);
         }
     }
 
+    /**
+     * Use exactly like the Gsonvariant. In other words, if you are trying to deserialise a generic type, you must pass that type in.
+     * You can do that using Gson's TypeToken. E.g.
+     *
+     * Type type = new TypeToken<Map<String, String>>(){}.getType();
+     * Map<String, String> map = readObjectFromJsonResourceOrFile("resource/path.json", type);
+     */
     public static <T> T readObjectFromJsonResourceOrFile(String resourcePath, Type typeOfT) throws IOException {
         try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(getResourceOrFileStream(resourcePath), "UTF8")))) {
             return gson.fromJson(r, typeOfT);
@@ -292,8 +275,6 @@ public class Dialoguer implements AutoCloseable {
     }
 
     public static InputStream getResourceOrFileStream(String resourcePath) throws IOException {
-
-
         try {
             return Resources.getResource(resourcePath).openStream();
         } catch (IllegalArgumentException e){
@@ -357,5 +338,16 @@ public class Dialoguer implements AutoCloseable {
         }
         // Otherwise give up
         else throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
+    }
+
+    private void validateAnalyserIdsOrThrow(Set<String> requiredSourceIds){
+        if (!Sets.difference(
+                requiredSourceIds,
+                Sets.newHashSet(analysers.stream()
+                        .map(Analyser::getSourceId)
+                        .collect(Collectors.toList())))
+                .isEmpty())
+            throw new DialoguerException("Handler requires Analysers with the following source IDs: "
+                    + requiredSourceIds.stream().collect(Collectors.joining(", ")));
     }
 }

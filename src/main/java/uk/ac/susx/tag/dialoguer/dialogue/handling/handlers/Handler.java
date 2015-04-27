@@ -1,6 +1,7 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
 import org.reflections.Reflections;
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
@@ -9,6 +10,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +28,14 @@ import java.util.stream.IntStream;
 public abstract class Handler implements AutoCloseable {
 
     private Map<String, IntentHandler> intentHandlers = new HashMap<>();
+
+    /**
+     * Override this method if you wish to required that there are Analysers with particular source IDs for a given
+     * task. Return a set of the IDs that you require. The Dialoguer will throw an exception if requirements are not met.
+     */
+    public Set<String> getRequiredAnalyserSourceIds(){
+        return new HashSet<>();
+    }
 
     /**
      * Given a list of new intents, and the dialogue thusfar, determine the response to give.
@@ -49,7 +59,6 @@ public abstract class Handler implements AutoCloseable {
      * of handler.
      */
     public abstract HandlerFactory getFactory();
-
 
     /**
      * Interface defining something which can take an intent and current dialogue, and produce an appropriate response
@@ -105,6 +114,8 @@ public abstract class Handler implements AutoCloseable {
                 .filter(i -> !intentHandlers.containsKey(i.getName()))
                 .collect(Collectors.toList());
     }
+
+
 
 
     /**
