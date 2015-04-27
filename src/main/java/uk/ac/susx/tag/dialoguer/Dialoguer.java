@@ -137,17 +137,6 @@ public class Dialoguer implements AutoCloseable {
         responseTemplates = new HashMap<>();
     }
 
-    public void validateAnalyserIdsOrThrow(Set<String> requiredSourceIds){
-        if (!Sets.difference(
-                  requiredSourceIds,
-                  Sets.newHashSet(analysers.stream()
-                                    .map(Analyser::getSourceId)
-                                    .collect(Collectors.toList())))
-             .isEmpty())
-            throw new DialoguerException("Handler requires Analysers with the following source IDs: "
-                                            + requiredSourceIds.stream().collect(Collectors.joining(", ")));
-    }
-
     public Dialogue startNewDialogue(String dialogueId){
         return handler.getNewDialogue(dialogueId);
     }
@@ -274,6 +263,13 @@ public class Dialoguer implements AutoCloseable {
         }
     }
 
+    /**
+     * Use exactly like the Gsonvariant. In other words, if you are trying to deserialise a generic type, you must pass that type in.
+     * You can do that using Gson's TypeToken. E.g.
+     *
+     * Type type = new TypeToken<Map<String, String>>(){}.getType();
+     * Map<String, String> map = readObjectFromJsonResourceOrFile("resource/path.json", type);
+     */
     public static <T> T readObjectFromJsonResourceOrFile(String resourcePath, Type typeOfT) throws IOException {
         try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(getResourceOrFileStream(resourcePath), "UTF8")))) {
             return gson.fromJson(r, typeOfT);
@@ -344,5 +340,16 @@ public class Dialoguer implements AutoCloseable {
         }
         // Otherwise give up
         else throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
+    }
+
+    private void validateAnalyserIdsOrThrow(Set<String> requiredSourceIds){
+        if (!Sets.difference(
+                requiredSourceIds,
+                Sets.newHashSet(analysers.stream()
+                        .map(Analyser::getSourceId)
+                        .collect(Collectors.toList())))
+                .isEmpty())
+            throw new DialoguerException("Handler requires Analysers with the following source IDs: "
+                    + requiredSourceIds.stream().collect(Collectors.joining(", ")));
     }
 }
