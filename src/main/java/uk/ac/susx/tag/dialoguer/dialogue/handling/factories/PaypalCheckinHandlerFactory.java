@@ -22,8 +22,6 @@ public class PaypalCheckinHandlerFactory implements HandlerFactory{
             return h;
         }
         else {
-//            Map<String, String> config =  Dialoguer.readObjectFromJsonResourceOrFile(json,  new TypeToken<Map<String, String>>(){}.getType());
-//            return new PaypalCheckinHandler(config.get("dbHost"), Integer.parseInt(config.get("dbPort")), config.get("dbName"));
             PaypalCheckinHandler h = Dialoguer.readObjectFromJsonResourceOrFile(json, PaypalCheckinHandler.class);
             h.setupDatabase();
             return h;

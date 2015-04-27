@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
@@ -56,7 +57,7 @@ public class PaypalCheckinHandler extends Handler{
         super.registerProblemHandler(new LocMethod());
     }
 
-    public void setupDatabase(){
+    public void setupDatabase()throws Dialoguer.DialoguerException {
         try {
             if(!dbHost.equals("")) {
                 db = new ProductMongoDB(dbHost, Integer.parseInt(dbPort), dbName);
@@ -65,7 +66,7 @@ public class PaypalCheckinHandler extends Handler{
 
             }
         } catch (UnknownHostException e) {
-            System.err.println("Cannot connect to database host");
+            throw new Dialoguer.DialoguerException("Cannot connect to database host", e);
         }
     }
 
@@ -81,8 +82,7 @@ public class PaypalCheckinHandler extends Handler{
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
         System.err.println(intents.get(0).getName());
-        Response r=null;
-        applyFirstProblemHandlerOrNull(intents,dialogue,this.db);
+        Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);
         if(r==null) {
             r=applyIntentHandler(intents.get(0), dialogue, this.db);
         }//probably not safe just to consider first intent.  Probably should apply all intent handlers or search intents first to find best one
