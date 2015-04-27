@@ -14,7 +14,9 @@ public class ConfirmMethod implements Handler.IntentHandler {
         //perform side effects
         System.out.println("Contacting paypal for user "+d.getId()+" to checkin at "+d.getFromWorkingMemory("merchantId")+"....");
         //return Response
-        return new Response("confirm_completion");
+        d.pushFocus("confirm_completion");
+        return new Response("");
+
     }
 }
 

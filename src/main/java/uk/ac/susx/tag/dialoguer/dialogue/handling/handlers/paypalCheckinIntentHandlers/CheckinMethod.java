@@ -3,37 +3,34 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.Merchant;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
+import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * Created by juliewe on 21/04/2015.
  */
 public class CheckinMethod implements Handler.IntentHandler {
+
     public Response handle(Intent i,Dialogue d, Object resource){
         //generate response to request Location
-        List<String> newStates = new ArrayList<>();
-        newStates.add("confirm_loc");
+        ProductMongoDB db=null;
+        if (resource instanceof ProductMongoDB){
+            db=(ProductMongoDB) resource;
+        }
 
-        Response r = new Response("request_location",newStates);
-        System.err.println(r.getResponseName());
-        //update Dialogue state to know that confirm_loc is expected next
-        //d.setState("confirm_loc");
-        return r; // Return response ID here
+        List<Merchant> possibleMerchants = LocMethod.findNearbyMerchants(db, d.getUserData());
 
-    }
+        LocMethod.processMerchantList(possibleMerchants,d);
+        return new Response("");
 
-    public static List<String> processIntent(Intent i, Dialogue d, Object resource){
-        List<String> newStates = new ArrayList<>();
-        newStates.add("confirm_loc");
-        d.pushFocus("request_location");
-        return newStates;
+
 
     }
 
-    public static Response processStack(Dialogue d,List<String> newStates){
-        Response r = new Response(d.popTopFocus(),newStates);
-        return r;
-    }
+
 }

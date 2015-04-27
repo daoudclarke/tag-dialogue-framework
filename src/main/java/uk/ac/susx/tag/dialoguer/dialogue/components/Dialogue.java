@@ -123,6 +123,7 @@ public class Dialogue {
     public String popTopFocus() { return questionFocusStack.remove(questionFocusStack.size()-1);}
     public void pushFocus(String newTopFocus) { questionFocusStack.add(newTopFocus); }
     public void clearFocusStack() { questionFocusStack.clear();}
+    public boolean isEmptyFocusStack() {return questionFocusStack.size()==0;}
 
 /***********************************************
  * Choice / Confirmation management

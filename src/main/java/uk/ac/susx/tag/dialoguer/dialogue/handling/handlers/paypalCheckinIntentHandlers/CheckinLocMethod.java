@@ -9,9 +9,9 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
  */
 public class CheckinLocMethod implements Handler.IntentHandler{
     public Response handle(Intent i,Dialogue d, Object r){
-        //handle both checkin and location intents
-        Response checkin = new CheckinMethod().handle(i,d,r);
-        Response location = new LocMethod().handle(i,d,r);
-        return location;
+
+        LocMethod.handleLocation(i,d,r);
+        return new Response("");
+
     }
 }

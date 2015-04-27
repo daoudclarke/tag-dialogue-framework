@@ -1,7 +1,7 @@
 {
     "handler" : {
         "name" : "paypal_checkin",
-        "path" : ""
+        "path" : "paypal_checkin_handler.json"
     },
     "analysers" : [
         {"name" : "simple_cancel"},
@@ -37,7 +37,7 @@
         "unknown" : [
             "I don't know how to handle that request."
             ],
-        "confirm_location" : [
+        "confirm_loc" : [
             "Please confirm that you wish to check in at {local_search_query}"
             ],
         "auto_query" : [
@@ -45,8 +45,10 @@
             ],
         "repeat_request_location" : [
             "I can't find a nearby merchant matching {local_search_query}.  Please respecify your location."
+            ],
+        "hello" : [
+            "Hello {user}. I am the paypal_checkin app. What would you like to do?"
             ]
-
     }
 
 }

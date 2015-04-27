@@ -247,7 +247,8 @@ public class DialogueTracker implements AutoCloseable {
 
         }
         catch(Exception e){
-            System.err.println("Error reading json definition for "+filename);
+            System.err.println("Exception thrown: "+e.toString());
+            e.printStackTrace();
             System.exit(1);
         }
     }
