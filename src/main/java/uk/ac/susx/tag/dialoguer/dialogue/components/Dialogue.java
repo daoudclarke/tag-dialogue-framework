@@ -122,6 +122,8 @@ public class Dialogue {
     public String peekTopFocus() { return questionFocusStack.get(questionFocusStack.size()-1);}
     public String popTopFocus() { return questionFocusStack.remove(questionFocusStack.size()-1);}
     public void pushFocus(String newTopFocus) { questionFocusStack.add(newTopFocus); }
+    public boolean isFocusPresent(String focus) { return questionFocusStack.contains(focus); }
+    public void removeFocus(String focus) { questionFocusStack.remove(focus); }
     public void clearFocusStack() { questionFocusStack.clear();}
     public boolean isEmptyFocusStack() {return questionFocusStack.size()==0;}
 

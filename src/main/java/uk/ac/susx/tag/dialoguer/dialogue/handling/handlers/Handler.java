@@ -9,6 +9,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,11 @@ import java.util.stream.IntStream;
 public abstract class Handler implements AutoCloseable {
 
     private Map<String, IntentHandler> intentHandlers = new HashMap<>();
+    private List<ProblemHandler> problemHandlers = new ArrayList<>();
+
+/********************************************************
+ * Functionality to be implemented by subclasses
+ ********************************************************/
 
     /**
      * Override this method if you wish to required that there are Analysers with particular source IDs for a given
@@ -60,6 +66,11 @@ public abstract class Handler implements AutoCloseable {
      */
     public abstract HandlerFactory getFactory();
 
+/********************************************************
+ * Simple intent handling
+ *
+ * Appropriate when one intent maps nicely to a response
+ ********************************************************/
     /**
      * Interface defining something which can take an intent and current dialogue, and produce an appropriate response
      * with no other information.
@@ -115,8 +126,45 @@ public abstract class Handler implements AutoCloseable {
                 .collect(Collectors.toList());
     }
 
+/********************************************************
+ * Problem handling
+ *
+ * Appropriate when the intents and dialogue state must be checked
+ * to see if a particular handling is appropriate. Generally when
+ * multiple overlapping intents may contribute to a single logical
+ * problem.
+ *
+ * Generally, if more than one ProblemHandler is appropriate for
+ * a problem, you're using them wrong.
+ ********************************************************/
 
+    public static interface ProblemHandler {
 
+        /**
+         * Return true if the current intents and dialogue should be handled by this handler
+         */
+        public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue);
+
+        /**
+         * Return the appropriate response for this state.
+         */
+        public Response handle(List<Intent> intents, Dialogue dialogue, Object resource);
+    }
+
+    protected void registerProblemHandler(ProblemHandler h) {
+        problemHandlers.add(h);
+    }
+
+    protected Response applyFirstProblemHandlerOrNull(List<Intent> intents, Dialogue dialogue, Object resource){
+        return problemHandlers.stream()
+                .filter(h -> h.isInHandleableState(intents, dialogue)) // Only allow through handler that can handle this state
+                .map(h -> h.handle(intents, dialogue, resource))  // Map the handler to the response it gives
+                .findFirst().orElse(null);  // Return the first one we see, otherwise if there's none, return null
+    }
+
+/********************************************************
+ * Creation and factory related methods
+ ********************************************************/
 
     /**
      * Get the name of the factory that can produce this type of handler.
