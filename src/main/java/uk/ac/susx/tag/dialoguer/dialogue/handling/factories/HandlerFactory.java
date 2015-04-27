@@ -1,9 +1,12 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.factories;
 
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * It is the responsibility of the HandlerFactory to be able to create a new instance of a specific type of Handler,

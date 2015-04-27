@@ -137,13 +137,15 @@ public class Dialoguer implements AutoCloseable {
         responseTemplates = new HashMap<>();
     }
 
-    public boolean validateAnalyserIds(Set<String> requiredSourceIds){
-        return Sets.difference(
+    public void validateAnalyserIdsOrThrow(Set<String> requiredSourceIds){
+        if (!Sets.difference(
                   requiredSourceIds,
                   Sets.newHashSet(analysers.stream()
                                     .map(Analyser::getSourceId)
                                     .collect(Collectors.toList())))
-               .isEmpty();
+             .isEmpty())
+            throw new DialoguerException("Handler requires Analysers with the following source IDs: "
+                                            + requiredSourceIds.stream().collect(Collectors.joining(", ")));
     }
 
     public Dialogue startNewDialogue(String dialogueId){
@@ -237,7 +239,9 @@ public class Dialoguer implements AutoCloseable {
     }
 
     public static Dialoguer loadDialoguerFromJsonResourceOrFile(String dialoguerDefinition) throws IOException {
-        return readObjectFromJsonResourceOrFile(dialoguerDefinition, Dialoguer.class);
+        Dialoguer d =  readObjectFromJsonResourceOrFile(dialoguerDefinition, Dialoguer.class);
+        d.validateAnalyserIdsOrThrow(d.handler.getRequiredAnalyserSourceIds());
+        return d;
     }
 
     /**
