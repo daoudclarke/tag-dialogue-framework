@@ -10,7 +10,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
  */
 public class ConfirmMethod implements Handler.IntentHandler {
 
-    public Response handle(Intent i, Dialogue d) {
+    public Response handle(Intent i, Dialogue d, Object r) {
         //perform side effects
         System.out.println("Contacting paypal for user "+d.getId()+" to checkin at "+d.getFromWorkingMemory("merchantId")+"....");
         //return Response

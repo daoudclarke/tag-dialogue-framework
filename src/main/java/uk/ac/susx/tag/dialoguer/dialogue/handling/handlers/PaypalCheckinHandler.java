@@ -10,15 +10,18 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHa
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.CheckinLocMethod;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.ConfirmLocMethod;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.LocMethod;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
 
-
+import java.net.UnknownHostException;
 import java.util.List;
 
 /**
  * Created by juliewe on 20/04/2015.
  */
 public class PaypalCheckinHandler extends Handler{
+
+    protected ProductMongoDB db;
 
 
     public static final String checkinIntent = "check_in"; //check this against wit
@@ -32,18 +35,20 @@ public class PaypalCheckinHandler extends Handler{
     public static final String no = "no";
 
     public PaypalCheckinHandler(){
-        super.registerIntentHandler(quit, (i, d) -> {
-            return new Response("confirm_cancellation");
-                  });
+        super.registerIntentHandler(quit, (i, d, r) -> new Response("confirm_cancellation"));
         super.registerIntentHandler(confirm, new ConfirmMethod());
         super.registerIntentHandler(yes,new ConfirmMethod());
         super.registerIntentHandler(checkinIntent,new CheckinMethod());
         super.registerIntentHandler(loc,new LocMethod());
         super.registerIntentHandler(checkinLoc,new CheckinLocMethod());
         super.registerIntentHandler(confirmLoc,new ConfirmLocMethod());
-        super.registerIntentHandler(otherIntent, (i,d) -> {
-            return new Response("unknown");
-        });
+        super.registerIntentHandler(otherIntent, (i,d, r) -> new Response("unknown"));
+        try {
+            db = new ProductMongoDB();
+        }
+        catch(UnknownHostException e){
+            System.err.println("Cannot connect to database host");
+        }
     }
 
 
@@ -58,7 +63,7 @@ public class PaypalCheckinHandler extends Handler{
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
         System.err.println(intents.get(0).getName());
-        return applyIntentHandler(intents.get(0),dialogue); //probably not safe just to consider first intent.  Probably should apply all intent handlers or search intents first to find best one
+        return applyIntentHandler(intents.get(0),dialogue, this.db); //probably not safe just to consider first intent.  Probably should apply all intent handlers or search intents first to find best one
 
     }
 
@@ -70,6 +75,7 @@ public class PaypalCheckinHandler extends Handler{
     @Override
     public void close() throws Exception {
         // Close any resources here (like database)
+        db.close();
     }
 
 

@@ -5,6 +5,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.PaypalCheckinHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.Merchant;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
@@ -20,13 +21,23 @@ public class LocMethod implements Handler.IntentHandler {
     public static final String locationSlot="local_search_query";
     public static final int searchradius = 50;
     public static final int limit = 50;
+
     protected ProductMongoDB db;
 
-    public Response handle(Intent i, Dialogue d){
+    public void setDB(ProductMongoDB db){this.db=db;}
+
+    public Response handle(Intent i, Dialogue d, Object resource){
         //we think that the user message has some information about location
         //we also need to consider the user's geolocation information
 
         //Multimap<String, Intent.Slot> slots = i.getSlots();
+
+
+        //grab db
+        if (resource instanceof ProductMongoDB){
+            setDB((ProductMongoDB) resource);
+        }
+
         List<String> newStates = new ArrayList<>();
         Map<String, String> responseVariables = new HashMap<>();
 
@@ -37,12 +48,7 @@ public class LocMethod implements Handler.IntentHandler {
             location_list.add(location.value);
         }
 
-        try {
-            db = new ProductMongoDB();
-        }
-        catch(UnknownHostException e){
-            System.err.println("Cannot connect to database host");
-        }
+
         List<Merchant> possibleMerchants = matchNearbyMerchants(location_list,db, d.getUserData());
 
         if(possibleMerchants.size()==0){
@@ -77,8 +83,12 @@ public class LocMethod implements Handler.IntentHandler {
         if(db!=null){
             merchants = db.merchantQueryByLocation(user.getLatitude(),user.getLongitude(),searchradius,limit);
             merchants.retainAll(db.merchantQuery(StringUtils.phrasejoin(location_list)));
+        } else {
+            System.err.println("No database specified");
         }
         return merchants;
     }
+
+
 
 }

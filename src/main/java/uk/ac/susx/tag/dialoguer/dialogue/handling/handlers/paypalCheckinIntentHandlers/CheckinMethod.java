@@ -11,7 +11,7 @@ import java.util.List;
  * Created by juliewe on 21/04/2015.
  */
 public class CheckinMethod implements Handler.IntentHandler {
-    public Response handle(Intent i,Dialogue d){
+    public Response handle(Intent i,Dialogue d, Object resource){
         //generate response to request Location
         List<String> newStates = new ArrayList<>();
         newStates.add("confirm_loc");

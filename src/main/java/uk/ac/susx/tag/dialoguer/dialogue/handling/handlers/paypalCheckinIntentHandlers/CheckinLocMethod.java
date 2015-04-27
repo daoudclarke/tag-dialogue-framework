@@ -8,5 +8,5 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
  * Created by juliewe on 21/04/2015.
  */
 public class CheckinLocMethod implements Handler.IntentHandler{
-    public Response handle(Intent i,Dialogue d){return new Response("unknown");}
+    public Response handle(Intent i,Dialogue d, Object r){return new Response("unknown");}
 }
