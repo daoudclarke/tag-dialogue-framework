@@ -21,8 +21,10 @@ import java.util.List;
  */
 public class PaypalCheckinHandler extends Handler{
 
-    protected ProductMongoDB db;
-
+    protected transient ProductMongoDB db;
+    private String dbHost;
+    private String dbPort;
+    private String dbName;
 
     public static final String checkinIntent = "check_in"; //check this against wit
     public static final String otherIntent = "other";
@@ -43,12 +45,7 @@ public class PaypalCheckinHandler extends Handler{
         super.registerIntentHandler(checkinLoc,new CheckinLocMethod());
         super.registerIntentHandler(confirmLoc,new ConfirmLocMethod());
         super.registerIntentHandler(otherIntent, (i,d, r) -> new Response("unknown"));
-        try {
-            db = new ProductMongoDB();
-        }
-        catch(UnknownHostException e){
-            System.err.println("Cannot connect to database host");
-        }
+
     }
 
 
@@ -56,6 +53,13 @@ public class PaypalCheckinHandler extends Handler{
     public Dialogue getNewDialogue(String dialogueId){
         Dialogue d = new Dialogue(dialogueId);
         d.setState("initial");
+        if(db==null) {
+            try {
+                db = new ProductMongoDB(dbHost, Integer.getInteger(dbPort), dbName);
+            } catch (UnknownHostException e) {
+                System.err.println("Cannot connect to database host");
+            }
+        }
         return d;
     }
 

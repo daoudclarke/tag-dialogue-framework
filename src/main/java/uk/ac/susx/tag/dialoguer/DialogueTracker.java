@@ -230,9 +230,8 @@ public class DialogueTracker implements AutoCloseable {
         String userMessage;
         boolean doContinue=true;
 
-        try {
+        try (DialogueTracker myTracker = new DialogueTracker(filename)) {
             //System.err.println("Using json file: "+filename);
-            DialogueTracker myTracker = new DialogueTracker(filename);
             while (doContinue){
                 userMessage=userinput.nextLine();
                 if(userMessage.startsWith("end")){
@@ -243,7 +242,7 @@ public class DialogueTracker implements AutoCloseable {
             }
 
         }
-        catch(IOException e){
+        catch(Exception e){
             System.err.println("Error reading json definition for "+filename);
             System.exit(1);
         }
