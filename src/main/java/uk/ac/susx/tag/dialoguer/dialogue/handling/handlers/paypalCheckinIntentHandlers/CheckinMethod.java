@@ -23,4 +23,17 @@ public class CheckinMethod implements Handler.IntentHandler {
         return r; // Return response ID here
 
     }
+
+    public static List<String> processIntent(Intent i, Dialogue d, Object resource){
+        List<String> newStates = new ArrayList<>();
+        newStates.add("confirm_loc");
+        d.pushFocus("request_location");
+        return newStates;
+
+    }
+
+    public static Response processStack(Dialogue d,List<String> newStates){
+        Response r = new Response(d.popTopFocus(),newStates);
+        return r;
+    }
 }
