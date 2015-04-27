@@ -20,6 +20,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static final String locationSlot="local_search_query";
     public static final String userSlot="user";
+    public static final String yes_no_slot = "yes_no";
     public static final int searchradius = 50;
     public static final int limit = 50;
     public static final String confirmLoc = "confirm_loc";
@@ -44,7 +45,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public Response handle(List<Intent> intents, Dialogue d, Object resource){
         //we think that the user message has some information about location
-        System.err.println("Using problem handler: locMethod()");
+        //System.err.println("Using problem handler: locMethod()");
         handleLocation(intents.get(0),d,resource); // must actually find correct intent
         return processStack(d);
 
@@ -56,6 +57,22 @@ public class LocMethod implements Handler.ProblemHandler {
             db=(ProductMongoDB) resource;
         }
 
+        //possible confirm slot
+        Collection<Intent.Slot> answers = i.getSlotByType(yes_no_slot);
+        boolean accept=false;
+        for(Intent.Slot answer:answers){
+
+            if(answer.value.equals("yes")){
+                accept=true;
+            }
+        }
+        if(accept){
+            ConfirmMethod.accept(d);
+        } else {
+            ConfirmMethod.reject(d, resource);
+        }
+
+        //definite location slot
         Collection<Intent.Slot> locations = i.getSlotByType(locationSlot);
         ArrayList location_list = new ArrayList<>();
         for(Intent.Slot location: locations){
@@ -63,18 +80,18 @@ public class LocMethod implements Handler.ProblemHandler {
 
         }
         d.putToWorkingMemory("locationList",StringUtils.join(location_list));
-        List<Merchant> possibleMerchants = matchNearbyMerchants(location_list,db, d.getUserData());
+        List<Merchant> possibleMerchants = filterRejected(matchNearbyMerchants(location_list, db, d.getUserData()), d.getFromWorkingMemory("rejectedlist"));
         processMerchantList(possibleMerchants,d);
 
     }
 
     public static void processMerchantList(List<Merchant> possibleMerchants, Dialogue d){
-        System.err.println("Processing possible merchants");
+        //System.err.println("Processing possible merchants");
         if(possibleMerchants.size()==0){
             //newStates.add("confirm_loc");
             //responseVariables.put(locationSlot, StringUtils.join(location_list));
-            System.err.println("No matching merchants");
-            if(d.getStates().contains("initial")){
+            //System.err.println("No matching merchants");
+            if(d.getFromWorkingMemory("location_list")==null){
                 d.pushFocus("request_location");
             } else {
                 d.pushFocus("repeat_request_loc");
@@ -102,9 +119,14 @@ public class LocMethod implements Handler.ProblemHandler {
     }
 
 
-    private static void updateMerchant(Merchant m, Dialogue d){
-        d.putToWorkingMemory("merchantId",m.getMerchantId());
-        d.putToWorkingMemory("merchantName",m.getName());
+    public static void updateMerchant(Merchant m, Dialogue d){
+        if(m==null){
+            d.putToWorkingMemory("merchantId","");
+            d.putToWorkingMemory("merchantName","");
+        } else {
+            d.putToWorkingMemory("merchantId", m.getMerchantId());
+            d.putToWorkingMemory("merchantName", m.getName());
+        }
 
     }
 
@@ -120,7 +142,28 @@ public class LocMethod implements Handler.ProblemHandler {
         return merchants;
     }
 
+    public static List<Merchant> filterRejected(List<Merchant> merchants, String rejectedlist){
+        System.err.println("rejected: "+rejectedlist);
+        if(rejectedlist==null){
+            return merchants;
+        } else {
+            String[] rejected = rejectedlist.split(" ");
+            List<Merchant> newmerchants = new ArrayList<>();
+            for (Merchant m : merchants) {
+                boolean reject=false;
+                for (String r : rejected) {
+                    if (m.getMerchantId().equals(r)) {
+                        reject=true;
 
+                    }
+                }
+                if(!reject){
+                    newmerchants.add(m);
+                }
+            }
+            return newmerchants;
+        }
+    }
 
     public static List<Merchant> matchNearbyMerchants(List<String> location_list, ProductMongoDB db,User user){
         if(db!=null) {
@@ -164,11 +207,11 @@ public class LocMethod implements Handler.ProblemHandler {
         }
 
         Response r=  new Response(focus,responseVariables,newStates);
-        if(r==null){
-            System.err.println("No response generated");}
-        else {
-            System.err.println("Generated non-null response");
-        }
+        //if(r==null){
+        //    System.err.println("No response generated");}
+        //else {
+        //    System.err.println("Generated non-null response");
+        //}
         return r;
 
     }

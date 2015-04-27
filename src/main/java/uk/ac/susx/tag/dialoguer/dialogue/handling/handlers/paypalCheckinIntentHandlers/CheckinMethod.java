@@ -24,6 +24,8 @@ public class CheckinMethod implements Handler.IntentHandler {
             db=(ProductMongoDB) resource;
         }
 
+
+        d.putToWorkingMemory("rejectionlist",null); // in case restarting
         List<Merchant> possibleMerchants = LocMethod.findNearbyMerchants(db, d.getUserData());
 
         LocMethod.processMerchantList(possibleMerchants, d);
