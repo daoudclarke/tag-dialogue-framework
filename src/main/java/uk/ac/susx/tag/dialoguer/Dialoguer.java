@@ -7,8 +7,10 @@ import com.google.common.io.Resources;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 
+import com.google.gson.stream.JsonWriter;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -16,6 +18,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.TestHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
 import uk.ac.susx.tag.dialoguer.utils.JsonUtils;
@@ -348,7 +351,7 @@ public class Dialoguer implements AutoCloseable {
                 Sets.newHashSet(analysers.stream()
                         .map(Analyser::getSourceId)
                         .collect(Collectors.toList())))
-                .isEmpty())
+             .isEmpty())
             throw new DialoguerException("Handler requires Analysers with the following source IDs: "
                     + requiredSourceIds.stream().collect(Collectors.joining(", ")));
     }
