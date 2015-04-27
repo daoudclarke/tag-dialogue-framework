@@ -33,7 +33,7 @@ public class DialogueTracker implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(DialogueTracker.class.getName());
     static {
         try {
-            FileHandler f = new FileHandler("dialogues.txt");
+            FileHandler f = new FileHandler("dialogues.log");
             f.setFormatter(new SimpleFormatter());
             logger.addHandler(f);
         } catch (IOException e) { e.printStackTrace(); }
@@ -46,6 +46,10 @@ public class DialogueTracker implements AutoCloseable {
     private boolean logDialogues;
     private CompletedDialogueHandler cdHandler;
 
+    /**
+     * Create a new Dialogue Tracker, passing in the path to the JSON file containing the definition of the
+     * Dialoguer. The JSON file can be a normal file or bundled in the jar's resources.
+     */
     public DialogueTracker(String resourcePath) throws IOException {
         this(Dialoguer.loadDialoguerFromJsonResourceOrFile(resourcePath));
     }
@@ -59,17 +63,17 @@ public class DialogueTracker implements AutoCloseable {
         cdHandler = null;
     }
 
+    /**
+     * This allows you to register a function that will be called on all completed Dialogues before they are
+     * untracked.
+     */
     public void registerCompletedDialogueHandler(CompletedDialogueHandler h){
         cdHandler = h;
     }
 
-    public void removeTrackingTimeLimit(){
-        trackingTimeLimit = null;
-    }
+    public void removeTrackingTimeLimit(){ trackingTimeLimit = null; }
+    public void setTrackingTimeLimit(Duration d){ trackingTimeLimit = d; }
 
-    public void setTrackingTimeLimit(Duration d){
-        trackingTimeLimit = d;
-    }
 
     public String getResponse(String dialogueId, String userMessage, User userData){
         return getResponse(dialogueId, userMessage, userData, trackingTimeLimit);
@@ -100,7 +104,7 @@ public class DialogueTracker implements AutoCloseable {
     }
 
     public boolean isTracked(String dialogueId) {
-        return isTracked(dialogueId, trackingTimeLimit);
+        return isTracked(dialogueId, trackingTimeLimit); // whatever the general time limit is set to
     }
 
     public boolean isTracked(String dialogueId, Duration timeLimit){

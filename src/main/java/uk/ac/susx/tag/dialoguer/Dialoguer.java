@@ -2,7 +2,9 @@ package uk.ac.susx.tag.dialoguer;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
@@ -19,6 +21,7 @@ import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
 import uk.ac.susx.tag.dialoguer.utils.JsonUtils;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -52,6 +55,7 @@ import java.util.stream.Collectors;
  *   {
  *     name: <String name of analyser>,
  *     path: <string path to JSON file definition for handler
+ *     sourceId : <String ID that is given as the source to any intent produced by this analyser. Optional.>
  *   },
  *   ... (as many analysers as you like)...
  * ]
@@ -133,6 +137,15 @@ public class Dialoguer implements AutoCloseable {
         responseTemplates = new HashMap<>();
     }
 
+    public boolean validateAnalyserIds(Set<String> requiredSourceIds){
+        return Sets.difference(
+                  requiredSourceIds,
+                  Sets.newHashSet(analysers.stream()
+                                    .map(Analyser::getSourceId)
+                                    .collect(Collectors.toList())))
+               .isEmpty();
+    }
+
     public Dialogue startNewDialogue(String dialogueId){
         return handler.getNewDialogue(dialogueId);
     }
@@ -151,11 +164,10 @@ public class Dialoguer implements AutoCloseable {
 
         // 2. Determine user intent (largely ignored if we're auto-querying, see below)
         List<Intent> intents = new ArrayList<>();
-        for (int i = 0; i < analysers.size(); i++){
-            Analyser analyser = analysers.get(i);
+        for (Analyser analyser : analysers) {
             List<Intent> analysis = analyser.analyse(message, dialogue);
             for (Intent intent : analysis)
-                intent.setSource(i);  // Source of the intent is the position of the analyser that produced it in the array of analysers
+                intent.setSource(analyser.getSourceId());  // Source of the intent is the position of the analyser that produced it in the array of analysers
             intents.addAll(analysis);
         }
 
@@ -273,6 +285,12 @@ public class Dialoguer implements AutoCloseable {
         }
     }
 
+    public static <T> T readObjectFromJsonResourceOrFile(String resourcePath, Type typeOfT) throws IOException {
+        try (JsonReader r = new JsonReader(new BufferedReader(new InputStreamReader(getResourceOrFileStream(resourcePath), "UTF8")))) {
+            return gson.fromJson(r, typeOfT);
+        }
+    }
+
     public static InputStream getResourceOrFileStream(String resourcePath) throws IOException {
 
 
@@ -290,7 +308,7 @@ public class Dialoguer implements AutoCloseable {
             a.close();
     }
 
-    private static class DialoguerException extends RuntimeException{
+    public static class DialoguerException extends RuntimeException{
         public DialoguerException(String msg) {
             super(msg);
         }

@@ -22,6 +22,7 @@ import java.util.Set;
  */
 public abstract class Analyser implements AutoCloseable {
 
+    private String sourceId = null;
 
     /**
      * Perform analysis of latest message, forming a list of intents the user is trying to express
@@ -36,10 +37,18 @@ public abstract class Analyser implements AutoCloseable {
 
     public String getName(){ return getFactory().getName();}
 
+    public String getSourceId() { return sourceId; }
+
+    public boolean isSourceId(String sourceId){
+        return isSourceIdPresent() && sourceId.equals(this.sourceId);
+    }
+
+    public boolean isSourceIdPresent() { return sourceId != null; }
+
     /**
      * Find and build analyser with a given name, and json setup file.
      */
-    public static Analyser getAnalyser(String analyserName, String analyserSetupJson) throws IllegalAccessException, InstantiationException, IOException {
+    public static Analyser getAnalyser(String analyserName, String analyserSetupJson, String sourceId) throws IllegalAccessException, InstantiationException, IOException {
         Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.analysing.factories");
 
         Set<Class<? extends AnalyserFactory>> foundAnalyserFactories = reflections.getSubTypesOf(AnalyserFactory.class);
@@ -47,7 +56,9 @@ public abstract class Analyser implements AutoCloseable {
         for (Class<? extends AnalyserFactory> klass : foundAnalyserFactories){
             AnalyserFactory analyserFactory = klass.newInstance();
             if (analyserFactory.getName().equals(analyserName)) {
-                return analyserFactory.readJson(analyserSetupJson);
+                Analyser a = analyserFactory.readJson(analyserSetupJson);
+                a.sourceId = sourceId;
+                return a;
             }
         } throw new IOException("Unable to load analyser; analyser name not found.");
     }

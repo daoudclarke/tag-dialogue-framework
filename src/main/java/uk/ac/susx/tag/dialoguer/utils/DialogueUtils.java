@@ -10,10 +10,12 @@ import com.googlecode.clearnlp.engine.EngineGetter;
 import com.googlecode.clearnlp.reader.AbstractReader;
 import com.googlecode.clearnlp.segmentation.AbstractSegmenter;
 import com.googlecode.clearnlp.tokenization.AbstractTokenizer;
+import sun.java2d.pipe.SpanShapeRenderer;
 import uk.ac.susx.tag.classificationframework.datastructures.Instance;
 import uk.ac.susx.tag.classificationframework.featureextraction.inference.FeatureInferrer;
 import uk.ac.susx.tag.classificationframework.featureextraction.pipelines.FeatureExtractionPipeline;
 import uk.ac.susx.tag.classificationframework.featureextraction.pipelines.PipelineBuilder;
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 
 import java.io.BufferedReader;
@@ -22,15 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +35,57 @@ import java.util.stream.Collectors;
  * Time: 15:32
  */
 public class DialogueUtils {
+
+    // Version for tweets
+    public static List<String> splitByLengthOnTokens(String text, String userName){
+        return splitByLengthOnTokens(text, 140, userName);
+    }
+
+    public static List<String> splitByLengthOnTokens(String text, int lengthLimit){
+        return splitByLengthOnTokens(text, lengthLimit, "");
+    }
+
+    /**
+     * Given a piece of text, split it into several strings, ensuring that
+     *      1. Each string has no more characters then *lengthLimit*. (throws exception if this isn't possible) Should be
+     *         fine so long as lengthLimit >= prefix + " " + token , for all tokens
+     *      2. No tokens are split
+     *      3. Each string begins with *prefix* + a space (if prefix is non-empty)
+     *      4. Each string ends with a message number in brackets
+     */
+    public static List<String> splitByLengthOnTokens(String text, int lengthLimit, String prefix){
+        List<String> split = new ArrayList<>();
+        LinkedList<String> tokens = Lists.newLinkedList(Arrays.asList(SimplePatterns.splitByWhitespace(text)));
+        if (tokens.isEmpty())
+            return split;
+
+        // If there's a prefix, put a space between it and the text
+        final String finalPrefix = prefix.equals("")? prefix : prefix + " ";
+
+        if (tokens.stream().anyMatch((token) -> (token.length() + finalPrefix.length() > lengthLimit)))
+            throw new Dialoguer.DialoguerException("Prefix + token length exceeds limit set.");
+        if (finalPrefix.length() + text.length() <= lengthLimit)
+            split.add(finalPrefix + text);
+        else {
+            String nextToken = tokens.pop();
+            StringBuilder currentSplit = new StringBuilder(finalPrefix).append(nextToken);
+            int currentMessageNumber = 1;
+            String currentMessageNumberStr = "(" + Integer.toString(currentMessageNumber) + ")";
+            while (!tokens.isEmpty()){
+                nextToken = tokens.pop();
+                if (currentSplit.length() + 1 + nextToken.length() + currentMessageNumberStr.length()> lengthLimit){
+                    split.add(currentSplit.toString()+currentMessageNumberStr);
+                    currentSplit = new StringBuilder(finalPrefix).append(nextToken);
+                    currentMessageNumber++;
+                    currentMessageNumberStr = "(" + Integer.toString(currentMessageNumber) + ")";
+                } else {
+                    currentSplit.append(" ").append(nextToken);
+                }
+            } if (currentSplit.length()>0)
+                split.add(currentSplit.toString()+currentMessageNumberStr);
+        }
+        return split;
+    }
 
     /**
      * Given a multiset of elements (basically a set that allows multiples and tracks their frequency),
@@ -264,23 +309,5 @@ public class DialogueUtils {
                 };
             }
         };
-    }
-
-
-
-
-    public static void main(String[] args) throws IOException {
-
-//        new MarkovChainModel(
-//                Iterables.concat(
-//                    simpleCorpusReader(new File("J:\\Corpora\\art_history.txt")),
-//                    simpleCorpusReader(new File("J:\\Corpora\\test.txt"))
-//                ),
-//        2).interactiveTest();
-
-//        new MarkovChainModel(tweetPerLineReader(new File("/Volumes/LocalDataHD/scpbox/xaa")), 3).interactiveTest();
-
-        System.out.println(Resources.getResource("test"));
-
     }
 }
