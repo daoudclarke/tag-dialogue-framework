@@ -82,7 +82,7 @@ public abstract class Handler implements AutoCloseable {
      * processing of Intents to the IntentHandlers.
      */
     public static interface IntentHandler {
-        public Response handle(Intent intent, Dialogue dialogue);
+        public Response handle(Intent intent, Dialogue dialogue, Object resource);
     }
 
     /**
@@ -95,21 +95,21 @@ public abstract class Handler implements AutoCloseable {
     /**
      * see IntentHandler interface comments.
      */
-    protected Response applyIntentHandler(Intent intent, Dialogue d){
+    protected Response applyIntentHandler(Intent intent, Dialogue d, Object resource){
         if (intentHandlers.containsKey(intent.getName())){
-            return intentHandlers.get(intent.getName()).handle(intent, d);
+            return intentHandlers.get(intent.getName()).handle(intent, d, resource);
         } else return null;
     }
 
     /**
      * see IntentHandler interface comments.
      */
-    protected Map<Integer, Response> applyIntentHandlers(List<Intent> intents, Dialogue d){
+    protected Map<Integer, Response> applyIntentHandlers(List<Intent> intents, Dialogue d, Object resource){
         Map<Integer, Response> intentIndexToResponse = new HashMap<>();
         for (int i = 0; i < intents.size(); i++){
             Intent intent = intents.get(i);
             if (intentHandlers.containsKey(intent.getName())){
-                intentIndexToResponse.put(i, intentHandlers.get(intent.getName()).handle(intent, d));
+                intentIndexToResponse.put(i, intentHandlers.get(intent.getName()).handle(intent, d, resource));
             }
         } return intentIndexToResponse;
     }
