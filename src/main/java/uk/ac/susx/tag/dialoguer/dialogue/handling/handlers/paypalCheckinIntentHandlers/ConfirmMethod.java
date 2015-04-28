@@ -35,7 +35,7 @@ public class ConfirmMethod implements Handler.IntentHandler {
         }
     }
 
-    public Response handleConfirm(Intent i, Dialogue d, Object r) {
+    private Response handleConfirm(Intent i, Dialogue d, Object r) {
         Collection<Intent.Slot> answers = i.getSlotByType(yes_no_slot);
         boolean accept=false;
         for(Intent.Slot answer:answers){
@@ -51,26 +51,15 @@ public class ConfirmMethod implements Handler.IntentHandler {
         }
     }
 
-    public static Response accept(Dialogue d){
-        //perform side effects
-        System.out.println("Contacting paypal for user "+d.getId()+" to checkin at "+d.getFromWorkingMemory("merchantId")+" ("+d.getFromWorkingMemory("merchantName")+")....");
-        //return Response
-        d.setComplete(true);
-        d.pushFocus("confirm_completion");
+    private Response accept(Dialogue d){
+        handleAccept(d);
         return processStack(d);
     }
 
-    public static Response reject(Dialogue d, Object resource){
-
-
+    private Response reject(Dialogue d, Object resource){
         //rejecting the merchant currently in working memory.  Move to rejection list
-        String rejectedlist=d.getFromWorkingMemory("rejectedlist");
-        if(rejectedlist==null){rejectedlist="";}
-        String rejected = d.getFromWorkingMemory("merchantId");
-        if(rejected==null){rejected="";}
-        rejectedlist+=rejected+" ";
-        LocMethod.updateMerchant(null,d);
-        d.putToWorkingMemory("rejectedlist",rejectedlist);
+        handleReject(d);
+
         ProductMongoDB db;
         try {
             db = (ProductMongoDB) resource;
@@ -82,14 +71,15 @@ public class ConfirmMethod implements Handler.IntentHandler {
         if(d.getFromWorkingMemory("location_list")==null) {
             possibleMerchants = LocMethod.filterRejected(LocMethod.findNearbyMerchants(db, d.getUserData()), d.getFromWorkingMemory("rejectedlist"));
         } else {
-            possibleMerchants = LocMethod.matchNearbyMerchants(d.getFromWorkingMemory("location_list"),db, d.getUserData(), d);
+            possibleMerchants = LocMethod.matchNearbyMerchants(db, d.getUserData(), d);//will use workingmemory's location_list
         }
 
         LocMethod.processMerchantList(possibleMerchants, d);
         return processStack(d);
     }
 
-    private static Response processStack(Dialogue d){
+
+    private Response processStack(Dialogue d){
         String focus="hello";
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
@@ -121,6 +111,23 @@ public class ConfirmMethod implements Handler.IntentHandler {
         return new Response(focus,responseVariables,newStates);
 
     }
+    public static void handleReject(Dialogue d){
+        //rejecting the merchant currently in working memory.  Move to rejection list
+        String rejectedlist=d.getFromWorkingMemory("rejectedlist");
+        if(rejectedlist==null){rejectedlist="";}
+        String rejected = d.getFromWorkingMemory("merchantId");
+        if(rejected==null){rejected="";}
+        rejectedlist+=rejected+" ";
+        LocMethod.updateMerchant(null,d);
+        d.putToWorkingMemory("rejectedlist",rejectedlist);
+    }
 
+    public static void handleAccept(Dialogue d){
+        //perform side effects
+        System.out.println("Contacting paypal for user "+d.getId()+" to checkin at "+d.getFromWorkingMemory("merchantId")+" ("+d.getFromWorkingMemory("merchantName")+")....");
+        //return Response
+        d.setComplete(true);
+        d.pushFocus("confirm_completion");
+    }
 }
 

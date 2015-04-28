@@ -21,10 +21,7 @@ import java.util.Set;
 /**
  * Created by juliewe on 20/04/2015.
  *
- * TODO: find bug with location_list not being cleared.
- * TODO: find bug with repeating matchNearbyMerchants (on reject and loc?)
  * TODO: clean up wit intents so there is only one loc intent
- * TODO: remove checking db==null
  * TODO: use more streams and Sets/Lists methods
  *
  */

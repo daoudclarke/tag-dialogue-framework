@@ -34,10 +34,7 @@ public class LocMethod implements Handler.ProblemHandler {
     public static final String confirmLoc = "confirm_loc";
     public static final String checkinLoc = "check_in_loc";
     public static final String loc = "loc";
-
     public static final List<String> locIntents = Lists.newArrayList(confirmLoc, checkinLoc, loc);
-
-
 
     public boolean isInHandleableState(List<Intent> intents, Dialogue d){
         return intents.stream().anyMatch(i -> locIntents.contains(i.getName()));
@@ -51,13 +48,12 @@ public class LocMethod implements Handler.ProblemHandler {
                 handleLocation(i,d,resource); // first matching intent
             }
         }
-
         return processStack(d);
 
     }
 
     public static void handleLocation(Intent i, Dialogue d, Object resource){
-        DialogueTracker.logger.log(Level.INFO, "Im in handleLocation");
+        //DialogueTracker.logger.log(Level.INFO, "Im in handleLocation");
 
         ProductMongoDB db=null;
         if (resource instanceof ProductMongoDB){
@@ -75,7 +71,7 @@ public class LocMethod implements Handler.ProblemHandler {
         }
         if(!accept){//need to add the current selection to rejected_list
 
-            ConfirmMethod.reject(d, resource);
+            ConfirmMethod.handleReject(d);
         }
 
         //definite location slot
@@ -85,7 +81,7 @@ public class LocMethod implements Handler.ProblemHandler {
             location_list.add(location.value);
 
         }
-        d.putToWorkingMemory("location_list",StringUtils.join(location_list));
+
         List<Merchant> possibleMerchants = matchNearbyMerchants(location_list, db, d.getUserData(), d);
 
         if(accept){
@@ -105,7 +101,7 @@ public class LocMethod implements Handler.ProblemHandler {
             processMerchantList(possibleMerchants, d);
         }
         if(accept){//still accepting after checking possible location
-            ConfirmMethod.accept(d);
+            ConfirmMethod.handleAccept(d);
         }
 
     }
@@ -151,14 +147,9 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static List<Merchant> findNearbyMerchants(ProductMongoDB db, User user){
 
-        List<Merchant> merchants = new ArrayList<>();
-        if(db!=null){
-            merchants = db.merchantQueryByLocation(user.getLatitude(),user.getLongitude(),searchradius,limit);
+        return db.merchantQueryByLocation(user.getLatitude(),user.getLongitude(),searchradius,limit);
 
-        } else {
-            System.err.println("No database specified");
-        }
-        return merchants;
+
     }
 
     public static List<Merchant> filterRejected(List<Merchant> merchants, String rejectedlist){
@@ -185,72 +176,72 @@ public class LocMethod implements Handler.ProblemHandler {
     }
 
     public static List<Merchant> matchNearbyMerchants(List<String> location_list, ProductMongoDB db,User user, Dialogue d){
-        if(db!=null) {
-            List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
-            merchants.retainAll(db.merchantQuery(StringUtils.phrasejoin(location_list)));
-            if(merchants.size()==0){
-                merchants = findNearbyMerchants(db,user);
-                merchants.retainAll(db.merchantQuery(StringUtils.join(location_list)));
-            }
-            if(merchants.size()==0){
-                merchants=productMatchNearbyMerchants(location_list,db,user, d);
-            }
-            return merchants;
-        } else{
-            System.err.println("No database specified");
-            return new ArrayList<>();
+        List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
+        d.putToWorkingMemory("location_list",StringUtils.phrasejoin(location_list));
+        merchants.retainAll(db.merchantQuery(StringUtils.phrasejoin(location_list)));
+        if(merchants.size()==0){
+            merchants = findNearbyMerchants(db,user);
+            merchants.retainAll(db.merchantQuery(StringUtils.join(location_list)));
+            d.putToWorkingMemory("location_list",StringUtils.join(location_list));
         }
+        if(merchants.size()==0){
+            merchants=productMatchNearbyMerchants(location_list,db,user, d);
+        }
+        return merchants;
+
     }
 
-    public static List<Merchant> matchNearbyMerchants(String location_list, ProductMongoDB db,User user, Dialogue d){
-        if(db!=null) {
-            List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
-            merchants.retainAll(db.merchantQuery(location_list));
-            if(merchants.size()==0){//try a product match instead
-                merchants=productMatchNearbyMerchants(location_list,db,user, d);
-            }
-            return merchants;
-        } else{
-            System.err.println("No database specified");
-            return new ArrayList<>();
+    public static List<Merchant> matchNearbyMerchants(ProductMongoDB db,User user, Dialogue d){
+        //used when location_list is retrieved from working memory
+
+        List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
+        merchants.retainAll(db.merchantQuery(d.getFromWorkingMemory("location_list")));
+        if(merchants.size()==0){//try a product match instead
+            merchants=productMatchNearbyMerchants(db,user, d);
         }
+        return merchants;
+
     }
 
     public static List<Merchant> productMatchNearbyMerchants(List<String> location_list, ProductMongoDB db, User user, Dialogue d){
-        if(db!=null){
-            List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
-            List<Product> products = db.productQueryWithMerchants(StringUtils.phrasejoin(location_list),merchants,new HashSet<>(),limit);
-            ProductSet ps = new ProductSet(user.getLocationData(),products);
-            Set<Merchant> merchantSet= ps.fetchMerchants();
-            if(merchantSet.size()==0){
-                products=db.productQueryWithMerchants(StringUtils.join(location_list),merchants,new HashSet<>(),limit);
-                ps=new ProductSet();
-                ps.updateProducts(products);
-                merchantSet=ps.fetchMerchants();
-            }
-            merchants.retainAll(merchantSet);
 
-            return merchants;
-        } else {
-            System.err.println("No database specified");
-            return new ArrayList<>();
+        List<Merchant> merchants;
+        if(d.getFromWorkingMemory("merchantId")!=null){//if one merchant under consideration, only consider this for product match
+            merchants=new ArrayList<>();
+            merchants.add(db.getMerchant(d.getFromWorkingMemory("merchantId")));
         }
+        else {
+            merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
+        }
+        List<Product> products = db.productQueryWithMerchants(StringUtils.phrasejoin(location_list),merchants,new HashSet<>(),limit);
+        d.putToWorkingMemory("location_list",StringUtils.phrasejoin(location_list));
+        ProductSet ps = new ProductSet(user.getLocationData(),products);
+        Set<Merchant> merchantSet= ps.fetchMerchants();
+        if(merchantSet.size()==0){
+            products=db.productQueryWithMerchants(StringUtils.join(location_list),merchants,new HashSet<>(),limit);
+            d.putToWorkingMemory("location_list",StringUtils.join(location_list));
+            ps=new ProductSet();
+            ps.updateProducts(products);
+            merchantSet=ps.fetchMerchants();
+        }
+        merchants.retainAll(merchantSet);
+
+        return merchants;
+
     }
 
-    public static List<Merchant> productMatchNearbyMerchants(String location_list, ProductMongoDB db, User user, Dialogue d){
-        if(db!=null){
-            List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
-            List<Product> products = db.productQueryWithMerchants(location_list,merchants,new HashSet<>(),limit);
-            ProductSet ps = new ProductSet();
-            ps.updateProducts(products);
-            Set<Merchant> merchantSet= ps.fetchMerchants();
+    public static List<Merchant> productMatchNearbyMerchants(ProductMongoDB db, User user, Dialogue d){
+        //used when location_list is retrieved from workingmemory
 
-            merchants.retainAll(merchantSet);
-            return merchants;
-        } else {
-            System.err.println("No database specified");
-            return new ArrayList<>();
-        }
+        List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
+        List<Product> products = db.productQueryWithMerchants(d.getFromWorkingMemory("location_list"),merchants,new HashSet<>(),limit);
+        ProductSet ps = new ProductSet();
+        ps.updateProducts(products);
+        Set<Merchant> merchantSet= ps.fetchMerchants();
+
+        merchants.retainAll(merchantSet);
+        return merchants;
+
     }
 
     private Response processStack(Dialogue d){
