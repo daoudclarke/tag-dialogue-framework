@@ -169,6 +169,7 @@ public class Dialoguer implements AutoCloseable {
                 intent.setSource(analyser.getSourceId());  // Source of the intent is the position of the analyser that produced it in the array of analysers
             intents.addAll(analysis);
         }
+        intents = handler.preProcessIntents(intents, dialogue);
 
         // 3. Check to see if there is a cancellation intent, short-circuiting and finishing the dialogue
         if (isCancellationPresent(intents)){
@@ -177,11 +178,12 @@ public class Dialoguer implements AutoCloseable {
             dialogue.complete();
             r = Response.buildCancellationResponse();
         } else {
+            boolean isCancelAutoQueryPresent = isCancelAutoQueryPresent(intents);
             // 5. If dialogue was waiting for auto query response
             if (dialogue.isExpectingAutoRequestResponse()){
 
                 // 6. If any of the analysers decided that it was appropriate to short-circuit the auto-query process
-                if (isCancelAutoQueryPresent(intents)){
+                if (isCancelAutoQueryPresent){
 
                     // 7. Add all incomplete/complete intents being tracked to the intents list
                     intents.addAll(dialogue.popAutoQueriedIntents());
@@ -202,7 +204,7 @@ public class Dialoguer implements AutoCloseable {
                 }
             }
             // 16. Otherwise pay attention to what the analysers decide on the intents that the user is trying to convey, let handler deal so long as necessary slots are filled
-            else r = handleNewIntents(intents, dialogue, true);
+            else r = handleNewIntents(intents, dialogue, !isCancelAutoQueryPresent);
         }
 
         // 17. Add the response to the dialogue object

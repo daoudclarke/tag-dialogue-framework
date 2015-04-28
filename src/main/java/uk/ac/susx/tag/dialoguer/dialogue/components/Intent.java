@@ -91,6 +91,11 @@ public class Intent {
         return new IntentMatch(this, requiredSlotNames);
     }
 
+    public boolean isSlotTypeFilledWith(String type, String value){
+        return getSlotByType(type).stream()
+                .anyMatch(slot -> slot.value.equals(value));
+    }
+
     public static boolean areSlotsFilled(List<Intent> intents, Map<String, Set<String>> necessarySlotsPerIntent){
         for (Intent i : intents){
             if (!i.areSlotsFilled(necessarySlotsPerIntent.get(i.getName())))
@@ -130,6 +135,10 @@ public class Intent {
             this.value = value;
             this.start = start;
             this.end = end;
+        }
+
+        public String toString() {
+            return name + ":" + value + "(" + start + ":" + end + ")";
         }
     }
 

@@ -41,6 +41,21 @@ public abstract class Handler implements AutoCloseable {
     }
 
     /**
+     * This can act as a short circuit for the Dialoguer process. A call to this function is made between steps 2 and 3
+     * of the Dialoguer process. I.e. once the analysers have determined the user intents, the handler is asked to
+     * take a look at the intent list and perhaps decide to filter out certain intents.
+     *
+     * This is the best method of circumventing the auto-querying. This should be done if auto-querying is normally the
+     * right thing to do, but under certain circumstances it needs to be overridden. You could for example, filter out
+     * any incomplete intents, or add in a "cancel auto query" intent (see Intent docs).
+     *
+     * By default, the list is left untouched.
+     */
+    public List<Intent> preProcessIntents(List<Intent> intents, Dialogue dialogue){
+        return intents;
+    }
+
+    /**
      * Given a list of new intents, and the dialogue thusfar, determine the response to give.
      *
      * You can store intents on the dialogue (e.g. add or replace these new intents), and otherwise modify the dialogue
