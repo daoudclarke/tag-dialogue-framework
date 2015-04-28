@@ -91,6 +91,15 @@ import java.util.stream.Collectors;
  *
  *   confirm_cancellation : the response given to the user when they have requested a cancellation of the dialogue
  *
+ * Each response is an object that needs that one "templates" attribute. However, there are two further attributes that
+ * can optionally be specified:
+ *
+ *   newStates : A list of string states that the dialogue should be placed in when this response is given.
+ *   requestingYesNo : Either string "yes" or "no" to put the dialogue in the state of having requested a yes/no from the user
+ *
+ * When these options are not specified, the current states will be left untouched.
+ *
+ * These can be overriden even if present in the handler when it creates a response, by specifying what the states should be.
  *
  * --------- Intents & Slots ------------------------
  *
@@ -135,7 +144,7 @@ public class Dialoguer implements AutoCloseable {
 
     private Map<String, Set<String>> necessarySlotsPerIntent;
     private Map<String, String> humanReadableSlotNames;
-    private Map<String, List<String>> responseTemplates;
+    private Map<String, ResponseTemplate> responseTemplates;
 
     private Dialoguer(){
         handler = null;
@@ -207,12 +216,8 @@ public class Dialoguer implements AutoCloseable {
             else r = handleNewIntents(intents, dialogue, !isCancelAutoQueryPresent);
         }
 
-        // 17. Add the response to the dialogue object
-        dialogue.addNewSystemMessage(fillTemplateWithResponse(r));
-
-        // 18. Extract the new states from the response if there is one and put the dialogue in those states
-        if (r.areNewStates())
-            dialogue.setStates(r.getNewStates());
+        // 17. Add the response to the dialogue object and update states
+        applyResponse(r, dialogue);
 
         // Return the updated dialogue
         return dialogue;
@@ -313,6 +318,38 @@ public class Dialoguer implements AutoCloseable {
         }
     }
 
+    public static class ResponseTemplate {
+
+        public List<String> templates;
+        public List<String> newStates;
+        public String requestingYesNo;
+
+        public ResponseTemplate(){
+            templates = new ArrayList<>();
+            newStates = null;
+            requestingYesNo = null;
+        }
+
+        public boolean areNewStates() { return newStates != null; }
+        public List<String> getNewStates() {return newStates; }
+        public boolean isSettingRequestingYesNoState() { return requestingYesNo != null; }
+        public boolean getRequestingYesNo() {
+            switch (requestingYesNo) {
+                case "yes": return true;
+                case "no" : return false;
+                default: throw new DialoguerException("The 'requestingYesNo' property of a response template must be equals to 'yes' or 'no', or be non-existent");
+            }
+        }
+        public boolean hasMultipleAlternatives() { return templates.size() > 1; }
+        public String getRandomTemplateExample() {
+            if (hasMultipleAlternatives()){
+                return templates.get(random.nextInt(templates.size()));
+            } else {
+                return templates.get(0);
+            }
+        }
+    }
+
     /**
      * Return true if one of the intents is the default cancel intent
      */
@@ -331,25 +368,34 @@ public class Dialoguer implements AutoCloseable {
         return humanReadableSlotNames.containsKey(slotName) ? humanReadableSlotNames.get(slotName) : slotName;
     }
 
-    private String fillTemplateWithResponse(Response r){
-        List<String> alternatives = responseTemplates.get(r.getResponseName());
-        // If the user has defined an appropriate template in the Dialoguer JSON config file, use it.
-        if (alternatives != null){
-            if (alternatives.size() == 1)
-                return r.fillTemplate(alternatives.get(0));
-            else
-                return r.fillTemplate(alternatives.get(random.nextInt(alternatives.size())));
+    private void applyResponse(Response r, Dialogue dialogue){
+        // If there's a template for this response
+        if (responseTemplates.containsKey(r.getResponseName())){
+            // Get the template
+            ResponseTemplate template = responseTemplates.get(r.getResponseName());
+            dialogue.addNewSystemMessage(r.fillTemplate(template.getRandomTemplateExample()));
+
+            if (template.areNewStates())
+                dialogue.setStates(template.newStates);
+            if (template.isSettingRequestingYesNoState())
+                dialogue.setRequestingYesNo(template.getRequestingYesNo());
         }
-        // Otherwise see if it's a default response that we can handle.
+        // Otherwise check for default response templates
         else if (r.getResponseName().equals(Response.defaultConfirmCancelResponseId)) {
-            return r.fillTemplate("Cancelled. Thank you!");
+            dialogue.addNewSystemMessage(r.fillTemplate("Cancelled. Thank you!"));
         } else if (r.getResponseName().equals(Response.defaultCompletionResponseId)) {
-            return r.fillTemplate("Thanks, goodbye!");
+            dialogue.addNewSystemMessage(r.fillTemplate("Thanks, goodbye!"));
         } else if (r.getResponseName().equals(Response.defaultAutoQueryResponseId)) {
-            return r.fillTemplate("Please specify {query}.");
+            dialogue.addNewSystemMessage(r.fillTemplate("Please specify {query}."));
         }
-        // Otherwise give up
+        //Otherwise give up
         else throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
+
+        // Response can override the states specified by the template
+        if (r.isOverridingTemplate()){
+            dialogue.setStates(r.getNewStates());
+            dialogue.setRequestingYesNo(r.isRequestingYesNo());
+        }
     }
 
     private void validateAnalyserIdsOrThrow(Set<String> requiredSourceIds){
