@@ -149,6 +149,24 @@ public class Dialogue {
  * Working memory management
  ***********************************************/
     public void putToWorkingMemory(String key, String dataValue) { workingMemory.put(key, dataValue);}
+    public boolean isInWorkingMemory(String key, String value){
+        return workingMemory.containsKey(key) && workingMemory.get(key).equals(value);
+    }
+    public void appendToWorkingMemory(String key, String appendValue){
+        appendToWorkingMemory(key, appendValue, "");
+    }
+
+    /**
+     * Append *appendValue* to whatever string is in working memory for *key*, separated by *separator*.
+     * If *key* is not in working memory, then this method is the same as putToWorkingMemory.
+     */
+    public void appendToWorkingMemory(String key, String appendValue, String separator){
+        if (workingMemory.containsKey(key)){
+            workingMemory.put(key, workingMemory.get(key)+separator+appendValue);
+        } else {
+            putToWorkingMemory(key, appendValue);
+        }
+    }
     public String getFromWorkingMemory(String key) { return workingMemory.get(key); }
     public String getStrippedText(){ return getFromWorkingMemory("stripped"); }
     public String getStrippedNoStopwordsText(){ return getFromWorkingMemory("strippedNoStopwords"); }
