@@ -57,7 +57,12 @@ public class ConfirmMethod implements Handler.IntentHandler {
             db=(ProductMongoDB) resource;
         }
 
-        List<Merchant> possibleMerchants = LocMethod.filterRejected(LocMethod.findNearbyMerchants(db, d.getUserData()), d.getFromWorkingMemory("rejectedlist"));
+        List<Merchant> possibleMerchants;
+        if(d.getFromWorkingMemory("location_list")==null) {
+            possibleMerchants = LocMethod.filterRejected(LocMethod.findNearbyMerchants(db, d.getUserData()), d.getFromWorkingMemory("rejectedlist"));
+        } else {
+            possibleMerchants = LocMethod.matchNearbyMerchants(d.getFromWorkingMemory("location_list"),db, d.getUserData(), d);
+        }
 
         LocMethod.processMerchantList(possibleMerchants, d);
         return processStack(d);

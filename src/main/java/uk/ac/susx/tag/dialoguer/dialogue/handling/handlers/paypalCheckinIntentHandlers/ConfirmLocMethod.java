@@ -9,5 +9,6 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
  * Created by juliewe on 21/04/2015.
  */
 public class ConfirmLocMethod implements Handler.IntentHandler {
+    //should not be used
     public Response handle(Intent i, Dialogue d, Object r){return new Response("unknown");}
 }
