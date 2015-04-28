@@ -1,6 +1,8 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers;
 
+import com.google.common.collect.Lists;
 import com.sun.jdi.request.MonitorContendedEnteredRequest;
+import uk.ac.susx.tag.dialoguer.DialogueTracker;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -15,6 +17,8 @@ import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
  * Created by juliewe on 21/04/2015.
@@ -31,31 +35,17 @@ public class LocMethod implements Handler.ProblemHandler {
     public static final String checkinLoc = "check_in_loc";
     public static final String loc = "loc";
 
+    public static final List<String> locIntents = Lists.newArrayList(confirmLoc, checkinLoc, loc);
 
-    public static List<String> getIntents(){
-        ArrayList<String> locIntents = new ArrayList<>();
-        locIntents.add(confirmLoc);
-        locIntents.add(checkinLoc);
-        locIntents.add(loc);
-        return locIntents;
-    }
 
 
     public boolean isInHandleableState(List<Intent> intents, Dialogue d){
-        List<String> locIntents = getIntents();
-        boolean response=false;
-        for(Intent i:intents){
-            if (locIntents.contains(i.getName())){
-                response=true;
-            }
-        }
-        return response;
+        return intents.stream().anyMatch(i -> locIntents.contains(i.getName()));
     }
 
     public Response handle(List<Intent> intents, Dialogue d, Object resource){
         //we think that the user message has some information about location
         //System.err.println("Using problem handler: locMethod()");
-        List<String> locIntents = getIntents();
         for(Intent i:intents){
             if(locIntents.contains(i.getName())){
                 handleLocation(i,d,resource); // first matching intent
@@ -67,6 +57,8 @@ public class LocMethod implements Handler.ProblemHandler {
     }
 
     public static void handleLocation(Intent i, Dialogue d, Object resource){
+        DialogueTracker.logger.log(Level.INFO, "Im in handleLocation");
+
         ProductMongoDB db=null;
         if (resource instanceof ProductMongoDB){
             db=(ProductMongoDB) resource;
@@ -88,7 +80,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
         //definite location slot
         Collection<Intent.Slot> locations = i.getSlotByType(locationSlot);
-        ArrayList location_list = new ArrayList<>();
+        ArrayList<String> location_list = new ArrayList<>();
         for(Intent.Slot location: locations){
             location_list.add(location.value);
 
@@ -194,7 +186,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static List<Merchant> matchNearbyMerchants(List<String> location_list, ProductMongoDB db,User user, Dialogue d){
         if(db!=null) {
-            List<Merchant> merchants = filterRejected(findNearbyMerchants(db,user), d.getFromWorkingMemory("rejectedlist"));
+            List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
             merchants.retainAll(db.merchantQuery(StringUtils.phrasejoin(location_list)));
             if(merchants.size()==0){
                 merchants = findNearbyMerchants(db,user);
@@ -212,7 +204,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static List<Merchant> matchNearbyMerchants(String location_list, ProductMongoDB db,User user, Dialogue d){
         if(db!=null) {
-            List<Merchant> merchants = filterRejected(findNearbyMerchants(db,user),d.getFromWorkingMemory("rejectedlist"));
+            List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
             merchants.retainAll(db.merchantQuery(location_list));
             if(merchants.size()==0){//try a product match instead
                 merchants=productMatchNearbyMerchants(location_list,db,user, d);
@@ -226,10 +218,9 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static List<Merchant> productMatchNearbyMerchants(List<String> location_list, ProductMongoDB db, User user, Dialogue d){
         if(db!=null){
-            List<Merchant> merchants = filterRejected(findNearbyMerchants(db,user),d.getFromWorkingMemory("rejectedlist"));
+            List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
             List<Product> products = db.productQueryWithMerchants(StringUtils.phrasejoin(location_list),merchants,new HashSet<>(),limit);
-            ProductSet ps = new ProductSet();
-            ps.updateProducts(products);
+            ProductSet ps = new ProductSet(user.getLocationData(),products);
             Set<Merchant> merchantSet= ps.fetchMerchants();
             if(merchantSet.size()==0){
                 products=db.productQueryWithMerchants(StringUtils.join(location_list),merchants,new HashSet<>(),limit);
@@ -248,7 +239,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static List<Merchant> productMatchNearbyMerchants(String location_list, ProductMongoDB db, User user, Dialogue d){
         if(db!=null){
-            List<Merchant> merchants = filterRejected(findNearbyMerchants(db,user),d.getFromWorkingMemory("rejectedlist"));
+            List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
             List<Product> products = db.productQueryWithMerchants(location_list,merchants,new HashSet<>(),limit);
             ProductSet ps = new ProductSet();
             ps.updateProducts(products);

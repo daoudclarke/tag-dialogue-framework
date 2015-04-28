@@ -30,7 +30,7 @@ import java.util.logging.SimpleFormatter;
  */
 public class DialogueTracker implements AutoCloseable {
 
-    private static final Logger logger = Logger.getLogger(DialogueTracker.class.getName());
+    public static final Logger logger = Logger.getLogger(DialogueTracker.class.getName());
     static {
         try {
             FileHandler f = new FileHandler("dialogues.log");
@@ -59,7 +59,7 @@ public class DialogueTracker implements AutoCloseable {
         this.dialogues = new HashMap<>();
         lastUpdated = new HashMap<>();
         trackingTimeLimit = Duration.ofDays(1);
-        logDialogues = false;
+        logDialogues = true;
         cdHandler = null;
     }
 

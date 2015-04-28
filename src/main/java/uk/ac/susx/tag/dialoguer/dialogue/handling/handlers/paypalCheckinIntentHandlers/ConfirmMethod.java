@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers;
 
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
@@ -60,6 +61,8 @@ public class ConfirmMethod implements Handler.IntentHandler {
     }
 
     public static Response reject(Dialogue d, Object resource){
+
+
         //rejecting the merchant currently in working memory.  Move to rejection list
         String rejectedlist=d.getFromWorkingMemory("rejectedlist");
         if(rejectedlist==null){rejectedlist="";}
@@ -68,9 +71,11 @@ public class ConfirmMethod implements Handler.IntentHandler {
         rejectedlist+=rejected+" ";
         LocMethod.updateMerchant(null,d);
         d.putToWorkingMemory("rejectedlist",rejectedlist);
-        ProductMongoDB db=null;
-        if (resource instanceof ProductMongoDB){
-            db=(ProductMongoDB) resource;
+        ProductMongoDB db;
+        try {
+            db = (ProductMongoDB) resource;
+        } catch (ClassCastException e){
+            throw new Dialoguer.DialoguerException("Resource should be mongo db", e);
         }
 
         List<Merchant> possibleMerchants;

@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
+import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -19,6 +20,13 @@ import java.util.Set;
 
 /**
  * Created by juliewe on 20/04/2015.
+ *
+ * TODO: find bug with location_list not being cleared.
+ * TODO: find bug with repeating matchNearbyMerchants (on reject and loc?)
+ * TODO: clean up wit intents so there is only one loc intent
+ * TODO: remove checking db==null
+ * TODO: use more streams and Sets/Lists methods
+ *
  */
 public class PaypalCheckinHandler extends Handler{
 
@@ -38,7 +46,7 @@ public class PaypalCheckinHandler extends Handler{
     public static final String yes = "yes";
     public static final String no = "no";
 
-    public static final String mainAnalyser="wit.ai1";
+    public static final String mainAnalyser="wit.ai";
     public static final String yesNoAnalyser="simple_yes_no";
 
 
@@ -109,11 +117,7 @@ public class PaypalCheckinHandler extends Handler{
 
     @Override
     public Set<String> getRequiredAnalyserSourceIds(){
-        Set<String> ids = new HashSet<>();
-        ids.add(mainAnalyser);
-        ids.add(yesNoAnalyser);
-        return ids;
-
+        return Sets.newHashSet(mainAnalyser, yesNoAnalyser);
     }
 
 
