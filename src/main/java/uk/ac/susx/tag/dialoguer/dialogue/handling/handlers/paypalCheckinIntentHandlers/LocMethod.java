@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers;
 
+import com.sun.jdi.request.MonitorContendedEnteredRequest;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -20,6 +21,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static final String locationSlot="local_search_query";
     public static final String userSlot="user";
+    public static final String merchantSlot="merchant";
     public static final String yes_no_slot = "yes_no";
     public static final int searchradius = 50;
     public static final int limit = 50;
@@ -66,9 +68,8 @@ public class LocMethod implements Handler.ProblemHandler {
                 accept=true;
             }
         }
-        if(accept){
-            ConfirmMethod.accept(d);
-        } else {
+        if(!accept){//need to add the current selection to rejected_list
+
             ConfirmMethod.reject(d, resource);
         }
 
@@ -79,9 +80,27 @@ public class LocMethod implements Handler.ProblemHandler {
             location_list.add(location.value);
 
         }
-        d.putToWorkingMemory("locationList",StringUtils.join(location_list));
+        d.putToWorkingMemory("location_list",StringUtils.join(location_list));
         List<Merchant> possibleMerchants = filterRejected(matchNearbyMerchants(location_list, db, d.getUserData()), d.getFromWorkingMemory("rejectedlist"));
-        processMerchantList(possibleMerchants,d);
+        if(accept){
+            //check that the accepted location is in possiblemerchants
+            boolean match=false;
+            for(Merchant m:possibleMerchants){
+                if(m.getMerchantId().equals(d.getFromWorkingMemory("merchantId"))){
+                    match=true;
+                }
+            }
+            if(!match){
+                //problem - accepted merchant does not appear to match the location given
+                d.pushFocus("reconfirm_loc");
+                accept=false;
+            }
+        }else {
+            processMerchantList(possibleMerchants, d);
+        }
+        if(accept){//still accepting after checking possible location
+            ConfirmMethod.accept(d);
+        }
 
     }
 
@@ -199,6 +218,10 @@ public class LocMethod implements Handler.ProblemHandler {
                 newStates.add("initial");
                 responseVariables.put(userSlot,d.getId());
                 break;
+            case "reconfirm_loc":
+                newStates.add("confirm_loc");
+                responseVariables.put(merchantSlot, d.getFromWorkingMemory("merchantName"));
+                responseVariables.put(locationSlot,d.getFromWorkingMemory("location_list"));
             //case "confirm_completion":
 
 
