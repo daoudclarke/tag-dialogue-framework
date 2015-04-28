@@ -8,7 +8,11 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * This class caters to a particular kind of XML collection. In its most basic form, it looks something like below:

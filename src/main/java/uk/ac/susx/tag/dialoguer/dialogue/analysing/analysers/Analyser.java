@@ -5,7 +5,6 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;

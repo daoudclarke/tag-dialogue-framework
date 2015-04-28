@@ -1,13 +1,11 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
 import org.reflections.Reflections;
-import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * It is the function of the Handler to determine what response to give to a user's intents, and what side-effects to
