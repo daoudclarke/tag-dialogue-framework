@@ -6,10 +6,13 @@
     "analysers" : [
         {"name" : "simple_cancel"},
         {"name" : "simple_choice"},
-        {"name" : "simple_yes_no"},
+        {"name" : "simple_yes_no",
+         "sourceId" : "simple_yes_no"
+        },
         {
             "name" : "wit.ai",
-            "path" : "paypal_checkin_wit_config.json"
+            "path" : "paypal_checkin_wit_config.json",
+            "sourceId" : "wit.ai"
         }
     ],
     "humanReadableSlotNames" : {

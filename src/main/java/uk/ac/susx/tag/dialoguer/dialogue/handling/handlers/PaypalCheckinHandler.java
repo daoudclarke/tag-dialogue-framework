@@ -13,7 +13,9 @@ import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
 
 import java.net.UnknownHostException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by juliewe on 20/04/2015.
@@ -36,6 +38,8 @@ public class PaypalCheckinHandler extends Handler{
     public static final String yes = "yes";
     public static final String no = "no";
 
+    public static final String mainAnalyser="wit.ai";
+    public static final String yesNoAnalyser="simple_yes_no";
 
 
 
@@ -63,7 +67,7 @@ public class PaypalCheckinHandler extends Handler{
         }
     }
 
- 
+
 
     @Override
     public Dialogue getNewDialogue(String dialogueId){
@@ -77,11 +81,18 @@ public class PaypalCheckinHandler extends Handler{
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
-        System.err.println(intents.get(0).getName());
-        Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);
+        for(Intent i:intents) {
+            System.err.println(i.getName());
+        }
+        Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
+
         if(r==null) {
-            r=applyIntentHandler(intents.get(0), dialogue, this.db);
-        }//probably not safe just to consider first intent.  Probably should apply all intent handlers or search intents first to find best one
+            Intent mainIntent = Intent.getFirstIntentFromSource(yesNoAnalyser,intents);//then check for a response from yes_no
+            if(mainIntent==null){
+                mainIntent=Intent.getFirstIntentFromSource(mainAnalyser,intents);//then get wit's response
+            }
+            r=applyIntentHandler(mainIntent, dialogue, this.db);
+        }
         return r;
     }
 
@@ -96,6 +107,14 @@ public class PaypalCheckinHandler extends Handler{
         db.close();
     }
 
+    @Override
+    public Set<String> getRequiredAnalyserSourceIds(){
+        Set<String> ids = new HashSet<>();
+        ids.add(mainAnalyser);
+        ids.add(yesNoAnalyser);
+        return ids;
+
+    }
 
 
 }

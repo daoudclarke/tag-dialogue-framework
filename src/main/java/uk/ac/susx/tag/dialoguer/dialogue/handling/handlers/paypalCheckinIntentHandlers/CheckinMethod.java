@@ -46,19 +46,17 @@ public class CheckinMethod implements Handler.IntentHandler {
             case "confirm_loc":
                 newStates.add(focus);
                 responseVariables.put(locationSlot, d.getFromWorkingMemory("merchantName"));
+                d.setRequestingYesNo(true);
                 break;
             case "repeat_request_loc":
                 newStates.add("confirm_loc");
                 responseVariables.put(locationSlot, d.getFromWorkingMemory("location_list"));
+                d.setRequestingYesNo(false);
                 break;
             case "request_location":
                 newStates.add("confirm_loc");
+                d.setRequestingYesNo(false);
                 break;
-            case "hello":
-                newStates.add("initial");
-                responseVariables.put(userSlot,d.getId());
-                break;
-            //case "confirm_completion":
 
 
 

@@ -17,8 +17,24 @@ public class ConfirmMethod implements Handler.IntentHandler {
     public static final String yes_no_slot = "yes_no";
     public static final String locationSlot="local_search_query";
     public static final String userSlot="user";
+    public static final String confirm = "confirm";
+    public static final String yes = "yes";
+    public static final String no = "no";
 
-    public Response handle(Intent i, Dialogue d, Object r) {
+    public Response handle(Intent i, Dialogue d, Object r){
+        switch(i.getName()){
+            case yes:
+                return accept(d);
+            case no:
+                return reject(d,r);
+            case confirm:
+                return handleConfirm(i,d,r);
+            default:
+                return new Response("unknown");
+        }
+    }
+
+    public Response handleConfirm(Intent i, Dialogue d, Object r) {
         Collection<Intent.Slot> answers = i.getSlotByType(yes_no_slot);
         boolean accept=false;
         for(Intent.Slot answer:answers){
@@ -79,18 +95,18 @@ public class ConfirmMethod implements Handler.IntentHandler {
             case "confirm_loc":
                 newStates.add(focus);
                 responseVariables.put(locationSlot, d.getFromWorkingMemory("merchantName"));
+                d.setRequestingYesNo(true);
                 break;
             case "repeat_request_loc":
                 newStates.add("confirm_loc");
                 responseVariables.put(locationSlot, d.getFromWorkingMemory("location_list"));
+                d.setRequestingYesNo(false);
                 break;
             case "request_location":
                 newStates.add("confirm_loc");
+                d.setRequestingYesNo(false);
                 break;
-            case "hello":
-                newStates.add("initial");
-                responseVariables.put(userSlot,d.getId());
-                break;
+
             //case "confirm_completion":
 
 

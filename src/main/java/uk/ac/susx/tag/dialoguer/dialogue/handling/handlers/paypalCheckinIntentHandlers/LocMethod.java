@@ -273,22 +273,23 @@ public class LocMethod implements Handler.ProblemHandler {
             case "confirm_loc":
                 newStates.add(focus);
                 responseVariables.put(locationSlot, d.getFromWorkingMemory("merchantName"));
+                d.setRequestingYesNo(true);
                 break;
             case "repeat_request_loc":
                 newStates.add("confirm_loc");
                 responseVariables.put(locationSlot, d.getFromWorkingMemory("location_list"));
+                d.setRequestingYesNo(false);
                 break;
             case "request_location":
                 newStates.add("confirm_loc");
+                d.setRequestingYesNo(false);
                 break;
-            case "hello":
-                newStates.add("initial");
-                responseVariables.put(userSlot,d.getId());
-                break;
+
             case "reconfirm_loc":
                 newStates.add("confirm_loc");
                 responseVariables.put(merchantSlot, d.getFromWorkingMemory("merchantName"));
                 responseVariables.put(locationSlot,d.getFromWorkingMemory("location_list"));
+                d.setRequestingYesNo(true);
             //case "confirm_completion":
 
 
