@@ -1,8 +1,7 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers;
 
-import com.google.common.collect.Lists;
-import com.sun.jdi.request.MonitorContendedEnteredRequest;
-import uk.ac.susx.tag.dialoguer.DialogueTracker;
+
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -14,40 +13,33 @@ import uk.ac.susx.tag.dialoguer.knowledge.database.product.Product;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductSet;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
-
-import java.net.UnknownHostException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
+
 
 /**
  * Created by juliewe on 21/04/2015.
  */
 public class LocMethod implements Handler.ProblemHandler {
 
-    public static final String locationSlot="local_search_query";
-    public static final String userSlot="user";
-    public static final String merchantSlot="merchant";
-    public static final String yes_no_slot = "yes_no";
     public static final int searchradius = 50;
     public static final int limit = 50;
-    public static final String confirmLoc = "confirm_loc";
-    public static final String checkinLoc = "check_in_loc";
-    public static final String loc = "loc";
-    public static final List<String> locIntents = Lists.newArrayList(confirmLoc, checkinLoc, loc);
+
 
     public boolean isInHandleableState(List<Intent> intents, Dialogue d){
-        return intents.stream().anyMatch(i -> locIntents.contains(i.getName()));
+        return intents.stream().anyMatch(i -> PaypalCheckinHandler.locIntents.contains(i.getName()));
     }
 
     public Response handle(List<Intent> intents, Dialogue d, Object resource){
         //we think that the user message has some information about location
         //System.err.println("Using problem handler: locMethod()");
         for(Intent i:intents){
-            if(locIntents.contains(i.getName())){
+            if(PaypalCheckinHandler.locIntents.contains(i.getName())){
                 handleLocation(i,d,resource); // first matching intent
             }
         }
+      //  intents.stream().filter(i->PaypalCheckinHandler.locIntents.contains(i.getName()))
+        //        .findFirst()
+        
         return processStack(d);
 
     }
@@ -55,27 +47,23 @@ public class LocMethod implements Handler.ProblemHandler {
     public static void handleLocation(Intent i, Dialogue d, Object resource){
         //DialogueTracker.logger.log(Level.INFO, "Im in handleLocation");
 
-        ProductMongoDB db=null;
-        if (resource instanceof ProductMongoDB){
-            db=(ProductMongoDB) resource;
+        ProductMongoDB db;
+        try {
+            db = (ProductMongoDB) resource;
+        } catch (ClassCastException e){
+            throw new Dialoguer.DialoguerException("Resource should be mongo db", e);
         }
 
         //possible confirm slot
-        Collection<Intent.Slot> answers = i.getSlotByType(yes_no_slot);
-        boolean accept=false;
-        for(Intent.Slot answer:answers){
-
-            if(answer.value.equals("yes")){
-                accept=true;
-            }
-        }
+        Collection<Intent.Slot> answers = i.getSlotByType(PaypalCheckinHandler.yes_no_slot);
+        boolean accept =answers.stream().anyMatch(answer->answer.value.equals("yes")); //are any of the answers "yes"
         if(!accept){//need to add the current selection to rejected_list
 
             ConfirmMethod.handleReject(d);
         }
 
         //definite location slot
-        Collection<Intent.Slot> locations = i.getSlotByType(locationSlot);
+        Collection<Intent.Slot> locations = i.getSlotByType(PaypalCheckinHandler.locationSlot);
         ArrayList<String> location_list = new ArrayList<>();
         for(Intent.Slot location: locations){
             location_list.add(location.value);
@@ -181,8 +169,8 @@ public class LocMethod implements Handler.ProblemHandler {
         merchants.retainAll(db.merchantQuery(StringUtils.phrasejoin(location_list)));
         if(merchants.size()==0){
             merchants = findNearbyMerchants(db,user);
-            merchants.retainAll(db.merchantQuery(StringUtils.join(location_list)));
-            d.putToWorkingMemory("location_list",StringUtils.join(location_list));
+            merchants.retainAll(db.merchantQuery(StringUtils.detokenise(location_list)));
+            d.putToWorkingMemory("location_list",StringUtils.detokenise(location_list));
         }
         if(merchants.size()==0){
             merchants=productMatchNearbyMerchants(location_list,db,user, d);
@@ -206,11 +194,12 @@ public class LocMethod implements Handler.ProblemHandler {
     public static List<Merchant> productMatchNearbyMerchants(List<String> location_list, ProductMongoDB db, User user, Dialogue d){
 
         List<Merchant> merchants;
-        if(d.getFromWorkingMemory("merchantId")!=null){//if one merchant under consideration, only consider this for product match
+        try{//if one merchant under consideration, only consider this for product match
+            //System.err.println(d.getFromWorkingMemory("merchantId"));
             merchants=new ArrayList<>();
             merchants.add(db.getMerchant(d.getFromWorkingMemory("merchantId")));
         }
-        else {
+        catch(IllegalArgumentException e) {
             merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
         }
         List<Product> products = db.productQueryWithMerchants(StringUtils.phrasejoin(location_list),merchants,new HashSet<>(),limit);
@@ -218,8 +207,8 @@ public class LocMethod implements Handler.ProblemHandler {
         ProductSet ps = new ProductSet(user.getLocationData(),products);
         Set<Merchant> merchantSet= ps.fetchMerchants();
         if(merchantSet.size()==0){
-            products=db.productQueryWithMerchants(StringUtils.join(location_list),merchants,new HashSet<>(),limit);
-            d.putToWorkingMemory("location_list",StringUtils.join(location_list));
+            products=db.productQueryWithMerchants(StringUtils.detokenise(location_list),merchants,new HashSet<>(),limit);
+            d.putToWorkingMemory("location_list",StringUtils.detokenise(location_list));
             ps=new ProductSet();
             ps.updateProducts(products);
             merchantSet=ps.fetchMerchants();
@@ -254,12 +243,12 @@ public class LocMethod implements Handler.ProblemHandler {
         switch(focus){
             case "confirm_loc":
                 newStates.add(focus);
-                responseVariables.put(locationSlot, d.getFromWorkingMemory("merchantName"));
+                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
                 d.setRequestingYesNo(true);
                 break;
             case "repeat_request_loc":
                 newStates.add("confirm_loc");
-                responseVariables.put(locationSlot, d.getFromWorkingMemory("location_list"));
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
                 d.setRequestingYesNo(false);
                 break;
             case "request_location":
@@ -269,8 +258,8 @@ public class LocMethod implements Handler.ProblemHandler {
 
             case "reconfirm_loc":
                 newStates.add("confirm_loc");
-                responseVariables.put(merchantSlot, d.getFromWorkingMemory("merchantName"));
-                responseVariables.put(locationSlot,d.getFromWorkingMemory("location_list"));
+                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
+                responseVariables.put(PaypalCheckinHandler.locationSlot,d.getFromWorkingMemory("location_list"));
                 d.setRequestingYesNo(true);
             //case "confirm_completion":
 

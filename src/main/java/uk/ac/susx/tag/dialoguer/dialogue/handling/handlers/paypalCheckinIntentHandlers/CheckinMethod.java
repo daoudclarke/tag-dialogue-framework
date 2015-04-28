@@ -1,8 +1,10 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers;
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.PaypalCheckinHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.Merchant;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
@@ -14,16 +16,14 @@ import java.util.*;
  */
 public class CheckinMethod implements Handler.IntentHandler {
 
-    public static final String locationSlot="local_search_query";
-    public static final String userSlot="user";
-
     public Response handle(Intent i,Dialogue d, Object resource){
         //generate response to request Location
-        ProductMongoDB db=null;
-        if (resource instanceof ProductMongoDB){
-            db=(ProductMongoDB) resource;
+        ProductMongoDB db;
+        try {
+            db = (ProductMongoDB) resource;
+        } catch (ClassCastException e){
+            throw new Dialoguer.DialoguerException("Resource should be mongo db", e);
         }
-
 
         d.putToWorkingMemory("rejectionlist",null); // in case restarting
         List<Merchant> possibleMerchants = LocMethod.findNearbyMerchants(db, d.getUserData());
@@ -45,20 +45,18 @@ public class CheckinMethod implements Handler.IntentHandler {
         switch(focus){
             case "confirm_loc":
                 newStates.add(focus);
-                responseVariables.put(locationSlot, d.getFromWorkingMemory("merchantName"));
+                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
                 d.setRequestingYesNo(true);
                 break;
             case "repeat_request_loc":
                 newStates.add("confirm_loc");
-                responseVariables.put(locationSlot, d.getFromWorkingMemory("location_list"));
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
                 d.setRequestingYesNo(false);
                 break;
             case "request_location":
                 newStates.add("confirm_loc");
                 d.setRequestingYesNo(false);
                 break;
-
-
 
 
         }

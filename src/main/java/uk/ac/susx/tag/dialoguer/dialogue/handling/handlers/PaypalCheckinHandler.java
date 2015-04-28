@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
@@ -33,20 +34,29 @@ public class PaypalCheckinHandler extends Handler{
     private String dbName;
     protected transient ProductMongoDB db;
 
+    //intent names
     public static final String checkinIntent = "check_in"; //check this against wit
     public static final String otherIntent = "other";
-//    public static final String confirmLoc = "confirm_loc";
-//   public static final String checkinLoc = "check_in_loc";
-//    public static final String loc = "loc";
     public static final String confirm = "confirm";
     public static final String quit = "quit";
     public static final String yes = "yes";
     public static final String no = "no";
+    public static final String confirmLoc = "confirm_loc";
+    public static final String checkinLoc = "check_in_loc";
+    public static final String loc = "loc";
 
+    public static final List<String> locIntents = Lists.newArrayList(PaypalCheckinHandler.confirmLoc, PaypalCheckinHandler.checkinLoc, PaypalCheckinHandler.loc);
+
+
+    //analyser names
     public static final String mainAnalyser="wit.ai";
     public static final String yesNoAnalyser="simple_yes_no";
 
-
+    //slot names
+    public static final String yes_no_slot = "yes_no";
+    public static final String locationSlot="local_search_query";
+    public static final String userSlot="user";
+    public static final String merchantSlot="merchant";
 
     public PaypalCheckinHandler(){
 

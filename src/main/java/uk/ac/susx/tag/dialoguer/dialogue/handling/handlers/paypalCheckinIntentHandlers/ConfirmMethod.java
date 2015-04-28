@@ -5,6 +5,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.PaypalCheckinHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.Merchant;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
@@ -15,20 +16,15 @@ import java.util.*;
  */
 public class ConfirmMethod implements Handler.IntentHandler {
 
-    public static final String yes_no_slot = "yes_no";
-    public static final String locationSlot="local_search_query";
-    public static final String userSlot="user";
-    public static final String confirm = "confirm";
-    public static final String yes = "yes";
-    public static final String no = "no";
+
 
     public Response handle(Intent i, Dialogue d, Object r){
         switch(i.getName()){
-            case yes:
+            case PaypalCheckinHandler.yes:
                 return accept(d);
-            case no:
+            case PaypalCheckinHandler.no:
                 return reject(d,r);
-            case confirm:
+            case PaypalCheckinHandler.confirm:
                 return handleConfirm(i,d,r);
             default:
                 return new Response("unknown");
@@ -36,14 +32,8 @@ public class ConfirmMethod implements Handler.IntentHandler {
     }
 
     private Response handleConfirm(Intent i, Dialogue d, Object r) {
-        Collection<Intent.Slot> answers = i.getSlotByType(yes_no_slot);
-        boolean accept=false;
-        for(Intent.Slot answer:answers){
-
-            if(answer.value.equals("yes")){
-                accept=true;
-            }
-        }
+        Collection<Intent.Slot> answers = i.getSlotByType(PaypalCheckinHandler.yes_no_slot);
+        boolean accept = answers.stream().anyMatch(answer->answer.value.equals("yes"));
         if(accept){
             return accept(d);
         } else {
@@ -89,12 +79,12 @@ public class ConfirmMethod implements Handler.IntentHandler {
         switch(focus){
             case "confirm_loc":
                 newStates.add(focus);
-                responseVariables.put(locationSlot, d.getFromWorkingMemory("merchantName"));
+                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
                 d.setRequestingYesNo(true);
                 break;
             case "repeat_request_loc":
                 newStates.add("confirm_loc");
-                responseVariables.put(locationSlot, d.getFromWorkingMemory("location_list"));
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
                 d.setRequestingYesNo(false);
                 break;
             case "request_location":

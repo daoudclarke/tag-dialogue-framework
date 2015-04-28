@@ -1,5 +1,7 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
+import jersey.repackaged.com.google.common.collect.Lists;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,11 +68,7 @@ public class User {
     }
 
     public List<Double> getLocationData(){
-        List<Double> locationlist = new ArrayList<>();
-        locationlist.add(latitude);
-        locationlist.add(longitude);
-        locationlist.add(uncertaintyRadius);
-        return locationlist;
+        return Lists.newArrayList(latitude, longitude, uncertaintyRadius);
     }
 
     public double getUncertaintyRadius() {
