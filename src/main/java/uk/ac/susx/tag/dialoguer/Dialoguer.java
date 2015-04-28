@@ -203,9 +203,7 @@ public class Dialoguer implements AutoCloseable {
         }
 
         // 17. Add the response to the dialogue object
-        if(r==null){
-            System.err.println("Null response");
-        }
+
         dialogue.addNewSystemMessage(fillTemplateWithResponse(r));
 
         // 18. Extract the new states from the response if there is one and put the dialogue in those states

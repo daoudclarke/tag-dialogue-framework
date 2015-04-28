@@ -38,7 +38,7 @@ public class PaypalCheckinHandler extends Handler{
     public static final String yes = "yes";
     public static final String no = "no";
 
-    public static final String mainAnalyser="wit.ai";
+    public static final String mainAnalyser="wit.ai1";
     public static final String yesNoAnalyser="simple_yes_no";
 
 
