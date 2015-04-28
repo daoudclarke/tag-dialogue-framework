@@ -5,10 +5,6 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.PatternFindingAnaly
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
-import javax.sound.midi.Soundbank;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;

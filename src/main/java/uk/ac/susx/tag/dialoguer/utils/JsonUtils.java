@@ -5,10 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
-import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
@@ -16,7 +13,6 @@ import com.google.gson.stream.JsonWriter;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

@@ -2,7 +2,6 @@ package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.YesNoAnalyserStringMatchingFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;

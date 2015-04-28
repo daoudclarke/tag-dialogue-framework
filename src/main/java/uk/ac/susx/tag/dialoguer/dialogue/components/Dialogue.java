@@ -1,12 +1,13 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 /**

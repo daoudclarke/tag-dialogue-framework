@@ -3,7 +3,13 @@ package uk.ac.susx.tag.dialoguer.knowledge.database.product.processing;
 import com.google.common.collect.Multimap;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.Product;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
