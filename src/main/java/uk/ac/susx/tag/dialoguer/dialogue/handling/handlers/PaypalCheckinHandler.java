@@ -8,18 +8,12 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.PaypalCheckinHandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.ConfirmMethod;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.CheckinMethod;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.CheckinLocMethod;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.ConfirmLocMethod;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.LocMethod;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
-import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by juliewe on 20/04/2015.
@@ -34,9 +28,9 @@ public class PaypalCheckinHandler extends Handler{
 
     public static final String checkinIntent = "check_in"; //check this against wit
     public static final String otherIntent = "other";
-    public static final String confirmLoc = "confirm_loc";
-    public static final String checkinLoc = "check_in_loc";
-    public static final String loc = "loc";
+//    public static final String confirmLoc = "confirm_loc";
+//   public static final String checkinLoc = "check_in_loc";
+//    public static final String loc = "loc";
     public static final String confirm = "confirm";
     public static final String quit = "quit";
     public static final String yes = "yes";
@@ -46,15 +40,14 @@ public class PaypalCheckinHandler extends Handler{
 
 
     public PaypalCheckinHandler(){
+
         super.registerIntentHandler(quit, (i, d, r) -> new Response("confirm_cancellation"));
         super.registerIntentHandler(confirm, new ConfirmMethod());
         super.registerIntentHandler(yes,new ConfirmMethod());
+        super.registerIntentHandler(no,new ConfirmMethod());
         super.registerIntentHandler(checkinIntent,new CheckinMethod());
-        //super.registerIntentHandler(loc,new LocMethod());
-        //super.registerIntentHandler(checkinLoc,new CheckinLocMethod());
-        //super.registerIntentHandler(confirmLoc,new ConfirmLocMethod());
         super.registerIntentHandler(otherIntent, (i,d, r) -> new Response("unknown"));
-        super.registerProblemHandler(new LocMethod());
+        super.registerProblemHandler(new LocMethod()); //this deals with loc, check_in_loc and confirm_loc from the wit.analyser
     }
 
     public void setupDatabase()throws Dialoguer.DialoguerException {
@@ -70,8 +63,11 @@ public class PaypalCheckinHandler extends Handler{
         }
     }
 
+ 
+
     @Override
     public Dialogue getNewDialogue(String dialogueId){
+
         Dialogue d = new Dialogue(dialogueId);
         d.setState("initial");
 
