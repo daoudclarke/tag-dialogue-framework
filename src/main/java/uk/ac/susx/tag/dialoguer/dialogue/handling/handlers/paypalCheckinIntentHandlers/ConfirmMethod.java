@@ -81,6 +81,10 @@ public class ConfirmMethod implements Handler.ProblemHandler {
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
                 d.setRequestingYesNo(false);
                 break;
+            case "repeat_request_loc_rejects":
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
+                d.setRequestingYesNo(false);
+                break;
             case "request_location":
                 d.setRequestingYesNo(false);
                 break;

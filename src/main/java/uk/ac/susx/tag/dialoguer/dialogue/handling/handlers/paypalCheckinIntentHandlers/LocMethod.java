@@ -130,13 +130,18 @@ public class LocMethod implements Handler.ProblemHandler {
             if(d.getFromWorkingMemory("location_list")==null){
                 d.pushFocus("request_location");
             } else {
-                d.pushFocus("repeat_request_loc");
+                if(d.getFromWorkingMemory("rejectedlist")==null) {
+                    d.pushFocus("repeat_request_loc");
+                } else {
+                    d.pushFocus("repeat_request_loc_rejects");
+                    d.putToWorkingMemory("rejectedlist",null); //clear this for a restart
+                }
             }
 
         } else {
             if(possibleMerchants.size()==1){
                 d.pushFocus("confirm_loc");
-                updateMerchant(possibleMerchants.get(0),d);
+                updateMerchant(possibleMerchants.get(0), d);
             }
             else{
                 //may want to do something different if multiple merchants returned but currently assume first is best and just offer this one
@@ -161,13 +166,13 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static List<Merchant> findNearbyMerchants(ProductMongoDB db, User user){
 
-        return db.merchantQueryByLocation(user.getLatitude(),user.getLongitude(),searchradius,limit);
+        return db.merchantQueryByLocation(user.getLatitude(), user.getLongitude(), searchradius, limit);
 
 
     }
 
     public static List<Merchant> filterRejected(List<Merchant> merchants, String rejectedlist){
-        //System.err.println("rejected: "+rejectedlist);
+       // System.err.println("rejected: "+rejectedlist);
         if(rejectedlist==null){
             return merchants;
         } else {
@@ -176,11 +181,13 @@ public class LocMethod implements Handler.ProblemHandler {
             for (Merchant m : merchants) {
                 boolean reject=false;
                 for (String r : rejected) {
+                    //System.err.println(":"+r+":"+m.getMerchantId()+":");
                     if (m.getMerchantId().equals(r)) {
                         reject=true;
 
                     }
                 }
+                //System.err.println(m.getMerchantId()+":"+reject);
                 if(!reject){
                     newmerchants.add(m);
                 }
@@ -194,7 +201,7 @@ public class LocMethod implements Handler.ProblemHandler {
         d.putToWorkingMemory("location_list",StringUtils.phrasejoin(location_list));
         merchants.retainAll(db.merchantQuery(StringUtils.phrasejoin(location_list)));
         if(merchants.size()==0){
-            merchants = findNearbyMerchants(db,user);
+            merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
             merchants.retainAll(db.merchantQuery(StringUtils.detokenise(location_list)));
             d.putToWorkingMemory("location_list",StringUtils.detokenise(location_list));
         }
@@ -271,11 +278,14 @@ public class LocMethod implements Handler.ProblemHandler {
             case "repeat_request_loc":
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
                 break;
+            case "repeat_request_loc_rejects":
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
+                break;
             //case "request_location":
               //  break;
             case "reconfirm_loc":
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
-                responseVariables.put(PaypalCheckinHandler.locationSlot,d.getFromWorkingMemory("location_list"));
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
             //case "confirm_completion":
 
         }

@@ -72,12 +72,19 @@
         "requestingYesNo":"no"
         },
         "repeat_request_loc" : {
-        "templates": [
-            "I can't find a nearby merchant matching {local_search_query}.  Please respecify your location."
-            ],
-        "newStates":["confirm_loc"],
-        "requestingYesNo":"no"
+            "templates": [
+                "I can't find a nearby merchant matching {local_search_query}.  Please respecify your location."
+                ],
+            "newStates":["confirm_loc"],
+            "requestingYesNo":"no"
         },
+        "repeat_request_loc_rejects" : {
+                    "templates": [
+                        "I can't find any other nearby merchant matching {local_search_query}.  Please respecify your location."
+                        ],
+                    "newStates":["confirm_loc"],
+                    "requestingYesNo":"no"
+                },
         "hello" : {
         "templates": [
             "Hello {user}. I am the paypal_checkin app. What would you like to do?"
