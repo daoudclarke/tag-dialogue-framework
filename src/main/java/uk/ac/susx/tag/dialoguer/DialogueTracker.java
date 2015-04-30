@@ -59,7 +59,7 @@ public class DialogueTracker implements AutoCloseable {
         this.dialogues = new HashMap<>();
         lastUpdated = new HashMap<>();
         trackingTimeLimit = Duration.ofDays(1);
-        logDialogues = false;
+        logDialogues = true;
         cdHandler = null;
     }
 

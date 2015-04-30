@@ -417,7 +417,7 @@ public class Dialoguer implements AutoCloseable {
                     + requiredSourceIds.stream().collect(Collectors.joining(", ")));
     }
 
-    public static void validateDialoguerConfig(String resourcePath) throws IOException {
+    private static void validateDialoguerConfig(String resourcePath) throws IOException {
         boolean valid = true;
 
         Map<String, Object> obj = Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, new TypeToken<Map<String, Object>>(){}.getType());
