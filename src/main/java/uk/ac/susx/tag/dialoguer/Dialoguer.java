@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import org.apache.xml.serializer.utils.SerializerMessages_ru;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -412,5 +414,56 @@ public class Dialoguer implements AutoCloseable {
              .isEmpty())
             throw new DialoguerException("Handler requires Analysers with the following source IDs: "
                     + requiredSourceIds.stream().collect(Collectors.joining(", ")));
+    }
+
+    public static void validateDialoguerConfig(String resourcePath) throws IOException {
+        Map<String, Object> obj = Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, new TypeToken<Map<String, Object>>(){}.getType());
+        Set<String> allowableTopLevelFields = Sets.newHashSet("handler", "analysers", "humanReadableSlotNames", "necessarySlotsPerIntent", "responseTemplates");
+        Set<String> necessaryTopLevelFields = Sets.newHashSet("handler", "analysers");
+        Set<String> handlerAnalyserFields = Sets.newHashSet("name", "path");
+        Set<String> allowableResponseTemplateFields = Sets.newHashSet("templates", "newStates", "requestingYesNo");
+
+
+        if (!Sets.difference(necessaryTopLevelFields, obj.keySet()).isEmpty())
+            System.err.println("Config object must define the following fields: " + necessaryTopLevelFields);
+
+        if (!Sets.difference(obj.keySet(), allowableTopLevelFields).isEmpty())
+            System.err.println("Config has unexpected fields: " + Sets.difference(obj.keySet(), allowableTopLevelFields));
+
+        if (obj.containsKey("handler")){
+            Map<String, String> handler = (Map<String, String>) obj.get("handler");
+            if (!Sets.difference(handler.keySet(), handlerAnalyserFields).isEmpty())
+                System.err.println("Handler has unexpected fields: " + Sets.difference(handler.keySet(), handlerAnalyserFields));
+            if (!Sets.difference( Sets.newHashSet("name"), handler.keySet()).isEmpty())
+                System.err.println("Handler requires the following fields: " + Sets.newHashSet("name"));
+        }
+
+        if (obj.containsKey("analysers")){
+            if (!(obj.get("analysers") instanceof List)) {
+                System.err.println("Analysers must be list of objects.");
+                return;
+            }
+            List<Map<String, String>> analysers = (List<Map<String, String>>) obj.get("analysers");
+            for (Map<String, String> analyser : analysers){
+                if (!Sets.difference(analyser.keySet(), handlerAnalyserFields).isEmpty())
+                    System.err.println("Analyser has unexpected fields: " + Sets.difference(analyser.keySet(), handlerAnalyserFields));
+                if (!Sets.difference(Sets.newHashSet("name"), analyser.keySet()).isEmpty())
+                    System.err.println("Analyser requires the following fields: " + Sets.newHashSet("name"));
+            }
+        }
+
+        if (obj.containsKey("responseTemplates")){
+            if (!(obj.get("responseTemplates") instanceof Map)) {
+                System.err.println("responseTemplates must be a map from response name strings, to response template objects.");
+                return;
+            }
+            Map<String, Map<String, Object>> responseTemplates = (Map<String, Map<String, Object>>) obj.get("responseTemplates");
+            for (Map<String, Object> responseAtts : responseTemplates.values()){
+                if (!Sets.difference(responseAtts.keySet(), allowableResponseTemplateFields).isEmpty())
+                    System.err.println("Response templates has unexpected fields: " + Sets.difference(responseAtts.keySet(), allowableResponseTemplateFields));
+                if (!Sets.difference(Sets.newHashSet("templates"), responseAtts.keySet()).isEmpty())
+                    System.err.println("Analyser requires the following fields: " + Sets.newHashSet("templates"));
+            }
+        }
     }
 }
