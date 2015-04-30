@@ -175,7 +175,7 @@ public class Dialoguer implements AutoCloseable {
         for (Analyser analyser : analysers) {
 
             List<Intent> analysis = analyser.analyse(message, dialogue);
-            System.err.println("Using analyser: "+analyser.getName()+" generated intents: "+analysis.size());
+            //System.err.println("Using analyser: "+analyser.getName()+" generated intents: "+analysis.size());
             for (Intent intent : analysis)
                 intent.setSource(analyser.getSourceId());  // Source of the intent is the position of the analyser that produced it in the array of analysers
             intents.addAll(analysis);

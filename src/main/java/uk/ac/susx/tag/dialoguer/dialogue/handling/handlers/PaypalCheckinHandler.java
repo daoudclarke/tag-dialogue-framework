@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
+import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.PaypalCheckinHandlerFactory;
@@ -24,8 +25,7 @@ import java.util.stream.Collectors;
 /**
  * Created by juliewe on 20/04/2015.
  *
- * TODO: clean up wit intents so there is only one loc intent
- * TODO: use more streams and Sets/Lists methods
+ * TODO: check null pointer on "fab thats right"
  *
  */
 public class PaypalCheckinHandler extends Handler{
@@ -43,7 +43,6 @@ public class PaypalCheckinHandler extends Handler{
     public static final String quit = "quit";
     public static final String yes = "yes";
     public static final String no = "no";
-   // public static final String confirmLoc = "confirm_loc";
     public static final String checkinLoc = "check_in_loc";
     public static final String loc = "loc";
 
@@ -96,7 +95,7 @@ public class PaypalCheckinHandler extends Handler{
     }
 
     @Override
-    public List<Intent> preProcessIntents(List<Intent> intents, Dialogue d){
+    public List<Intent> preProcessIntents(List<Intent> intents, List<IntentMatch> matches, Dialogue d){
         //remove any intents returned by the wit analyser which should have entities but don't
         //this actually makes autoquerying pointless and would actually be better not to have them as necessary slots
         //however this is actually better because it actually removes these intents
@@ -122,9 +121,9 @@ public class PaypalCheckinHandler extends Handler{
             }
 
         }
-        for(Intent i: filtered){
-            System.err.println(i.toString());
-        }
+//        for(Intent i: filtered){
+//            System.err.println(i.toString());
+//        }
         return filtered;
     }
 

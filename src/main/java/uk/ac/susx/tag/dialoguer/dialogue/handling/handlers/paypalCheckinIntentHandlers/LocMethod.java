@@ -101,14 +101,21 @@ public class LocMethod implements Handler.ProblemHandler {
             for(Merchant m:possibleMerchants){
                 if(m.getMerchantId().equals(d.getFromWorkingMemory("merchantId"))){
                     match=true;
+                    d.putToWorkingMemory("accepting","yes");
                 }
             }
             if(!match){
                 //problem - accepted merchant does not appear to match the location given
-                d.pushFocus("reconfirm_loc");
-                d.putToWorkingMemory("accepting","no");
+                if(d.isInWorkingMemory("accepting","yes")) {
+                    d.pushFocus("reconfirm_loc");
+                    d.putToWorkingMemory("accepting", "no");
+                } else {
+                    //System.err.println(possibleMerchants);
+                    processMerchantList(possibleMerchants, d); //assume it was a rejection of the previous suggestion
+                }
             }
         }else {
+            //System.err.println(possibleMerchants);
             processMerchantList(possibleMerchants, d);
         }
         if(d.isInWorkingMemory("accepting","yes")){//still accepting after checking possible location
@@ -213,12 +220,11 @@ public class LocMethod implements Handler.ProblemHandler {
     public static List<Merchant> productMatchNearbyMerchants(List<String> location_list, ProductMongoDB db, User user, Dialogue d){
 
         List<Merchant> merchants;
-        try{//if one merchant under consideration, only consider this for product match
-            //System.err.println(d.getFromWorkingMemory("merchantId"));
+        if(d.isInWorkingMemory("accepting","yes")){
             merchants=new ArrayList<>();
             merchants.add(db.getMerchant(d.getFromWorkingMemory("merchantId")));
         }
-        catch(IllegalArgumentException e) {
+        else{
             merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
         }
         List<Product> products = db.productQueryWithMerchants(StringUtils.phrasejoin(location_list),merchants,new HashSet<>(),limit);
