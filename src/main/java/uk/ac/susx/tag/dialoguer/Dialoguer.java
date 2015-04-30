@@ -250,6 +250,7 @@ public class Dialoguer implements AutoCloseable {
     }
 
     public static Dialoguer loadDialoguerFromJsonResourceOrFile(String dialoguerDefinition) throws IOException {
+        validateDialoguerConfig(dialoguerDefinition);
         Dialoguer d =  readObjectFromJsonResourceOrFile(dialoguerDefinition, Dialoguer.class);
         d.validateAnalyserIdsOrThrow(d.handler.getRequiredAnalyserSourceIds());
         return d;
@@ -417,6 +418,8 @@ public class Dialoguer implements AutoCloseable {
     }
 
     public static void validateDialoguerConfig(String resourcePath) throws IOException {
+        boolean valid = true;
+
         Map<String, Object> obj = Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, new TypeToken<Map<String, Object>>(){}.getType());
         Set<String> allowableTopLevelFields = Sets.newHashSet("handler", "analysers", "humanReadableSlotNames", "necessarySlotsPerIntent", "responseTemplates");
         Set<String> necessaryTopLevelFields = Sets.newHashSet("handler", "analysers");
@@ -424,46 +427,56 @@ public class Dialoguer implements AutoCloseable {
         Set<String> allowableResponseTemplateFields = Sets.newHashSet("templates", "newStates", "requestingYesNo");
 
 
-        if (!Sets.difference(necessaryTopLevelFields, obj.keySet()).isEmpty())
-            System.err.println("Config object must define the following fields: " + necessaryTopLevelFields);
+        if (!Sets.difference(necessaryTopLevelFields, obj.keySet()).isEmpty()) {
+            System.err.println("Config object must define the following fields: " + necessaryTopLevelFields); valid = false;
+        }
 
-        if (!Sets.difference(obj.keySet(), allowableTopLevelFields).isEmpty())
-            System.err.println("Config has unexpected fields: " + Sets.difference(obj.keySet(), allowableTopLevelFields));
+        if (!Sets.difference(obj.keySet(), allowableTopLevelFields).isEmpty()) {
+            System.err.println("Config has unexpected fields: " + Sets.difference(obj.keySet(), allowableTopLevelFields)); valid = false;
+        }
 
         if (obj.containsKey("handler")){
             Map<String, String> handler = (Map<String, String>) obj.get("handler");
-            if (!Sets.difference(handler.keySet(), handlerAnalyserFields).isEmpty())
-                System.err.println("Handler has unexpected fields: " + Sets.difference(handler.keySet(), handlerAnalyserFields));
-            if (!Sets.difference( Sets.newHashSet("name"), handler.keySet()).isEmpty())
-                System.err.println("Handler requires the following fields: " + Sets.newHashSet("name"));
+            if (!Sets.difference(handler.keySet(), handlerAnalyserFields).isEmpty()) {
+                System.err.println("Handler has unexpected fields: " + Sets.difference(handler.keySet(), handlerAnalyserFields)); valid = false;
+            }
+            if (!Sets.difference( Sets.newHashSet("name"), handler.keySet()).isEmpty()) {
+                System.err.println("Handler requires the following fields: " + Sets.newHashSet("name")); valid = false;
+            }
         }
 
         if (obj.containsKey("analysers")){
             if (!(obj.get("analysers") instanceof List)) {
                 System.err.println("Analysers must be list of objects.");
-                return;
+                throw new DialoguerException("Config file malformed.");
             }
             List<Map<String, String>> analysers = (List<Map<String, String>>) obj.get("analysers");
             for (Map<String, String> analyser : analysers){
-                if (!Sets.difference(analyser.keySet(), handlerAnalyserFields).isEmpty())
-                    System.err.println("Analyser has unexpected fields: " + Sets.difference(analyser.keySet(), handlerAnalyserFields));
-                if (!Sets.difference(Sets.newHashSet("name"), analyser.keySet()).isEmpty())
-                    System.err.println("Analyser requires the following fields: " + Sets.newHashSet("name"));
+                if (!Sets.difference(analyser.keySet(), handlerAnalyserFields).isEmpty()) {
+                    System.err.println("Analyser has unexpected fields: " + Sets.difference(analyser.keySet(), handlerAnalyserFields)); valid = false;
+                }
+                if (!Sets.difference(Sets.newHashSet("name"), analyser.keySet()).isEmpty()) {
+                    System.err.println("Analyser requires the following fields: " + Sets.newHashSet("name")); valid = false;
+                }
             }
         }
 
         if (obj.containsKey("responseTemplates")){
             if (!(obj.get("responseTemplates") instanceof Map)) {
                 System.err.println("responseTemplates must be a map from response name strings, to response template objects.");
-                return;
+                throw new DialoguerException("Config file malformed.");
             }
             Map<String, Map<String, Object>> responseTemplates = (Map<String, Map<String, Object>>) obj.get("responseTemplates");
             for (Map<String, Object> responseAtts : responseTemplates.values()){
-                if (!Sets.difference(responseAtts.keySet(), allowableResponseTemplateFields).isEmpty())
-                    System.err.println("Response templates has unexpected fields: " + Sets.difference(responseAtts.keySet(), allowableResponseTemplateFields));
-                if (!Sets.difference(Sets.newHashSet("templates"), responseAtts.keySet()).isEmpty())
-                    System.err.println("Analyser requires the following fields: " + Sets.newHashSet("templates"));
+                if (!Sets.difference(responseAtts.keySet(), allowableResponseTemplateFields).isEmpty()) {
+                    System.err.println("Response templates has unexpected fields: " + Sets.difference(responseAtts.keySet(), allowableResponseTemplateFields)); valid = false;
+                }
+                if (!Sets.difference(Sets.newHashSet("templates"), responseAtts.keySet()).isEmpty()) {
+                    System.err.println("Analyser requires the following fields: " + Sets.newHashSet("templates")); valid = false;
+                }
             }
         }
+
+        if (!valid) throw new DialoguerException("Config file malformed.");
     }
 }
