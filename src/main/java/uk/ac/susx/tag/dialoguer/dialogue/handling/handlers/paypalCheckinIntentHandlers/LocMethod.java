@@ -39,7 +39,7 @@ public class LocMethod implements Handler.ProblemHandler {
         }
       //  intents.stream().filter(i->PaypalCheckinHandler.locIntents.contains(i.getName()))
         //        .findFirst()
-        
+
         return processStack(d);
 
     }
