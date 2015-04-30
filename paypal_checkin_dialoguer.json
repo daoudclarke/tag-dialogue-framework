@@ -22,39 +22,74 @@
     "necessarySlotsPerIntent" : {
         "confirm" : ["yes_no"],
         "loc" : ["local_search_query"],
-        "confirm_loc" : ["yes_no","local_search_query"],
         "check_in_loc" : ["local_search_query"]
     },
     "responseTemplates" : {
-        "confirm_cancellation" : [
-            "Cancelled. Thanks.",
-            "Cancelled. Bye!"
-        ],
-        "confirm_completion" : [
+        "confirm_cancellation" : {
+            "templates":[
+                "Cancelled. Thanks.",
+                "Cancelled. Bye!"
+            ],
+            "newStates":[],
+            "requestingYesNo":"no"
+        },
+        "confirm_completion" : {
+        "templates":[
             "Completed. Thanks.",
             "Completed. Bye!"
         ],
-        "request_location" : [
+        "newStates":[],
+        "requestingYesNo":"no"
+        },
+        "request_location" : {
+        "templates" :[
             "Where would you like to check in?"
         ],
-        "unknown" : [
-            "I don't know how to handle that request."
+        "newStates":["confirm_loc"],
+        "requestingYesNo":"no"
+        },
+        "unknown" : {
+            "templates" : [
+                "I don't know how to handle that request."
+                ],
+            "newStates":[],
+            "requestingYesNo":"no"
+        },
+        "confirm_loc" : {
+        "templates" : [
+            "Please confirm that you wish to check in at {merchant}"
             ],
-        "confirm_loc" : [
-            "Please confirm that you wish to check in at {local_search_query}"
-            ],
-        "auto_query" : [
+        "newStates":["confirm_loc"],
+        "requestingYesNo":"yes"
+        },
+        "auto_query" : {
+        "templates":[
             "Please specify {query}"
             ],
-        "repeat_request_loc" : [
+        "newStates":[],
+        "requestingYesNo":"no"
+        },
+        "repeat_request_loc" : {
+        "templates": [
             "I can't find a nearby merchant matching {local_search_query}.  Please respecify your location."
             ],
-        "hello" : [
+        "newStates":["confirm_loc"],
+        "requestingYesNo":"no"
+        },
+        "hello" : {
+        "templates": [
             "Hello {user}. I am the paypal_checkin app. What would you like to do?"
             ],
-        "reconfirm_loc" : [
+        "newStates": ["initial"],
+        "requestingYesNo":"no"
+        },
+        "reconfirm_loc" : {
+        "templates":[
             "{local_search_query} does not seem to match the agreed merchant {merchant}.  Please reconfirm that you wish to check in at {merchant}."
-            ]
+            ],
+        "newStates":["confirm_loc"],
+        "requestingYesNo":"yes"
+        }
     }
 
 }

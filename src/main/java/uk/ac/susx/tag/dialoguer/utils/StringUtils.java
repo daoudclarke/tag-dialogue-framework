@@ -69,19 +69,7 @@ public class StringUtils {
     }
 
 
-    public static String phrasejoin(Iterable<String> items){
-        String res="";
-        for(String item:items){
-            res+=" \""+item+"\" ";
-        }
-        return res;
-    }
-
-    public static String join(Iterable<String> items){
-        String res="";
-        for(String item:items){
-            res+=" "+item+" ";
-        }
-        return res;
-    }
+   public static String phrasejoin(List<String> items){
+       return detokenise(items.stream().map(item->"\""+item+"\"").collect(Collectors.toList()));
+   }
 }

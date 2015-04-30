@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,24 +45,34 @@ public class Response {
 
     private String responseName;
     private Map<String, String> responseVariables;
+
+    private boolean overrideTemplate;
     private List<String> newStates;
+    private boolean requestingYesNo;
 
     public Response(String responseName) {
-        this(responseName, new HashMap<>(), null);
+        this(responseName, new HashMap<>());
     }
 
     public Response(String responseName, Map<String, String> responseVariables){
-        this(responseName, responseVariables, null);
-    }
-
-    public Response(String responseName, List<String> newStates){
-        this(responseName, new HashMap<>(), newStates);
-    }
-
-    public Response(String responseName, Map<String, String> responseVariables, List<String> newStates) {
-        this.newStates = newStates;
         this.responseName = responseName;
         this.responseVariables = responseVariables;
+
+        overrideTemplate = false;
+        newStates = new ArrayList<>();
+        requestingYesNo = false;
+    }
+
+    public Response overrideResponseTemplateStates(List<String> newStates, boolean requestingYesNo){
+        overrideTemplate = true;
+        this.newStates = newStates;
+        this.requestingYesNo = requestingYesNo;
+        return this;
+    }
+
+    public Response(String responseName, Map<String, String> responseVariables, List<String> newStates, boolean requestingYesNo){
+        this(responseName, responseVariables);
+        overrideResponseTemplateStates(newStates, requestingYesNo);
     }
 
     public Response addResponseVariable(String variableName, String variableValue){
@@ -83,7 +94,8 @@ public class Response {
     public List<String> getNewStates() {
         return newStates;
     }
-    public void setNewStates(List<String> newStates) { this.newStates = newStates; }
+    public boolean isRequestingYesNo() { return requestingYesNo; }
+    public boolean isOverridingTemplate() { return overrideTemplate; }
 
     /**
      * Used by the Dialoguer to fill the appropriate template with this response.
@@ -115,8 +127,8 @@ public class Response {
     public static Response buildCancellationResponse(){
         return new Response(defaultConfirmCancelResponseId);
     }
-    public static Response buildCancellationResponse(Map<String, String> responseVariables, List<String> newStates){
-        return new Response(defaultConfirmCancelResponseId, responseVariables, newStates);
+    public static Response buildCancellationResponse(Map<String, String> responseVariables){
+        return new Response(defaultConfirmCancelResponseId, responseVariables);
     }
 
     public static Response buildAutoQueryResponse(String query){
@@ -127,8 +139,8 @@ public class Response {
     public static Response buildCompletionResponse(){
         return new Response(defaultCompletionResponseId);
     }
-    public static Response buildCompletionResponse(Map<String, String> responseVariables, List<String> newStates){
-        return new Response(defaultCompletionResponseId, responseVariables, newStates);
+    public static Response buildCompletionResponse(Map<String, String> responseVariables){
+        return new Response(defaultCompletionResponseId, responseVariables);
     }
 
     public static class ResponseException extends RuntimeException {

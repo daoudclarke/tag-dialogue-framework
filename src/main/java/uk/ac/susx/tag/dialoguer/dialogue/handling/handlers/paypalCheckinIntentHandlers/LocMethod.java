@@ -14,6 +14,7 @@ import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductSet;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -32,16 +33,47 @@ public class LocMethod implements Handler.ProblemHandler {
     public Response handle(List<Intent> intents, Dialogue d, Object resource){
         //we think that the user message has some information about location
         //System.err.println("Using problem handler: locMethod()");
-        for(Intent i:intents){
-            if(PaypalCheckinHandler.locIntents.contains(i.getName())){
-                handleLocation(i,d,resource); // first matching intent
-            }
-        }
-      //  intents.stream().filter(i->PaypalCheckinHandler.locIntents.contains(i.getName()))
-        //        .findFirst()
 
+        //first of all check for yes/no/confirm intents
+        d.putToWorkingMemory("accepting","no_choice");
+        Optional<Intent> confirm = intents.stream().filter(intent->PaypalCheckinHandler.confirmIntents.contains(intent.getName())).findFirst();
+        if(confirm.isPresent()){
+            handleConfirm(confirm.get(),d,resource);
+        }
+
+        //now get location intent
+        Optional<Intent> location = intents.stream().filter(intent->PaypalCheckinHandler.locIntents.contains(intent.getName())).findFirst();
+        if(location.isPresent()){
+            handleLocation(location.get(),d,resource);
+        }
+
+        
         return processStack(d);
 
+    }
+
+    public static void handleConfirm(Intent i, Dialogue d, Object resource){
+        //possible confirm slot
+        boolean accept=false;
+        if(i.getName().equals(PaypalCheckinHandler.yes)){
+            accept=true;
+        } else {
+            if(i.getName().equals(PaypalCheckinHandler.no)){
+                accept=false;
+            } else {
+                accept = i.isSlotTypeFilledWith(PaypalCheckinHandler.yes_no_slot,"yes");
+            }
+        }
+
+
+        if(!accept){//need to add the current selection to rejected_list
+            d.putToWorkingMemory("accepting","no");
+            ConfirmMethod.handleReject(d);
+        } else {
+            d.putToWorkingMemory("accepting","yes");
+            //need to handle location as well before going through accept method
+        }
+        //System.err.println(d.getFromWorkingMemory("accepting"));
     }
 
     public static void handleLocation(Intent i, Dialogue d, Object resource){
@@ -54,41 +86,39 @@ public class LocMethod implements Handler.ProblemHandler {
             throw new Dialoguer.DialoguerException("Resource should be mongo db", e);
         }
 
-        //possible confirm slot
-        Collection<Intent.Slot> answers = i.getSlotByType(PaypalCheckinHandler.yes_no_slot);
-        boolean accept =answers.stream().anyMatch(answer->answer.value.equals("yes")); //are any of the answers "yes"
-        if(!accept){//need to add the current selection to rejected_list
-
-            ConfirmMethod.handleReject(d);
-        }
 
         //definite location slot
-        Collection<Intent.Slot> locations = i.getSlotByType(PaypalCheckinHandler.locationSlot);
-        ArrayList<String> location_list = new ArrayList<>();
-        for(Intent.Slot location: locations){
-            location_list.add(location.value);
+        List<String> location_list = i.getSlotByType(PaypalCheckinHandler.locationSlot).stream()
+                                                .map(location->location.value)
+                                                .collect(Collectors.toList());
 
-        }
 
         List<Merchant> possibleMerchants = matchNearbyMerchants(location_list, db, d.getUserData(), d);
-
-        if(accept){
+        //System.err.println(d.getFromWorkingMemory("accepting"));
+        if(d.isInWorkingMemory("accepting","yes")||(d.isInWorkingMemory("accepting","no_choice")&&d.getFromWorkingMemory("merchantId")!=null)){
             //check that the accepted location is in possiblemerchants
             boolean match=false;
             for(Merchant m:possibleMerchants){
                 if(m.getMerchantId().equals(d.getFromWorkingMemory("merchantId"))){
                     match=true;
+                    d.putToWorkingMemory("accepting","yes");
                 }
             }
             if(!match){
                 //problem - accepted merchant does not appear to match the location given
-                d.pushFocus("reconfirm_loc");
-                accept=false;
+                if(d.isInWorkingMemory("accepting","yes")) {
+                    d.pushFocus("reconfirm_loc");
+                    d.putToWorkingMemory("accepting", "no");
+                } else {
+                    //System.err.println(possibleMerchants);
+                    processMerchantList(possibleMerchants, d); //assume it was a rejection of the previous suggestion
+                }
             }
         }else {
+            //System.err.println(possibleMerchants);
             processMerchantList(possibleMerchants, d);
         }
-        if(accept){//still accepting after checking possible location
+        if(d.isInWorkingMemory("accepting","yes")){//still accepting after checking possible location
             ConfirmMethod.handleAccept(d);
         }
 
@@ -105,17 +135,13 @@ public class LocMethod implements Handler.ProblemHandler {
 
         } else {
             if(possibleMerchants.size()==1){
-
                 d.pushFocus("confirm_loc");
                 updateMerchant(possibleMerchants.get(0),d);
-
             }
             else{
                 //may want to do something different if multiple merchants returned but currently assume first is best and just offer this one
                 d.pushFocus("confirm_loc");
                 updateMerchant(possibleMerchants.get(0),d);
-
-
             }
         }
 
@@ -194,12 +220,11 @@ public class LocMethod implements Handler.ProblemHandler {
     public static List<Merchant> productMatchNearbyMerchants(List<String> location_list, ProductMongoDB db, User user, Dialogue d){
 
         List<Merchant> merchants;
-        try{//if one merchant under consideration, only consider this for product match
-            //System.err.println(d.getFromWorkingMemory("merchantId"));
+        if(d.isInWorkingMemory("accepting","yes")){
             merchants=new ArrayList<>();
             merchants.add(db.getMerchant(d.getFromWorkingMemory("merchantId")));
         }
-        catch(IllegalArgumentException e) {
+        else{
             merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
         }
         List<Product> products = db.productQueryWithMerchants(StringUtils.phrasejoin(location_list),merchants,new HashSet<>(),limit);
@@ -238,37 +263,24 @@ public class LocMethod implements Handler.ProblemHandler {
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
         }
-        List<String> newStates = new ArrayList<>();
         Map<String, String> responseVariables = new HashMap<>();
         switch(focus){
             case "confirm_loc":
-                newStates.add(focus);
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
-                d.setRequestingYesNo(true);
                 break;
             case "repeat_request_loc":
-                newStates.add("confirm_loc");
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
-                d.setRequestingYesNo(false);
                 break;
-            case "request_location":
-                newStates.add("confirm_loc");
-                d.setRequestingYesNo(false);
-                break;
-
+            //case "request_location":
+              //  break;
             case "reconfirm_loc":
-                newStates.add("confirm_loc");
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
                 responseVariables.put(PaypalCheckinHandler.locationSlot,d.getFromWorkingMemory("location_list"));
-                d.setRequestingYesNo(true);
             //case "confirm_completion":
-
-
-
 
         }
 
-        Response r=  new Response(focus,responseVariables,newStates);
+        Response r=  new Response(focus,responseVariables);
 
         return r;
 

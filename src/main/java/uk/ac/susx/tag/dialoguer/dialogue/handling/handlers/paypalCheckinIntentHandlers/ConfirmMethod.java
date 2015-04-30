@@ -32,13 +32,8 @@ public class ConfirmMethod implements Handler.IntentHandler {
     }
 
     private Response handleConfirm(Intent i, Dialogue d, Object r) {
-        Collection<Intent.Slot> answers = i.getSlotByType(PaypalCheckinHandler.yes_no_slot);
-        boolean accept = answers.stream().anyMatch(answer->answer.value.equals("yes"));
-        if(accept){
-            return accept(d);
-        } else {
-            return reject(d, r);
-        }
+
+        return  i.isSlotTypeFilledWith(PaypalCheckinHandler.yes_no_slot, "yes") ?  accept(d) : reject(d,r);
     }
 
     private Response accept(Dialogue d){
@@ -74,21 +69,16 @@ public class ConfirmMethod implements Handler.IntentHandler {
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
         }
-        List<String> newStates = new ArrayList<>();
         Map<String, String> responseVariables = new HashMap<>();
         switch(focus){
             case "confirm_loc":
-                newStates.add(focus);
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
-                d.setRequestingYesNo(true);
                 break;
             case "repeat_request_loc":
-                newStates.add("confirm_loc");
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
                 d.setRequestingYesNo(false);
                 break;
             case "request_location":
-                newStates.add("confirm_loc");
                 d.setRequestingYesNo(false);
                 break;
 
@@ -98,7 +88,7 @@ public class ConfirmMethod implements Handler.IntentHandler {
 
 
         }
-        return new Response(focus,responseVariables,newStates);
+        return new Response(focus,responseVariables);
 
     }
     public static void handleReject(Dialogue d){
