@@ -45,6 +45,7 @@ public class PaypalCheckinHandler extends Handler{
     public static final String no = "no";
     public static final String checkinLoc = "check_in_loc";
     public static final String loc = "loc";
+    public static final String nochoice="no_choice";
 
     public static final List<String> locIntents = Lists.newArrayList(PaypalCheckinHandler.checkinLoc, PaypalCheckinHandler.loc);
     public static final List<String> confirmIntents = Lists.newArrayList(confirm,yes,no);
@@ -62,12 +63,11 @@ public class PaypalCheckinHandler extends Handler{
     public PaypalCheckinHandler(){
 
         super.registerIntentHandler(quit, (i, d, r) -> new Response("confirm_cancellation"));
-        super.registerIntentHandler(confirm, new ConfirmMethod());
-        super.registerIntentHandler(yes,new ConfirmMethod());
-        super.registerIntentHandler(no,new ConfirmMethod());
+        super.registerIntentHandler(nochoice, (i,d,r) -> new Response("unknown"));
         super.registerIntentHandler(checkinIntent,new CheckinMethod());
         super.registerIntentHandler(otherIntent, (i,d, r) -> new Response("unknown"));
         super.registerProblemHandler(new LocMethod()); //this deals with loc, check_in_loc and confirm_loc from the wit.analyser
+        super.registerProblemHandler(new ConfirmMethod()); //deals with confirm from wit and yes/no from yes_no analyser
     }
 
     public void setupDatabase()throws Dialoguer.DialoguerException {
@@ -121,9 +121,9 @@ public class PaypalCheckinHandler extends Handler{
             }
 
         }
-//        for(Intent i: filtered){
-//            System.err.println(i.toString());
-//        }
+        for(Intent i: filtered){
+            System.err.println(i.toString());
+        }
         return filtered;
     }
 
@@ -134,12 +134,10 @@ public class PaypalCheckinHandler extends Handler{
         Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
 
         if(r==null) {
-            Intent mainIntent = Intent.getFirstIntentFromSource(yesNoAnalyser,intents);//then check for a response from yes_no
-            if(mainIntent==null){
-                mainIntent=Intent.getFirstIntentFromSource(mainAnalyser,intents);//then get wit's response
-            }
-            r=applyIntentHandler(mainIntent, dialogue, this.db);
+
+            r=applyIntentHandler(Intent.getFirstIntentFromSource(mainAnalyser,intents),dialogue,this.db);//then get wit's response
         }
+
         return r;
     }
 
