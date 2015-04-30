@@ -97,10 +97,8 @@ public class Intent {
     }
 
     public static boolean areSlotsFilled(List<Intent> intents, Map<String, Set<String>> necessarySlotsPerIntent){
-        for (Intent i : intents){
-            if (!i.areSlotsFilled(necessarySlotsPerIntent.get(i.getName())))
-                return false;
-        } return true;
+        // Only return true if all slots are field on all intents
+        return intents.stream().allMatch(i -> i.areSlotsFilled(necessarySlotsPerIntent.get(i.getName())));
     }
 
     public Sets.SetView<String> getUnfilledSlotNames(Set<String> requiredSlotNames){

@@ -59,13 +59,11 @@ public class YesNoAnalyserStringMatching extends Analyser {
         if (dialogue.isRequestingYesNo()){
             String text = dialogue.getStrippedText();
             if (isNo(text)){
-                dialogue.setRequestingYesNo(false);
                 return Intent.buildNoIntent(message).toList();
             } else if (isYes(text)){
-                dialogue.setRequestingYesNo(false);
                 return Intent.buildYesIntent(message).toList();
             } else {
-                return Intent.buildNoIntent(message).toList();
+                return Intent.buildNoChoiceIntent(message).toList();
             }
         } else return new ArrayList<>();
     }
