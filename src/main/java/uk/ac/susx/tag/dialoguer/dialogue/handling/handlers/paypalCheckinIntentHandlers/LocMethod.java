@@ -238,37 +238,24 @@ public class LocMethod implements Handler.ProblemHandler {
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
         }
-        List<String> newStates = new ArrayList<>();
         Map<String, String> responseVariables = new HashMap<>();
         switch(focus){
             case "confirm_loc":
-                newStates.add(focus);
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
-                d.setRequestingYesNo(true);
                 break;
             case "repeat_request_loc":
-                newStates.add("confirm_loc");
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
-                d.setRequestingYesNo(false);
                 break;
-            case "request_location":
-                newStates.add("confirm_loc");
-                d.setRequestingYesNo(false);
-                break;
-
+            //case "request_location":
+              //  break;
             case "reconfirm_loc":
-                newStates.add("confirm_loc");
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
                 responseVariables.put(PaypalCheckinHandler.locationSlot,d.getFromWorkingMemory("location_list"));
-                d.setRequestingYesNo(true);
             //case "confirm_completion":
-
-
-
 
         }
 
-        Response r=  new Response(focus,responseVariables,newStates);
+        Response r=  new Response(focus,responseVariables);
 
         return r;
 

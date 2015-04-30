@@ -15,9 +15,11 @@ import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by juliewe on 20/04/2015.
@@ -92,6 +94,19 @@ public class PaypalCheckinHandler extends Handler{
 
         return d;
     }
+
+//    @Override
+//    public List<Intent> preProcessIntents(List<Intent> intents, Dialogue d){
+//        //if there are full intents, return these
+//        //otherwise return original list
+//        List<Intent> filteredIntents = intents.stream().filter(intent ->intent.areSlotsFilled(new HashSet<>())).collect(Collectors.toList());
+//        if(filteredIntents.isEmpty()){
+//            return intents;
+//        }
+//        else {
+//            return filteredIntents;
+//        }
+//    }
 
 
     @Override
