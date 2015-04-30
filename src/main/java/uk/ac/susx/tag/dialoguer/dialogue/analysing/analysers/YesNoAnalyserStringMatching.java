@@ -63,7 +63,7 @@ public class YesNoAnalyserStringMatching extends Analyser {
             } else if (isYes(text)){
                 return Intent.buildYesIntent(message).toList();
             } else {
-                return Intent.buildNoIntent(message).toList();
+                return Intent.buildNoChoiceIntent(message).toList();
             }
         } else return new ArrayList<>();
     }
