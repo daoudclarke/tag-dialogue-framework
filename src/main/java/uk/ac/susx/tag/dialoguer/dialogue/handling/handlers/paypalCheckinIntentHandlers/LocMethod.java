@@ -44,7 +44,10 @@ public class LocMethod implements Handler.ProblemHandler {
         //now get location intent
         Optional<Intent> location = intents.stream().filter(intent->PaypalCheckinHandler.locIntents.contains(intent.getName())).findFirst();
         if(location.isPresent()){
-            handleLocation(location.get(),d,resource);
+            if(location.get().getName().equals(PaypalCheckinHandler.neg_loc)){handleNegLocation(location.get(),d,resource);}
+            else {
+                handleLocation(location.get(), d, resource);
+            }
         }
 
         
@@ -76,6 +79,47 @@ public class LocMethod implements Handler.ProblemHandler {
         //System.err.println(d.getFromWorkingMemory("accepting"));
     }
 
+    public static void handleNegLocation(Intent i, Dialogue d, Object resource){
+        //System.err.println("Negative location!");
+        ProductMongoDB db;
+        try {
+            db = (ProductMongoDB) resource;
+        } catch (ClassCastException e){
+            throw new Dialoguer.DialoguerException("Resource should be mongo db", e);
+        }
+
+        //definite location slot
+        List<String> location_list = i.getSlotByType(PaypalCheckinHandler.locationSlot).stream()
+                .map(location->location.value)
+                .collect(Collectors.toList());
+        String cacheLocationList=d.getFromWorkingMemory("location_list");
+        List<Merchant> possibleMerchants = matchNearbyMerchants(location_list, db, d.getUserData(), d);
+        if(possibleMerchants.size()>0&&d.isInWorkingMemory("merchantId",possibleMerchants.get(0).getMerchantId())) {
+
+            //this is just a standard reject of the current suggestion
+            //System.err.println("Rejecting current suggestion");
+            ConfirmMethod.handleReject(d);
+            //reinstate previous location_list
+            d.putToWorkingMemory("location_list",cacheLocationList);
+            if(d.getFromWorkingMemory("location_list")==null) {
+
+                possibleMerchants = LocMethod.filterRejected(LocMethod.findNearbyMerchants(db, d.getUserData()), d.getFromWorkingMemory("rejectedlist"));
+            } else {
+                System.err.println(d.getFromWorkingMemory("location_list"));
+                possibleMerchants = LocMethod.matchNearbyMerchants(db, d.getUserData(), d);//will use workingmemory's location_list
+            }
+
+            LocMethod.processMerchantList(possibleMerchants, d);
+
+        }
+        else {
+            //avoid trying to handle logic of negation - ignore and ask user to specify location
+            d.pushFocus("request_location");
+
+        }
+
+    }
+
     public static void handleLocation(Intent i, Dialogue d, Object resource){
         //DialogueTracker.logger.log(Level.INFO, "Im in handleLocation");
 
@@ -93,6 +137,8 @@ public class LocMethod implements Handler.ProblemHandler {
                                                 .collect(Collectors.toList());
 
 
+
+
         List<Merchant> possibleMerchants = matchNearbyMerchants(location_list, db, d.getUserData(), d);
         //System.err.println(d.getFromWorkingMemory("accepting"));
         if(d.isInWorkingMemory("accepting","yes")||(d.isInWorkingMemory("accepting","no_choice")&&d.getFromWorkingMemory("merchantId")!=null)){
@@ -101,7 +147,12 @@ public class LocMethod implements Handler.ProblemHandler {
             for(Merchant m:possibleMerchants){
                 if(m.getMerchantId().equals(d.getFromWorkingMemory("merchantId"))){
                     match=true;
-                    d.putToWorkingMemory("accepting","yes");
+                    if(d.isInWorkingMemory("accepting","no_choice")&&d.isRequestingYesNo()) {
+                        //d.putToWorkingMemory("accepting","yes"); //shouldn't upgrade this to a definite yes.
+                        d.pushFocus("confirm");
+                    } else {
+                        d.pushFocus("confirm_loc");
+                    }
                 }
             }
             if(!match){
@@ -266,7 +317,7 @@ public class LocMethod implements Handler.ProblemHandler {
     }
 
     private Response processStack(Dialogue d){
-        String focus="hello";
+        String focus="unknown_hello";
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
         }

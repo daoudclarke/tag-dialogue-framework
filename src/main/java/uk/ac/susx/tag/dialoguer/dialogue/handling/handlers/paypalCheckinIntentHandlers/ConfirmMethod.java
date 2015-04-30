@@ -68,7 +68,7 @@ public class ConfirmMethod implements Handler.ProblemHandler {
 
 
     private Response processStack(Dialogue d){
-        String focus="hello";
+        String focus="unknown_hello";
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
         }

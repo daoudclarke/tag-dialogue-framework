@@ -44,12 +44,19 @@
         "requestingYesNo":"no"
         },
         "request_location" : {
-        "templates" :[
-            "Where would you like to check in?"
-        ],
-        "newStates":["confirm_loc"],
-        "requestingYesNo":"no"
+            "templates" :[
+                "Where would you like to check in?"
+            ],
+            "newStates":["confirm_loc"],
+            "requestingYesNo":"no"
         },
+        "unknown_request_location" : {
+                    "templates" :[
+                        "I'm not sure about that.  Please tell me where would you like to check in."
+                    ],
+                    "newStates":["confirm_loc"],
+                    "requestingYesNo":"no"
+                },
         "unknown" : {
             "templates" : [
                 "I don't know how to handle that request."
@@ -64,13 +71,18 @@
         "newStates":["confirm_loc"],
         "requestingYesNo":"yes"
         },
+        "confirm" : {
+            "templates" : ["Please state yes or no."],
+            "newStates":["confirm_loc"],
+            "requestingYesNo":"yes"
+            },
         "auto_query" : {
-        "templates":[
-            "Please specify {query}"
-            ],
-        "newStates":[],
-        "requestingYesNo":"no"
-        },
+            "templates":[
+                "Please specify {query}"
+                ],
+            "newStates":[],
+            "requestingYesNo":"no"
+            },
         "repeat_request_loc" : {
             "templates": [
                 "I can't find a nearby merchant matching {local_search_query}.  Please respecify your location."
@@ -85,9 +97,9 @@
                     "newStates":["confirm_loc"],
                     "requestingYesNo":"no"
                 },
-        "hello" : {
+        "unknown_hello" : {
         "templates": [
-            "Hello {user}. I am the paypal_checkin app. What would you like to do?"
+            "I'm not sure about that! I am the paypal_checkin app. How can I help you?"
             ],
         "newStates": ["initial"],
         "requestingYesNo":"no"
