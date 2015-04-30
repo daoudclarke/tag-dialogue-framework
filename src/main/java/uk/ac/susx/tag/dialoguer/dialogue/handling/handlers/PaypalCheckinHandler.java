@@ -43,11 +43,12 @@ public class PaypalCheckinHandler extends Handler{
     public static final String quit = "quit";
     public static final String yes = "yes";
     public static final String no = "no";
-    public static final String confirmLoc = "confirm_loc";
+   // public static final String confirmLoc = "confirm_loc";
     public static final String checkinLoc = "check_in_loc";
     public static final String loc = "loc";
 
-    public static final List<String> locIntents = Lists.newArrayList(PaypalCheckinHandler.confirmLoc, PaypalCheckinHandler.checkinLoc, PaypalCheckinHandler.loc);
+    public static final List<String> locIntents = Lists.newArrayList(PaypalCheckinHandler.checkinLoc, PaypalCheckinHandler.loc);
+    public static final List<String> confirmIntents = Lists.newArrayList(confirm,yes,no);
 
 
     //analyser names
@@ -57,7 +58,6 @@ public class PaypalCheckinHandler extends Handler{
     //slot names
     public static final String yes_no_slot = "yes_no";
     public static final String locationSlot="local_search_query";
-    public static final String userSlot="user";
     public static final String merchantSlot="merchant";
 
     public PaypalCheckinHandler(){
@@ -95,25 +95,43 @@ public class PaypalCheckinHandler extends Handler{
         return d;
     }
 
-//    @Override
-//    public List<Intent> preProcessIntents(List<Intent> intents, Dialogue d){
-//        //if there are full intents, return these
-//        //otherwise return original list
-//        List<Intent> filteredIntents = intents.stream().filter(intent ->intent.areSlotsFilled(new HashSet<>())).collect(Collectors.toList());
-//        if(filteredIntents.isEmpty()){
-//            return intents;
-//        }
-//        else {
-//            return filteredIntents;
-//        }
-//    }
+    @Override
+    public List<Intent> preProcessIntents(List<Intent> intents, Dialogue d){
+        //remove any intents returned by the wit analyser which should have entities but don't
+        //this actually makes autoquerying pointless and would actually be better not to have them as necessary slots
+        //however this is actually better because it actually removes these intents
+
+        List<Intent> filtered = new ArrayList<>();
+        for(Intent i:intents){
+            if(i.getSource().equals(mainAnalyser)) {
+                if (locIntents.contains(i.getName())) {
+                    if (i.areSlotsFilled(Sets.newHashSet(locationSlot))) {
+                        filtered.add(i);
+                    }
+                } else {
+                    if (confirmIntents.contains(i.getName())) {
+                        if (i.areSlotsFilled(Sets.newHashSet(yes_no_slot))) {
+                            filtered.add(i);
+                        }
+                    } else {
+                        filtered.add(i);
+                    }
+                }
+            } else {
+                filtered.add(i);
+            }
+
+        }
+        for(Intent i: filtered){
+            System.err.println(i.toString());
+        }
+        return filtered;
+    }
 
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
-        for(Intent i:intents) {
-            System.err.println(i.getName());
-        }
+
         Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
 
         if(r==null) {

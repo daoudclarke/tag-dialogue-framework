@@ -22,17 +22,16 @@
     "necessarySlotsPerIntent" : {
         "confirm" : ["yes_no"],
         "loc" : ["local_search_query"],
-        "confirm_loc" : ["yes_no","local_search_query"],
         "check_in_loc" : ["local_search_query"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : {
-        "templates":[
-            "Cancelled. Thanks.",
-            "Cancelled. Bye!"
-        ],
-        "newStates":[],
-        "requestingYesNo":"no"
+            "templates":[
+                "Cancelled. Thanks.",
+                "Cancelled. Bye!"
+            ],
+            "newStates":[],
+            "requestingYesNo":"no"
         },
         "confirm_completion" : {
         "templates":[
@@ -50,11 +49,11 @@
         "requestingYesNo":"no"
         },
         "unknown" : {
-        "templates" : [
-            "I don't know how to handle that request."
-            ],
-        "newStates":[],
-        "requestingYesNo":"no"
+            "templates" : [
+                "I don't know how to handle that request."
+                ],
+            "newStates":[],
+            "requestingYesNo":"no"
         },
         "confirm_loc" : {
         "templates" : [

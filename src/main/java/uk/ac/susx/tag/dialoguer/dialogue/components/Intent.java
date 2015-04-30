@@ -108,7 +108,7 @@ public class Intent {
     }
 
     public boolean areSlotsFilled(Set<String> requiredSlotNames){
-        return !getUnfilledSlotNames(requiredSlotNames).isEmpty();
+        return getUnfilledSlotNames(requiredSlotNames).isEmpty();
     }
 
     public Intent fillSlot(String name, String value, int start, int end){

@@ -32,13 +32,8 @@ public class ConfirmMethod implements Handler.IntentHandler {
     }
 
     private Response handleConfirm(Intent i, Dialogue d, Object r) {
-        Collection<Intent.Slot> answers = i.getSlotByType(PaypalCheckinHandler.yes_no_slot);
-        boolean accept = answers.stream().anyMatch(answer->answer.value.equals("yes"));
-        if(accept){
-            return accept(d);
-        } else {
-            return reject(d, r);
-        }
+
+        return  i.isSlotTypeFilledWith(PaypalCheckinHandler.yes_no_slot, "yes") ?  accept(d) : reject(d,r);
     }
 
     private Response accept(Dialogue d){

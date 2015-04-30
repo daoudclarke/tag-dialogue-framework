@@ -238,19 +238,23 @@ public class DialogueTracker implements AutoCloseable {
             //System.err.println("Using json file: "+filename);
             while (doContinue){
                 userMessage=userinput.nextLine();
-                if(userMessage.startsWith("end")){
-                    doContinue=false;
-                } else {
-                    System.out.printf("%s\n", myTracker.getResponse(userId, userMessage, userData));
-                }
-                if(myTracker.isTracked(userId)) {
-                    //System.err.println("Still tracking");
-                    System.out.print(">");
-                } else{
-                    //System.err.println("Finished tracking");
-                    if(doContinue) {
-                        System.out.printf("Hello %s. I am the %s app.  What would you like to do?\n>", userId, task);
+                if(!userMessage.equals("")) {
+                    if (userMessage.startsWith("end")) {
+                        doContinue = false;
+                    } else {
+                        System.out.printf("%s\n", myTracker.getResponse(userId, userMessage, userData));
                     }
+                    if (myTracker.isTracked(userId)) {
+                        //System.err.println("Still tracking");
+                        System.out.print(">");
+                    } else {
+                        //System.err.println("Finished tracking");
+                        if (doContinue) {
+                            System.out.printf("Hello %s. I am the %s app.  What would you like to do?\n>", userId, task);
+                        }
+                    }
+                } else {
+                    System.out.print(">");
                 }
             }
 
