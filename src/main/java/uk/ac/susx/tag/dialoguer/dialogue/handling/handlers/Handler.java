@@ -3,6 +3,7 @@ package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 import org.reflections.Reflections;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
+import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 
@@ -51,7 +52,7 @@ public abstract class Handler implements AutoCloseable {
      *
      * By default, the list is left untouched.
      */
-    public List<Intent> preProcessIntents(List<Intent> intents, Dialogue dialogue){
+    public List<Intent> preProcessIntents(List<Intent> intents, List<IntentMatch> matches, Dialogue dialogue){
         return intents;
     }
 
