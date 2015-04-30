@@ -178,7 +178,12 @@ public class Dialoguer implements AutoCloseable {
                 intent.setSource(analyser.getSourceId());  // Source of the intent is the position of the analyser that produced it in the array of analysers
             intents.addAll(analysis);
         }
-        intents = handler.preProcessIntents(intents, dialogue);
+
+        List<IntentMatch> intentMatches = intents.stream()
+                .map(intent -> intent.getIntentMatch(necessarySlotsPerIntent.get(intent.getName())))
+                .collect(Collectors.toList());
+
+        intents = handler.preProcessIntents(intents, intentMatches, dialogue);
 
         // 3. Check to see if there is a cancellation intent, short-circuiting and finishing the dialogue
         if (isCancellationPresent(intents)){
@@ -224,7 +229,7 @@ public class Dialoguer implements AutoCloseable {
     }
 
     private Response handleNewIntents(List<Intent> intents, Dialogue dialogue, boolean autoQueryTracking){
-        // 9. Find which necessary slots are not filled
+        // 9. Find which necessary slots are not filled (re-process because there could be more intents)
         List<IntentMatch> intentMatches = intents.stream()
                 .map(intent -> intent.getIntentMatch(necessarySlotsPerIntent.get(intent.getName())))
                 .collect(Collectors.toList());

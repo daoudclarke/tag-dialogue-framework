@@ -52,7 +52,7 @@ public abstract class Handler implements AutoCloseable {
      *
      * By default, the list is left untouched.
      */
-    public List<Intent> preProcessIntents(List<Intent> intents, List<IntentMatch> matches, Dialogue dialogue){
+    public List<Intent> preProcessIntents(List<Intent> intents, List<IntentMatch> intentMatches, Dialogue dialogue){
         return intents;
     }
 
