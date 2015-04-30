@@ -1,5 +1,9 @@
 package uk.ac.susx.tag.dialoguer;
 
+import com.bpodgursky.jbool_expressions.Expression;
+import com.bpodgursky.jbool_expressions.parsers.ExprParser;
+import com.bpodgursky.jbool_expressions.rules.RuleSet;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -8,7 +12,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import org.apache.xml.serializer.utils.SerializerMessages_ru;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -140,7 +143,8 @@ public class Dialoguer implements AutoCloseable {
                                         .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonDeserializer())       // Custom deserialisation for multimap
                                         .registerTypeAdapter(ImmutableSet.class, JsonUtils.immutableSetJsonDeserializer()) // Custom deserialisation for immutableset
                                         .registerTypeAdapter(Pattern.class, new JsonUtils.PatternAdaptor().nullSafe())
-                                        .create();
+                                        .registerTypeAdapter(Expression.class, new JsonUtils.ExpressionAdaptor().nullSafe())
+                                    .create();
     private Handler handler;
     private List<Analyser> analysers;
 
@@ -395,6 +399,8 @@ public class Dialoguer implements AutoCloseable {
             dialogue.addNewSystemMessage(r.fillTemplate("Thanks, goodbye!"));
         } else if (r.getResponseName().equals(Response.defaultAutoQueryResponseId)) {
             dialogue.addNewSystemMessage(r.fillTemplate("Please specify {query}."));
+        } else if (r.getResponseName().equals(Response.defaultUnableToProcessResponseId)) {
+            dialogue.addNewSystemMessage(r.fillTemplate("I'm sorry; I don't understand."));
         }
         //Otherwise give up
         else throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
@@ -478,5 +484,18 @@ public class Dialoguer implements AutoCloseable {
         }
 
         if (!valid) throw new DialoguerException("Config file malformed.");
+    }
+
+    public static void main(String[] args){
+        Expression<String> expr =  ExprParser.parse("A & (B | C)");
+        System.out.println(expr);
+        Expression filledExpr = RuleSet.assign(expr, ImmutableMap.of(
+             "A", true,
+             "B", false,
+             "C", true,
+             "D", false
+        ));
+
+        System.out.println(filledExpr);
     }
 }

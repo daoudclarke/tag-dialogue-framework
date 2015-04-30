@@ -40,6 +40,7 @@ public class Response {
     public static final String defaultConfirmCancelResponseId = "confirm_cancellation";
     public static final String defaultCompletionResponseId = "confirm_complete";
     public static final String defaultAutoQueryResponseId = "auto_query";
+    public static final String defaultUnableToProcessResponseId = "unable_to_process";
 
     private static final Pattern templateVariableRegex = Pattern.compile("\\{(.+?)\\}");
 
@@ -142,6 +143,8 @@ public class Response {
     public static Response buildCompletionResponse(Map<String, String> responseVariables){
         return new Response(defaultCompletionResponseId, responseVariables);
     }
+
+    public static Response buildUnableToProcessResponse() { return new Response(defaultUnableToProcessResponseId); }
 
     public static class ResponseException extends RuntimeException {
         public ResponseException(String msg) { super(msg);}
