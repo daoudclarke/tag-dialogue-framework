@@ -41,7 +41,7 @@
             "I don't know how to handle that request."
             ],
         "confirm_loc" : [
-            "Please confirm that you wish to check in at {local_search_query}"
+            "Please confirm that you wish to check in at {merchant}"
             ],
         "auto_query" : [
             "Please specify {query}"
