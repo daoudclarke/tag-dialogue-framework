@@ -1,6 +1,8 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers;
 
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
@@ -93,6 +95,7 @@ public class LocMethod implements Handler.ProblemHandler {
                 .map(location->location.value)
                 .collect(Collectors.toList());
         String cacheLocationList=d.getFromWorkingMemory("location_list");
+        String cacheTagList=d.getFromWorkingMemory("tag_list");
         List<Merchant> possibleMerchants = matchNearbyMerchants(location_list, db, d.getUserData(), d);
         if(possibleMerchants.size()>0&&d.isInWorkingMemory("merchantId",possibleMerchants.get(0).getMerchantId())) {
 
@@ -101,6 +104,7 @@ public class LocMethod implements Handler.ProblemHandler {
             ConfirmMethod.handleReject(d);
             //reinstate previous location_list
             d.putToWorkingMemory("location_list",cacheLocationList);
+            d.putToWorkingMemory("tag_list",cacheTagList);
             if(d.getFromWorkingMemory("location_list")==null) {
 
                 possibleMerchants = LocMethod.filterRejected(LocMethod.findNearbyMerchants(db, d.getUserData()), d.getFromWorkingMemory("rejectedlist"));
@@ -109,7 +113,7 @@ public class LocMethod implements Handler.ProblemHandler {
                 possibleMerchants = LocMethod.matchNearbyMerchants(db, d.getUserData(), d);//will use workingmemory's location_list
             }
 
-            LocMethod.processMerchantList(possibleMerchants, d);
+            LocMethod.processMerchantList(possibleMerchants, d,db);
 
         }
         else {
@@ -162,12 +166,12 @@ public class LocMethod implements Handler.ProblemHandler {
                     d.putToWorkingMemory("accepting", "no");
                 } else {
                     //System.err.println(possibleMerchants);
-                    processMerchantList(possibleMerchants, d); //assume it was a rejection of the previous suggestion
+                    processMerchantList(possibleMerchants, d, db); //assume it was a rejection of the previous suggestion
                 }
             }
         }else {
             //System.err.println(possibleMerchants);
-            processMerchantList(possibleMerchants, d);
+            processMerchantList(possibleMerchants, d, db);
         }
         if(d.isInWorkingMemory("accepting","yes")){//still accepting after checking possible location
             ConfirmMethod.handleAccept(d);
@@ -175,7 +179,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     }
 
-    public static void processMerchantList(List<Merchant> possibleMerchants, Dialogue d){
+    public static void processMerchantList(List<Merchant> possibleMerchants, Dialogue d, ProductMongoDB db){
 
         if(possibleMerchants.size()==0){
             if(d.getFromWorkingMemory("location_list")==null){
@@ -190,14 +194,18 @@ public class LocMethod implements Handler.ProblemHandler {
             }
 
         } else {
-            if(possibleMerchants.size()==1){
-                d.pushFocus("confirm_loc");
+            if(possibleMerchants.size()>0) { //may want to do something different if multiple merchants returned but currently assume first is best and just offer this one
+                if (d.getFromWorkingMemory("productSearch") == null) {
+                    d.pushFocus("confirm_loc");
+                } else {
+                    d.pushFocus("confirm_loc_product");
+                    List<Merchant> mymerchant = Lists.newArrayList(possibleMerchants.get(0));
+                    List<Product> products = db.productQueryWithMerchants(d.getFromWorkingMemory("location_list"),mymerchant,new HashSet<>(),limit);
+                    d.putToWorkingMemory("product",products.get(0).propertyDescription());
+                }
                 updateMerchant(possibleMerchants.get(0), d);
-            }
-            else{
-                //may want to do something different if multiple merchants returned but currently assume first is best and just offer this one
-                d.pushFocus("confirm_loc");
-                updateMerchant(possibleMerchants.get(0),d);
+
+
             }
         }
 
@@ -248,6 +256,7 @@ public class LocMethod implements Handler.ProblemHandler {
     }
 
     public static List<Merchant> matchNearbyMerchants(List<String> location_list, ProductMongoDB db,User user, Dialogue d){
+        d.putToWorkingMemory("productSearch",null);
         List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
         d.putToWorkingMemory("location_list",StringUtils.phrasejoin(location_list));
         merchants.retainAll(db.merchantQuery(StringUtils.phrasejoin(location_list)));
@@ -265,7 +274,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static List<Merchant> matchNearbyMerchants(ProductMongoDB db,User user, Dialogue d){
         //used when location_list is retrieved from working memory
-
+        d.putToWorkingMemory("productSearch",null);
         List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
         merchants.retainAll(db.merchantQuery(d.getFromWorkingMemory("location_list")));
         if(merchants.size()==0){//try a product match instead
@@ -285,19 +294,32 @@ public class LocMethod implements Handler.ProblemHandler {
         else{
             merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
         }
-        List<Product> products = db.productQueryWithMerchants(StringUtils.phrasejoin(location_list),merchants,new HashSet<>(),limit);
+
         d.putToWorkingMemory("location_list",StringUtils.phrasejoin(location_list));
+        d.putToWorkingMemory("tag_list",StringUtils.detokenise(location_list));
+        List<Product> products = db.productQueryWithMerchants(d.getFromWorkingMemory("location_list"),merchants, Sets.newHashSet(d.getFromWorkingMemory("tag_list")),limit);//quotes + tags
+
         ProductSet ps = new ProductSet(user.getLocationData(),products);
         Set<Merchant> merchantSet= ps.fetchMerchants();
-        if(merchantSet.size()==0){
-            products=db.productQueryWithMerchants(StringUtils.detokenise(location_list),merchants,new HashSet<>(),limit);
-            d.putToWorkingMemory("location_list",StringUtils.detokenise(location_list));
-            ps=new ProductSet();
-            ps.updateProducts(products);
-            merchantSet=ps.fetchMerchants();
+        if(merchantSet.isEmpty()) {
+            products = db.productQueryWithMerchants(d.getFromWorkingMemory("location_list"), merchants, new HashSet<>(), limit);//quotes, no tags
+            ps = new ProductSet(user.getLocationData(), products);
+            merchantSet = ps.fetchMerchants();
+            if (merchantSet.size() == 0) {
+                d.putToWorkingMemory("location_list", StringUtils.detokenise(location_list));
+                products=db.productQueryWithMerchants(d.getFromWorkingMemory("location_list"),merchants,Sets.newHashSet(d.getFromWorkingMemory("tag_list")),limit);//no quotes + tags
+                ps= new ProductSet(user.getLocationData(),products);
+                merchantSet=ps.fetchMerchants();
+                if(merchantSet.isEmpty()) {
+                    products = db.productQueryWithMerchants(d.getFromWorkingMemory("location_list"), merchants, new HashSet<>(), limit);//no quotes + no tags
+                    ps = new ProductSet(user.getLocationData(), products);
+                    merchantSet = ps.fetchMerchants();
+                }
+            }
         }
         merchants.retainAll(merchantSet);
 
+        d.putToWorkingMemory("productSearch","yes");
         return merchants;
 
     }
@@ -306,12 +328,20 @@ public class LocMethod implements Handler.ProblemHandler {
         //used when location_list is retrieved from workingmemory
 
         List<Merchant> merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
-        List<Product> products = db.productQueryWithMerchants(d.getFromWorkingMemory("location_list"),merchants,new HashSet<>(),limit);
+
+        List<Product> products = db.productQueryWithMerchants(d.getFromWorkingMemory("location_list"),merchants,Sets.newHashSet(d.getFromWorkingMemory("tag_list")),limit);
         ProductSet ps = new ProductSet();
         ps.updateProducts(products);
         Set<Merchant> merchantSet= ps.fetchMerchants();
-
+        if(merchantSet.isEmpty()) {
+            products = db.productQueryWithMerchants(d.getFromWorkingMemory("location_list"), merchants, new HashSet<>(), limit);
+            ps = new ProductSet();
+            ps.updateProducts(products);
+            merchantSet = ps.fetchMerchants();
+        }
         merchants.retainAll(merchantSet);
+
+        d.putToWorkingMemory("productSearch","yes");
         return merchants;
 
     }
@@ -325,6 +355,10 @@ public class LocMethod implements Handler.ProblemHandler {
         switch(focus){
             case "confirm_loc":
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
+                break;
+            case "confirm_loc_product":
+                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
+                responseVariables.put(PaypalCheckinHandler.productSlot,d.getFromWorkingMemory("product"));
                 break;
             case "repeat_request_loc":
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));

@@ -61,6 +61,7 @@ public class PaypalCheckinHandler extends Handler{
     public static final String yes_no_slot = "yes_no";
     public static final String locationSlot="local_search_query";
     public static final String merchantSlot="merchant";
+    public static final String productSlot="product";
 
     public PaypalCheckinHandler(){
 
@@ -123,9 +124,9 @@ public class PaypalCheckinHandler extends Handler{
             }
 
         }
-        for(Intent i: filtered){
-            System.err.println(i.toString());
-        }
+        //for(Intent i: filtered){
+        //    System.err.println(i.toString());
+        //}
         return filtered;
     }
 
@@ -136,8 +137,10 @@ public class PaypalCheckinHandler extends Handler{
         Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
 
         if(r==null) {
-
-            r=applyIntentHandler(Intent.getFirstIntentFromSource(mainAnalyser,intents),dialogue,this.db);//then get wit's response
+            Intent i = Intent.getFirstIntentFromSource(mainAnalyser,intents);
+            if(!(i ==null)) {
+                r = applyIntentHandler(Intent.getFirstIntentFromSource(mainAnalyser, intents), dialogue, this.db);//get wit's response
+            }
         }
         if(r==null){//no intent handler
             if(dialogue.getStates().contains("initial")) {

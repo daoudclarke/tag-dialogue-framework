@@ -352,7 +352,7 @@ public class Product {
         return "@ "+this.getMerchant().getInfo(myloc);
     }
 
-    private String propertyDescription(){
+    public String propertyDescription(){
         List<String> mainprops = new ArrayList<>(this.getMainProps()); // this needs to be a copy so local version can be updated
 
         //Set<String> props = this.getProperties().keySet(); //alternative for displaying all properties rather than main props

@@ -28,7 +28,7 @@ public class CheckinMethod implements Handler.IntentHandler {
         d.putToWorkingMemory("rejectionlist",null); // in case restarting
         List<Merchant> possibleMerchants = LocMethod.findNearbyMerchants(db, d.getUserData());
 
-        LocMethod.processMerchantList(possibleMerchants, d);
+        LocMethod.processMerchantList(possibleMerchants, d,db);
         return processStack(d);
 
 
@@ -44,6 +44,10 @@ public class CheckinMethod implements Handler.IntentHandler {
         switch(focus){
             case "confirm_loc":
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
+                break;
+            case "confirm_loc_product":
+                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
+                responseVariables.put(PaypalCheckinHandler.productSlot,d.getFromWorkingMemory("product"));
                 break;
             case "repeat_request_loc":
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));

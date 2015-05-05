@@ -17,7 +17,10 @@ import java.util.*;
 public class ConfirmMethod implements Handler.ProblemHandler {
 
     public boolean isInHandleableState(List<Intent> intents, Dialogue d){
-        return intents.stream().anyMatch(i -> PaypalCheckinHandler.confirmIntents.contains(i.getName()));
+        boolean intentMatch= intents.stream().anyMatch(i -> PaypalCheckinHandler.confirmIntents.contains(i.getName()));
+        boolean stateMatch=(d.getFromWorkingMemory("merchantId")==null||d.getFromWorkingMemory("merchantId").equals("")?false:true);
+
+        return intentMatch&&stateMatch;
     }
 
     public Response handle(List<Intent> intents, Dialogue d, Object r){
@@ -62,7 +65,7 @@ public class ConfirmMethod implements Handler.ProblemHandler {
             possibleMerchants = LocMethod.matchNearbyMerchants(db, d.getUserData(), d);//will use workingmemory's location_list
         }
 
-        LocMethod.processMerchantList(possibleMerchants, d);
+        LocMethod.processMerchantList(possibleMerchants, d,db);
         return processStack(d);
     }
 
@@ -76,6 +79,10 @@ public class ConfirmMethod implements Handler.ProblemHandler {
         switch(focus){
             case "confirm_loc":
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
+                break;
+            case "confirm_loc_product":
+                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
+                responseVariables.put(PaypalCheckinHandler.productSlot,d.getFromWorkingMemory("product"));
                 break;
             case "repeat_request_loc":
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));

@@ -30,7 +30,8 @@
         "confirm_cancellation" : {
             "templates":[
                 "Cancelled. Thanks.",
-                "Cancelled. Bye!"
+                "Cancelled. Bye!",
+                "Thanks for your interest.  Talk to you next time you want to check in with PayPal."
             ],
             "newStates":[],
             "requestingYesNo":"no"
@@ -38,7 +39,8 @@
         "confirm_completion" : {
         "templates":[
             "Completed. Thanks.",
-            "Completed. Bye!"
+            "Completed. Bye!",
+            "Great, now go ahead with your purchase and let them know at checkout that you want to pay with PayPal"
         ],
         "newStates":[],
         "requestingYesNo":"no"
@@ -59,18 +61,26 @@
                 },
         "unknown" : {
             "templates" : [
-                "I don't know how to handle that request."
+                "I don't know how to handle that request.",
+                "I don't understand.  Please try again."
                 ],
-            "newStates":[],
+            "newStates":["initial"],
             "requestingYesNo":"no"
         },
         "confirm_loc" : {
-        "templates" : [
-            "Please confirm that you wish to check in at {merchant}"
-            ],
-        "newStates":["confirm_loc"],
-        "requestingYesNo":"yes"
+            "templates" : [
+                "Please confirm that you wish to check in at {merchant}"
+                ],
+            "newStates":["confirm_loc"],
+            "requestingYesNo":"yes"
         },
+        "confirm_loc_product" : {
+                    "templates" : [
+                        "Please confirm that you wish to check in at {merchant} (sells products like: {product})"
+                        ],
+                    "newStates":["confirm_loc"],
+                    "requestingYesNo":"yes"
+                },
         "confirm" : {
             "templates" : ["Please state yes or no."],
             "newStates":["confirm_loc"],
@@ -80,7 +90,6 @@
             "templates":[
                 "Please specify {query}"
                 ],
-            "newStates":[],
             "requestingYesNo":"no"
             },
         "repeat_request_loc" : {
