@@ -1,5 +1,7 @@
 package uk.ac.susx.tag.dialoguer.utils;
 
+import com.bpodgursky.jbool_expressions.Expression;
+import com.bpodgursky.jbool_expressions.parsers.ExprParser;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -38,6 +40,19 @@ import java.util.regex.Pattern;
  */
 public class JsonUtils {
 
+/***************************************************************
+ * Support for (de)serialisation boolean expressions
+ *************************************************************/
+    public static class ExpressionAdaptor extends TypeAdapter<Expression> {
+        @Override
+        public void write(JsonWriter out, Expression value) throws IOException {
+            out.value(value.toString());
+        }
+        @Override
+        public Expression read(JsonReader in) throws IOException {
+            return ExprParser.parse(in.nextString());
+        }
+    }
 
 /***************************************************************
  * Support for (de)serialisation compiled regex patterns

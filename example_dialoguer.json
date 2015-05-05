@@ -20,19 +20,11 @@
         "buy_general" : ["product_query"]
     },
     "responseTemplates" : {
-        "confirm_cancellation" : [
-            "Cancelled. Thanks.",
-            "Cancelled. Bye!"
-        ],
-        "confirm_completion" : [
-            "Completed. Thanks.",
-            "Completed. Bye!"
-        ],
-        "confirm_product_purchase" : [
-            "Are you sure you want to buy {product_name}?"
-        ],
-        "choices" : [
-            "Do you want: {choices}"
-        ]
+        "confirm_cancellation" : {
+            "templates" : [
+                "Cancelled. Thanks.",
+                "Cancelled. Bye!"
+            ]
+        }
     }
 }

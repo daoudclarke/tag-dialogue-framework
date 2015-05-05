@@ -1,9 +1,14 @@
 package uk.ac.susx.tag.dialoguer;
 
+import com.bpodgursky.jbool_expressions.Expression;
+import com.bpodgursky.jbool_expressions.parsers.ExprParser;
+import com.bpodgursky.jbool_expressions.rules.RuleSet;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
@@ -138,7 +143,8 @@ public class Dialoguer implements AutoCloseable {
                                         .registerTypeAdapter(Multimap.class, JsonUtils.multimapJsonDeserializer())       // Custom deserialisation for multimap
                                         .registerTypeAdapter(ImmutableSet.class, JsonUtils.immutableSetJsonDeserializer()) // Custom deserialisation for immutableset
                                         .registerTypeAdapter(Pattern.class, new JsonUtils.PatternAdaptor().nullSafe())
-                                        .create();
+                                        .registerTypeAdapter(Expression.class, new JsonUtils.ExpressionAdaptor().nullSafe())
+                                    .create();
     private Handler handler;
     private List<Analyser> analysers;
 
@@ -250,6 +256,7 @@ public class Dialoguer implements AutoCloseable {
     }
 
     public static Dialoguer loadDialoguerFromJsonResourceOrFile(String dialoguerDefinition) throws IOException {
+        validateDialoguerConfig(dialoguerDefinition);
         Dialoguer d =  readObjectFromJsonResourceOrFile(dialoguerDefinition, Dialoguer.class);
         d.validateAnalyserIdsOrThrow(d.handler.getRequiredAnalyserSourceIds());
         return d;
@@ -394,6 +401,8 @@ public class Dialoguer implements AutoCloseable {
             dialogue.addNewSystemMessage(r.fillTemplate("Thanks, goodbye!"));
         } else if (r.getResponseName().equals(Response.defaultAutoQueryResponseId)) {
             dialogue.addNewSystemMessage(r.fillTemplate("Please specify {query}."));
+        } else if (r.getResponseName().equals(Response.defaultUnableToProcessResponseId)) {
+            dialogue.addNewSystemMessage(r.fillTemplate("I'm sorry; I don't understand."));
         }
         //Otherwise give up
         else throw new DialoguerException("No response template found for this response name: " + r.getResponseName());
@@ -414,5 +423,81 @@ public class Dialoguer implements AutoCloseable {
              .isEmpty())
             throw new DialoguerException("Handler requires Analysers with the following source IDs: "
                     + requiredSourceIds.stream().collect(Collectors.joining(", ")));
+    }
+
+    private static void validateDialoguerConfig(String resourcePath) throws IOException {
+        boolean valid = true;
+
+        Map<String, Object> obj = Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, new TypeToken<Map<String, Object>>(){}.getType());
+        Set<String> allowableTopLevelFields = Sets.newHashSet("handler", "analysers", "humanReadableSlotNames", "necessarySlotsPerIntent", "responseTemplates");
+        Set<String> necessaryTopLevelFields = Sets.newHashSet("handler", "analysers");
+        Set<String> handlerAnalyserFields = Sets.newHashSet("name", "path");
+        Set<String> allowableResponseTemplateFields = Sets.newHashSet("templates", "newStates", "requestingYesNo");
+
+
+        if (!Sets.difference(necessaryTopLevelFields, obj.keySet()).isEmpty()) {
+            System.err.println("Config object must define the following fields: " + necessaryTopLevelFields); valid = false;
+        }
+
+        if (!Sets.difference(obj.keySet(), allowableTopLevelFields).isEmpty()) {
+            System.err.println("Config has unexpected fields: " + Sets.difference(obj.keySet(), allowableTopLevelFields)); valid = false;
+        }
+
+        if (obj.containsKey("handler")){
+            Map<String, String> handler = (Map<String, String>) obj.get("handler");
+            if (!Sets.difference(handler.keySet(), handlerAnalyserFields).isEmpty()) {
+                System.err.println("Handler has unexpected fields: " + Sets.difference(handler.keySet(), handlerAnalyserFields)); valid = false;
+            }
+            if (!Sets.difference( Sets.newHashSet("name"), handler.keySet()).isEmpty()) {
+                System.err.println("Handler requires the following fields: " + Sets.newHashSet("name")); valid = false;
+            }
+        }
+
+        if (obj.containsKey("analysers")){
+            if (!(obj.get("analysers") instanceof List)) {
+                System.err.println("Analysers must be list of objects.");
+                throw new DialoguerException("Config file malformed.");
+            }
+            List<Map<String, String>> analysers = (List<Map<String, String>>) obj.get("analysers");
+            for (Map<String, String> analyser : analysers){
+                if (!Sets.difference(analyser.keySet(), handlerAnalyserFields).isEmpty()) {
+                    System.err.println("Analyser has unexpected fields: " + Sets.difference(analyser.keySet(), handlerAnalyserFields)); valid = false;
+                }
+                if (!Sets.difference(Sets.newHashSet("name"), analyser.keySet()).isEmpty()) {
+                    System.err.println("Analyser requires the following fields: " + Sets.newHashSet("name")); valid = false;
+                }
+            }
+        }
+
+        if (obj.containsKey("responseTemplates")){
+            if (!(obj.get("responseTemplates") instanceof Map)) {
+                System.err.println("responseTemplates must be a map from response name strings, to response template objects.");
+                throw new DialoguerException("Config file malformed.");
+            }
+            Map<String, Map<String, Object>> responseTemplates = (Map<String, Map<String, Object>>) obj.get("responseTemplates");
+            for (Map<String, Object> responseAtts : responseTemplates.values()){
+                if (!Sets.difference(responseAtts.keySet(), allowableResponseTemplateFields).isEmpty()) {
+                    System.err.println("Response templates has unexpected fields: " + Sets.difference(responseAtts.keySet(), allowableResponseTemplateFields)); valid = false;
+                }
+                if (!Sets.difference(Sets.newHashSet("templates"), responseAtts.keySet()).isEmpty()) {
+                    System.err.println("Analyser requires the following fields: " + Sets.newHashSet("templates")); valid = false;
+                }
+            }
+        }
+
+        if (!valid) throw new DialoguerException("Config file malformed.");
+    }
+
+    public static void main(String[] args){
+        Expression<String> expr =  ExprParser.parse("A & (B | C)");
+        System.out.println(expr);
+        Expression filledExpr = RuleSet.assign(expr, ImmutableMap.of(
+             "A", true,
+             "B", false,
+             "C", true,
+             "D", false
+        ));
+
+        System.out.println(filledExpr);
     }
 }
