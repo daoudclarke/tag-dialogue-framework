@@ -121,9 +121,9 @@ public class PaypalCheckinHandler extends Handler{
             }
 
         }
-//        for(Intent i: filtered){
-//            System.err.println(i.toString());
-//        }
+        for(Intent i: filtered){
+            System.err.println(i.toString());
+        }
         return filtered;
     }
 
