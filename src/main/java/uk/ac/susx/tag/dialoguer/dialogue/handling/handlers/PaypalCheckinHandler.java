@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 /**
  * Created by juliewe on 20/04/2015.
  *
- * TODO: handle neg_loc for No not Bench
  *
  */
 public class PaypalCheckinHandler extends Handler{
