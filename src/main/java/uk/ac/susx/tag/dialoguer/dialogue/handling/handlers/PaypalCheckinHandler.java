@@ -12,6 +12,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.PaypalCheckinHandler
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.ConfirmMethod;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.CheckinMethod;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.LocMethod;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.UnknownMethod;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
 
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 /**
  * Created by juliewe on 20/04/2015.
  *
- * TODO: check null pointer on "fab thats right"
+ * TODO: handle neg_loc for No not Bench
  *
  */
 public class PaypalCheckinHandler extends Handler{
@@ -45,8 +46,10 @@ public class PaypalCheckinHandler extends Handler{
     public static final String no = "no";
     public static final String checkinLoc = "check_in_loc";
     public static final String loc = "loc";
+    public static final String nochoice="no_choice";
+    public static final String neg_loc="neg_loc";
 
-    public static final List<String> locIntents = Lists.newArrayList(PaypalCheckinHandler.checkinLoc, PaypalCheckinHandler.loc);
+    public static final List<String> locIntents = Lists.newArrayList(PaypalCheckinHandler.checkinLoc, PaypalCheckinHandler.loc, neg_loc);
     public static final List<String> confirmIntents = Lists.newArrayList(confirm,yes,no);
 
 
@@ -62,12 +65,11 @@ public class PaypalCheckinHandler extends Handler{
     public PaypalCheckinHandler(){
 
         super.registerIntentHandler(quit, (i, d, r) -> new Response("confirm_cancellation"));
-        super.registerIntentHandler(confirm, new ConfirmMethod());
-        super.registerIntentHandler(yes,new ConfirmMethod());
-        super.registerIntentHandler(no,new ConfirmMethod());
-        super.registerIntentHandler(checkinIntent,new CheckinMethod());
-        super.registerIntentHandler(otherIntent, (i,d, r) -> new Response("unknown"));
+        super.registerIntentHandler(nochoice, new UnknownMethod());
+        super.registerIntentHandler(checkinIntent, new CheckinMethod());
+        super.registerIntentHandler(otherIntent, new UnknownMethod());
         super.registerProblemHandler(new LocMethod()); //this deals with loc, check_in_loc and confirm_loc from the wit.analyser
+        super.registerProblemHandler(new ConfirmMethod()); //deals with confirm from wit and yes/no from yes_no analyser
     }
 
     public void setupDatabase()throws Dialoguer.DialoguerException {
@@ -134,12 +136,18 @@ public class PaypalCheckinHandler extends Handler{
         Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
 
         if(r==null) {
-            Intent mainIntent = Intent.getFirstIntentFromSource(yesNoAnalyser,intents);//then check for a response from yes_no
-            if(mainIntent==null){
-                mainIntent=Intent.getFirstIntentFromSource(mainAnalyser,intents);//then get wit's response
-            }
-            r=applyIntentHandler(mainIntent, dialogue, this.db);
+
+            r=applyIntentHandler(Intent.getFirstIntentFromSource(mainAnalyser,intents),dialogue,this.db);//then get wit's response
         }
+        if(r==null){//no intent handler
+            if(dialogue.getStates().contains("initial")) {
+                r = new Response("unknown_hello");
+            } else {
+                r= new Response("unknown_request_location");
+            }
+
+        }
+
         return r;
     }
 

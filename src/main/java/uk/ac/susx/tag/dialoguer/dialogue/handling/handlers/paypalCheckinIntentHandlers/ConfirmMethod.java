@@ -14,11 +14,14 @@ import java.util.*;
 /**
  * Created by juliewe on 21/04/2015.
  */
-public class ConfirmMethod implements Handler.IntentHandler {
+public class ConfirmMethod implements Handler.ProblemHandler {
 
+    public boolean isInHandleableState(List<Intent> intents, Dialogue d){
+        return intents.stream().anyMatch(i -> PaypalCheckinHandler.confirmIntents.contains(i.getName()));
+    }
 
-
-    public Response handle(Intent i, Dialogue d, Object r){
+    public Response handle(List<Intent> intents, Dialogue d, Object r){
+        Intent i = intents.stream().filter(intent->PaypalCheckinHandler.confirmIntents.contains(intent.getName())).findFirst().get();
         switch(i.getName()){
             case PaypalCheckinHandler.yes:
                 return accept(d);
@@ -65,7 +68,7 @@ public class ConfirmMethod implements Handler.IntentHandler {
 
 
     private Response processStack(Dialogue d){
-        String focus="hello";
+        String focus="unknown_hello";
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
         }
@@ -75,6 +78,10 @@ public class ConfirmMethod implements Handler.IntentHandler {
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
                 break;
             case "repeat_request_loc":
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
+                d.setRequestingYesNo(false);
+                break;
+            case "repeat_request_loc_rejects":
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
                 d.setRequestingYesNo(false);
                 break;

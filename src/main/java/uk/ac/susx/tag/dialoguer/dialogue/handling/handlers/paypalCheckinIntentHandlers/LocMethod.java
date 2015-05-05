@@ -44,7 +44,10 @@ public class LocMethod implements Handler.ProblemHandler {
         //now get location intent
         Optional<Intent> location = intents.stream().filter(intent->PaypalCheckinHandler.locIntents.contains(intent.getName())).findFirst();
         if(location.isPresent()){
-            handleLocation(location.get(),d,resource);
+            if(location.get().getName().equals(PaypalCheckinHandler.neg_loc)){handleNegLocation(location.get(),d,resource);}
+            else {
+                handleLocation(location.get(), d, resource);
+            }
         }
 
         
@@ -76,6 +79,47 @@ public class LocMethod implements Handler.ProblemHandler {
         //System.err.println(d.getFromWorkingMemory("accepting"));
     }
 
+    public static void handleNegLocation(Intent i, Dialogue d, Object resource){
+        //System.err.println("Negative location!");
+        ProductMongoDB db;
+        try {
+            db = (ProductMongoDB) resource;
+        } catch (ClassCastException e){
+            throw new Dialoguer.DialoguerException("Resource should be mongo db", e);
+        }
+
+        //definite location slot
+        List<String> location_list = i.getSlotByType(PaypalCheckinHandler.locationSlot).stream()
+                .map(location->location.value)
+                .collect(Collectors.toList());
+        String cacheLocationList=d.getFromWorkingMemory("location_list");
+        List<Merchant> possibleMerchants = matchNearbyMerchants(location_list, db, d.getUserData(), d);
+        if(possibleMerchants.size()>0&&d.isInWorkingMemory("merchantId",possibleMerchants.get(0).getMerchantId())) {
+
+            //this is just a standard reject of the current suggestion
+            //System.err.println("Rejecting current suggestion");
+            ConfirmMethod.handleReject(d);
+            //reinstate previous location_list
+            d.putToWorkingMemory("location_list",cacheLocationList);
+            if(d.getFromWorkingMemory("location_list")==null) {
+
+                possibleMerchants = LocMethod.filterRejected(LocMethod.findNearbyMerchants(db, d.getUserData()), d.getFromWorkingMemory("rejectedlist"));
+            } else {
+                System.err.println(d.getFromWorkingMemory("location_list"));
+                possibleMerchants = LocMethod.matchNearbyMerchants(db, d.getUserData(), d);//will use workingmemory's location_list
+            }
+
+            LocMethod.processMerchantList(possibleMerchants, d);
+
+        }
+        else {
+            //avoid trying to handle logic of negation - ignore and ask user to specify location
+            d.pushFocus("request_location");
+
+        }
+
+    }
+
     public static void handleLocation(Intent i, Dialogue d, Object resource){
         //DialogueTracker.logger.log(Level.INFO, "Im in handleLocation");
 
@@ -93,6 +137,8 @@ public class LocMethod implements Handler.ProblemHandler {
                                                 .collect(Collectors.toList());
 
 
+
+
         List<Merchant> possibleMerchants = matchNearbyMerchants(location_list, db, d.getUserData(), d);
         //System.err.println(d.getFromWorkingMemory("accepting"));
         if(d.isInWorkingMemory("accepting","yes")||(d.isInWorkingMemory("accepting","no_choice")&&d.getFromWorkingMemory("merchantId")!=null)){
@@ -101,7 +147,12 @@ public class LocMethod implements Handler.ProblemHandler {
             for(Merchant m:possibleMerchants){
                 if(m.getMerchantId().equals(d.getFromWorkingMemory("merchantId"))){
                     match=true;
-                    d.putToWorkingMemory("accepting","yes");
+                    if(d.isInWorkingMemory("accepting","no_choice")&&d.isRequestingYesNo()) {
+                        //d.putToWorkingMemory("accepting","yes"); //shouldn't upgrade this to a definite yes.
+                        d.pushFocus("confirm");
+                    } else {
+                        d.pushFocus("confirm_loc");
+                    }
                 }
             }
             if(!match){
@@ -130,13 +181,18 @@ public class LocMethod implements Handler.ProblemHandler {
             if(d.getFromWorkingMemory("location_list")==null){
                 d.pushFocus("request_location");
             } else {
-                d.pushFocus("repeat_request_loc");
+                if(d.getFromWorkingMemory("rejectedlist")==null) {
+                    d.pushFocus("repeat_request_loc");
+                } else {
+                    d.pushFocus("repeat_request_loc_rejects");
+                    d.putToWorkingMemory("rejectedlist",null); //clear this for a restart
+                }
             }
 
         } else {
             if(possibleMerchants.size()==1){
                 d.pushFocus("confirm_loc");
-                updateMerchant(possibleMerchants.get(0),d);
+                updateMerchant(possibleMerchants.get(0), d);
             }
             else{
                 //may want to do something different if multiple merchants returned but currently assume first is best and just offer this one
@@ -161,13 +217,13 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static List<Merchant> findNearbyMerchants(ProductMongoDB db, User user){
 
-        return db.merchantQueryByLocation(user.getLatitude(),user.getLongitude(),searchradius,limit);
+        return db.merchantQueryByLocation(user.getLatitude(), user.getLongitude(), searchradius, limit);
 
 
     }
 
     public static List<Merchant> filterRejected(List<Merchant> merchants, String rejectedlist){
-        //System.err.println("rejected: "+rejectedlist);
+       // System.err.println("rejected: "+rejectedlist);
         if(rejectedlist==null){
             return merchants;
         } else {
@@ -176,11 +232,13 @@ public class LocMethod implements Handler.ProblemHandler {
             for (Merchant m : merchants) {
                 boolean reject=false;
                 for (String r : rejected) {
+                    //System.err.println(":"+r+":"+m.getMerchantId()+":");
                     if (m.getMerchantId().equals(r)) {
                         reject=true;
 
                     }
                 }
+                //System.err.println(m.getMerchantId()+":"+reject);
                 if(!reject){
                     newmerchants.add(m);
                 }
@@ -194,7 +252,7 @@ public class LocMethod implements Handler.ProblemHandler {
         d.putToWorkingMemory("location_list",StringUtils.phrasejoin(location_list));
         merchants.retainAll(db.merchantQuery(StringUtils.phrasejoin(location_list)));
         if(merchants.size()==0){
-            merchants = findNearbyMerchants(db,user);
+            merchants = filterRejected(findNearbyMerchants(db, user), d.getFromWorkingMemory("rejectedlist"));
             merchants.retainAll(db.merchantQuery(StringUtils.detokenise(location_list)));
             d.putToWorkingMemory("location_list",StringUtils.detokenise(location_list));
         }
@@ -259,7 +317,7 @@ public class LocMethod implements Handler.ProblemHandler {
     }
 
     private Response processStack(Dialogue d){
-        String focus="hello";
+        String focus="unknown_hello";
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
         }
@@ -271,11 +329,14 @@ public class LocMethod implements Handler.ProblemHandler {
             case "repeat_request_loc":
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
                 break;
+            case "repeat_request_loc_rejects":
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
+                break;
             //case "request_location":
               //  break;
             case "reconfirm_loc":
                 responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
-                responseVariables.put(PaypalCheckinHandler.locationSlot,d.getFromWorkingMemory("location_list"));
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
             //case "confirm_completion":
 
         }

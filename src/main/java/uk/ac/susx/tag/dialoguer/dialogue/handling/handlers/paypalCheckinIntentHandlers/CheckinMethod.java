@@ -36,7 +36,7 @@ public class CheckinMethod implements Handler.IntentHandler {
     }
 
     private Response processStack(Dialogue d){
-        String focus="hello";
+        String focus="unknown_hello";
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
         }
@@ -47,6 +47,10 @@ public class CheckinMethod implements Handler.IntentHandler {
                 break;
             case "repeat_request_loc":
                 responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
+                break;
+            case "repeat_request_loc_rejects":
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
+                d.setRequestingYesNo(false);
                 break;
             //case "request_location":
                // break;
