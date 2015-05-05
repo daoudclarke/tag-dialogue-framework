@@ -487,8 +487,4 @@ public class Dialoguer implements AutoCloseable {
 
         if (!valid) throw new DialoguerException("Config file malformed.");
     }
-
-    public static void main(String[] args) throws IOException {
-        Dialoguer.loadDialoguerFromJsonResourceOrFile("example_dialoguer.json");
-    }
 }

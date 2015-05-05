@@ -10,7 +10,7 @@
         {
             "name" : "wit.ai",
             "path" : "example_wit_config.json",
-            "sourceId" : "test"
+            "sourceId" : "test1"
         }
     ],
     "humanReadableSlotNames" : {
