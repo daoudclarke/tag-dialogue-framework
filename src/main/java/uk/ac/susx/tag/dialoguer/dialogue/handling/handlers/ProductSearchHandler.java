@@ -27,12 +27,13 @@ public class ProductSearchHandler extends Handler {
 
 
     //intent names
-
+        public static final String quit="quit";
 
     //slot names
 
     public ProductSearchHandler(){
         //register problem and intent handlers here
+        super.registerIntentHandler(quit, (i, d, r) -> new Response("confirm_cancellation"));
     }
 
     @Override
