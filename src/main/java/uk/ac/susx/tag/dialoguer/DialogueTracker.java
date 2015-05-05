@@ -3,11 +3,11 @@ package uk.ac.susx.tag.dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,7 +30,7 @@ import java.util.logging.SimpleFormatter;
  */
 public class DialogueTracker implements AutoCloseable {
 
-    private static final Logger logger = Logger.getLogger(DialogueTracker.class.getName());
+    public static final Logger logger = Logger.getLogger(DialogueTracker.class.getName());
     static {
         try {
             FileHandler f = new FileHandler("dialogues.log");
@@ -142,5 +142,127 @@ public class DialogueTracker implements AutoCloseable {
 
     public static interface CompletedDialogueHandler {
         public void handle(Dialogue d);
+    }
+
+
+    //debugging
+    public static Map<String,List<Double>> populateLocations(){
+        Map<String,List<Double>> locations= new HashMap<>();
+
+        List<Double> location = new ArrayList<>();
+        location.add(50.823694);
+        location.add(-0.143587);
+        location.add(3.0);
+        locations.put("clocktower",location);
+
+        location=new ArrayList<>();
+        location.add(50.823538);
+        location.add(-0.143807);
+        location.add(3.0);
+        locations.put("waterstones",location);
+
+        location=new ArrayList<>();
+        location.add(50.823471);
+        location.add(-0.143441);
+        location.add(3.0);
+        locations.put("bench",location);
+
+        location=new ArrayList<>();
+        location.add(50.823838);
+        location.add(-0.144005);
+        location.add(3.0);
+        locations.put("indulge",location);
+
+        location = new ArrayList<>();
+        location.add(50.823732);
+        location.add(-0.143193);
+        location.add(3.0);
+        locations.put("boots",location);
+        //Inside boots: 50.823732, -0.143193
+
+        location = new ArrayList<>();
+        location.add(50.823589);
+        location.add(-0.143933);
+        location.add(3.0);
+        locations.put("eat",location);
+
+        //Inside eat: 50.823589, -0.143933
+
+        location = new ArrayList<>();
+        location.add(50.823609);
+        location.add(-0.144029);
+        location.add(3.0);
+        locations.put("pret",location);
+        //Inside pret: 50.823609, -0.144029
+
+        location = new ArrayList<>();
+        location.add(50.823843);
+        location.add(-0.143801);
+        location.add(3.0);
+        locations.put("superdry",location);
+
+        //Inside superdry: 50.823843, -0.143801
+
+        location = new ArrayList<>();
+        location.add(50.8240815);
+        location.add(-0.1434446);
+        location.add(3.0);
+        locations.put("quadrant",location);
+        //Inside the quadrant: 50.8240815, -0.1434446
+
+
+        return locations;
+    }
+
+    public static void main(String[] args){
+
+        // get task name from command line arguments
+        String task="example";
+        if(args.length>0){
+            task=args[0];
+        }
+        String filename=task+"_dialoguer.json";
+
+        //set up test user ... maybe configure this from command line later
+        String userId="julie";
+        List<Double> location = populateLocations().get("clocktower");
+        User userData = new User(location.get(0),location.get(1),location.get(2));
+
+        //set up scanner to get user input
+        System.out.printf("Hello %s. I am the %s app.  What would you like to do?\n>", userId,task);
+        Scanner userinput=new Scanner(System.in);
+        String userMessage;
+        boolean doContinue=true;
+
+        try (DialogueTracker myTracker = new DialogueTracker(filename)) {
+            //System.err.println("Using json file: "+filename);
+            while (doContinue){
+                userMessage=userinput.nextLine();
+                if(!userMessage.equals("")) {
+                    if (userMessage.startsWith("end")) {
+                        doContinue = false;
+                    } else {
+                        System.out.printf("%s\n", myTracker.getResponse(userId, userMessage, userData));
+                    }
+                    if (myTracker.isTracked(userId)) {
+                        //System.err.println("Still tracking");
+                        System.out.print(">");
+                    } else {
+                        //System.err.println("Finished tracking");
+                        if (doContinue) {
+                            System.out.printf("Hello %s. I am the %s app.  What would you like to do?\n>", userId, task);
+                        }
+                    }
+                } else {
+                    System.out.print(">");
+                }
+            }
+
+        }
+        catch(Exception e){
+            System.err.println("Exception thrown: "+e.toString());
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 }

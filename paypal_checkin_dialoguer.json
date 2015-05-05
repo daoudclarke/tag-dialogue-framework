@@ -1,0 +1,125 @@
+{
+    "handler" : {
+        "name" : "paypal_checkin",
+        "path" : "paypal_checkin_handler.json"
+    },
+    "analysers" : [
+        {"name" : "simple_cancel",
+         "sourceId" : "simple_cancel"
+        },
+        {"name" : "simple_choice"},
+        {"name" : "simple_yes_no",
+         "sourceId" : "simple_yes_no"
+        },
+        {
+            "name" : "wit.ai",
+            "path" : "paypal_checkin_wit_config.json",
+            "sourceId" : "wit.ai"
+        }
+    ],
+    "humanReadableSlotNames" : {
+        "local_search_query" : "location",
+        "yes_no" : "yes or no"
+    },
+    "necessarySlotsPerIntent" : {
+        "confirm" : ["yes_no"],
+        "loc" : ["local_search_query"],
+        "check_in_loc" : ["local_search_query"]
+    },
+    "responseTemplates" : {
+        "confirm_cancellation" : {
+            "templates":[
+                "Cancelled. Thanks.",
+                "Cancelled. Bye!",
+                "Thanks for your interest.  Talk to you next time you want to check in with PayPal."
+            ],
+            "newStates":[],
+            "requestingYesNo":"no"
+        },
+        "confirm_completion" : {
+        "templates":[
+            "Completed. Thanks.",
+            "Completed. Bye!",
+            "Great, now go ahead with your purchase and let them know at checkout that you want to pay with PayPal"
+        ],
+        "newStates":[],
+        "requestingYesNo":"no"
+        },
+        "request_location" : {
+            "templates" :[
+                "Where would you like to check in?"
+            ],
+            "newStates":["confirm_loc"],
+            "requestingYesNo":"no"
+        },
+        "unknown_request_location" : {
+                    "templates" :[
+                        "I'm not sure about that.  Please tell me where would you like to check in."
+                    ],
+                    "newStates":["confirm_loc"],
+                    "requestingYesNo":"no"
+                },
+        "unknown" : {
+            "templates" : [
+                "I don't know how to handle that request.",
+                "I don't understand.  Please try again."
+                ],
+            "newStates":["initial"],
+            "requestingYesNo":"no"
+        },
+        "confirm_loc" : {
+            "templates" : [
+                "Please confirm that you wish to check in at {merchant}"
+                ],
+            "newStates":["confirm_loc"],
+            "requestingYesNo":"yes"
+        },
+        "confirm_loc_product" : {
+                    "templates" : [
+                        "Please confirm that you wish to check in at {merchant} (sells products like: {product})"
+                        ],
+                    "newStates":["confirm_loc"],
+                    "requestingYesNo":"yes"
+                },
+        "confirm" : {
+            "templates" : ["Please state yes or no."],
+            "newStates":["confirm_loc"],
+            "requestingYesNo":"yes"
+            },
+        "auto_query" : {
+            "templates":[
+                "Please specify {query}"
+                ],
+            "requestingYesNo":"no"
+            },
+        "repeat_request_loc" : {
+            "templates": [
+                "I can't find a nearby merchant matching {local_search_query}.  Please respecify your location."
+                ],
+            "newStates":["confirm_loc"],
+            "requestingYesNo":"no"
+        },
+        "repeat_request_loc_rejects" : {
+                    "templates": [
+                        "I can't find any other nearby merchant matching {local_search_query}.  Please respecify your location."
+                        ],
+                    "newStates":["confirm_loc"],
+                    "requestingYesNo":"no"
+                },
+        "unknown_hello" : {
+        "templates": [
+            "I'm not sure about that! I am the paypal_checkin app. How can I help you?"
+            ],
+        "newStates": ["initial"],
+        "requestingYesNo":"no"
+        },
+        "reconfirm_loc" : {
+        "templates":[
+            "{local_search_query} does not seem to match the agreed merchant {merchant}.  Please reconfirm that you wish to check in at {merchant}."
+            ],
+        "newStates":["confirm_loc"],
+        "requestingYesNo":"yes"
+        }
+    }
+
+}

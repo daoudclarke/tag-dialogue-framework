@@ -93,6 +93,8 @@ public abstract class Handler implements AutoCloseable {
      *
      * From the handle method of the Handler you can make calls to the applyIntentHandler methods, to farm out the
      * processing of Intents to the IntentHandlers.
+     *
+     * resource may for example be a DB that is needed to handle some intents
      */
     public static interface IntentHandler {
         public Response handle(Intent intent, Dialogue dialogue, Object resource);
@@ -113,6 +115,7 @@ public abstract class Handler implements AutoCloseable {
             return intentHandlers.get(intent.getName()).handle(intent, d, resource);
         } else return null;
     }
+
 
     /**
      * see IntentHandler interface comments.

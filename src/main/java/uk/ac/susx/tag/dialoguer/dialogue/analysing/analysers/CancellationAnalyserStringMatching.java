@@ -42,7 +42,8 @@ public class CancellationAnalyserStringMatching extends Analyser {
             "forget that",
             "forget it",
             "no bye",
-            "stop"
+            "stop",
+            "end"
     );
 
     public boolean isCancellation(Dialogue d) {

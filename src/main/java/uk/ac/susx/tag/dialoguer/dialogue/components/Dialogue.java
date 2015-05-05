@@ -95,6 +95,10 @@ public class Dialogue {
         requestingYesNo = false;
         history = new ArrayList<>();
         user = null;
+
+
+
+
     }
 
     public String getId() { return id; }
@@ -122,6 +126,7 @@ public class Dialogue {
     public boolean isFocusPresent(String focus) { return questionFocusStack.contains(focus); }
     public void removeFocus(String focus) { questionFocusStack.remove(focus); }
     public void clearFocusStack() { questionFocusStack.clear();}
+    public boolean isEmptyFocusStack() {return questionFocusStack.size()==0;}
 
 /***********************************************
  * Choice / Confirmation management

@@ -68,4 +68,8 @@ public class StringUtils {
         }
     }
 
+
+   public static String phrasejoin(List<String> items){
+       return detokenise(items.stream().map(item->"\""+item+"\"").collect(Collectors.toList()));
+   }
 }
