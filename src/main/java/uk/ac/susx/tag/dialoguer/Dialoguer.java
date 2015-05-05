@@ -429,7 +429,7 @@ public class Dialoguer implements AutoCloseable {
         Map<String, Object> obj = Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, new TypeToken<Map<String, Object>>(){}.getType());
         Set<String> allowableTopLevelFields = Sets.newHashSet("handler", "analysers", "humanReadableSlotNames", "necessarySlotsPerIntent", "responseTemplates");
         Set<String> necessaryTopLevelFields = Sets.newHashSet("handler", "analysers");
-        Set<String> handlerAnalyserFields = Sets.newHashSet("name", "path");
+        Set<String> handlerAnalyserFields = Sets.newHashSet("name", "path", "sourceId");
         Set<String> allowableResponseTemplateFields = Sets.newHashSet("templates", "newStates", "requestingYesNo");
 
 
@@ -486,16 +486,7 @@ public class Dialoguer implements AutoCloseable {
         if (!valid) throw new DialoguerException("Config file malformed.");
     }
 
-    public static void main(String[] args){
-        Expression<String> expr =  ExprParser.parse("A & (B | C)");
-        System.out.println(expr);
-        Expression filledExpr = RuleSet.assign(expr, ImmutableMap.of(
-             "A", true,
-             "B", false,
-             "C", true,
-             "D", false
-        ));
-
-        System.out.println(filledExpr);
+    public static void main(String[] args) throws IOException {
+        Dialoguer.loadDialoguerFromJsonResourceOrFile("example_dialoguer.json");
     }
 }

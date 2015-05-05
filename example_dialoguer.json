@@ -9,7 +9,8 @@
         {"name" : "simple_yes_no"},
         {
             "name" : "wit.ai",
-            "path" : "example_wit_config.json"
+            "path" : "example_wit_config.json",
+            "sourceId" : "test"
         }
     ],
     "humanReadableSlotNames" : {
