@@ -96,9 +96,6 @@ public class Dialogue {
         history = new ArrayList<>();
         user = null;
 
-
-
-
     }
 
     public String getId() { return id; }

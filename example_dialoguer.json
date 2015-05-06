@@ -1,7 +1,7 @@
 {
     "handler" : {
-        "name" : "test",
-        "path" : ""
+        "name" : "rule_based",
+        "path" : "rule_based_handler_config.json"
     },
     "analysers" : [
         {"name" : "simple_cancel"},
@@ -9,8 +9,7 @@
         {"name" : "simple_yes_no"},
         {
             "name" : "wit.ai",
-            "path" : "example_wit_config.json",
-            "sourceId" : "test1"
+            "path" : "example_wit_config.json"
         }
     ],
     "humanReadableSlotNames" : {
@@ -21,10 +20,9 @@
         "buy_general" : ["product_query"]
     },
     "responseTemplates" : {
-        "confirm_cancellation" : {
+        "confirm_buy" : {
             "templates" : [
-                "Cancelled. Thanks.",
-                "Cancelled. Bye!"
+                "Do you want to buy {bought_item}?"
             ]
         }
     }

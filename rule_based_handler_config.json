@@ -1,0 +1,15 @@
+{
+    "rules": [
+        {
+            "rule" :  "{buy} | {send}",
+            "responseName": "confirm_buy",
+            "responseVariables": [
+                {
+                    "variable" : "bought_item",
+                    "intent" : "buy",
+                    "slot" : "product"
+                }
+            ]
+        }
+    ]
+}
