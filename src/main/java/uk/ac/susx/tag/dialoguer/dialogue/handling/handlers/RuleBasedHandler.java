@@ -13,6 +13,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.RuleBasedHandlerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,13 @@ public class RuleBasedHandler extends Handler{
 
     public static List<String> variables = Lists.newArrayList("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
+    private List<String> initialStates;
     private List<ResponseRule> rules;
+
+    private RuleBasedHandler() {
+        initialStates = new ArrayList<>();
+        rules = new ArrayList<>();
+    }
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
@@ -43,7 +50,9 @@ public class RuleBasedHandler extends Handler{
 
     @Override
     public Dialogue getNewDialogue(String dialogueId) {
-        return new Dialogue(dialogueId);
+        Dialogue d = new Dialogue(dialogueId);
+        d.setStates(initialStates);
+        return d;
     }
 
     @Override

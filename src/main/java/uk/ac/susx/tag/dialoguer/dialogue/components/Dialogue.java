@@ -107,11 +107,11 @@ public class Dialogue {
 /***********************************************
  * Intent management
  ***********************************************/
-    public List<Intent> getCurrentIntents() { return intents; }
-    public void addToCurrentIntents(Intent i) { intents.add(i); }
-    public void addToCurrentIntents(List<Intent> intents){ this.intents.addAll(intents); }
-    public void clearCurrentIntents() { intents.clear(); }
-    public void replaceCurrentIntents(List<Intent> intents){ this.intents = intents; }
+    public List<Intent> getWorkingIntents() { return intents; }
+    public void addToWorkingIntents(Intent i) { intents.add(i); }
+    public void addToWorkingIntents(List<Intent> intents){ this.intents.addAll(intents); }
+    public void clearWorkingIntents() { intents.clear(); }
+    public void replaceWorkingIntents(List<Intent> intents){ this.intents = intents; }
 
 /***********************************************
  * Question focus stack

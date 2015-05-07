@@ -9,7 +9,9 @@
                     "intent" : "buy",
                     "slot" : "product"
                 }
-            ]
+            ],
+            "newStates" : ["not_initial_state"]
         }
-    ]
+    ],
+    "initialStates" : ["initial_state"]
 }
