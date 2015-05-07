@@ -4,13 +4,8 @@
             "rule" :  "{buy} | {send}",
             "responseName": "confirm_buy",
             "responseVariables": [
-                {
-                    "variable" : "bought_item",
-                    "intent" : "buy",
-                    "slot" : "product"
-                }
-            ],
-            "newStates" : ["not_initial_state"]
+                { "variable" : "bought_item", "intent" : "buy", "slot" : "product"}
+            ]
         }
     ],
     "initialStates" : ["initial_state"]
