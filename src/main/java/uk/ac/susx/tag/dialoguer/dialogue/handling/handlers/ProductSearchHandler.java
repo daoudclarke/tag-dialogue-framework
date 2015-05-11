@@ -8,7 +8,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.ProductSearchHandlerFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.BuyMediaMethod;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.BuyMethod;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
 import java.net.UnknownHostException;
@@ -32,7 +32,7 @@ public class ProductSearchHandler extends Handler {
 
     //intent names - match wit.ai intents
     public static final String quit="cancel_query";
-    public static final String buyMedia="buy_media";
+    public static final String buy="really_buy";
 
 
     //slot names
@@ -41,7 +41,7 @@ public class ProductSearchHandler extends Handler {
         //register problem and intent handlers here
         super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
         super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
-        super.registerIntentHandler(buyMedia, new BuyMediaMethod());
+        super.registerIntentHandler(buy, new BuyMethod());
     }
 
     @Override
@@ -85,6 +85,17 @@ public class ProductSearchHandler extends Handler {
         for(Intent i:intents){
             System.err.println(i.toString());
         }
+
+       // intents = new IntentMerger(intents)
+       //                 .merge(Sets.newHashSet("buy_media", "send"), "really_buy", (intentsToBeMerged) -> {
+       //                     Intent output = new Intent("really_buy");
+       //                     return output;
+       //                 })
+       //                 .getIntents();
+
+
+
+        //intents = IntentMerger.merge(intents, Sets.newHashSet("1", "2"), "12");
         return intents;
     }
 

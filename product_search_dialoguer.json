@@ -19,11 +19,11 @@
     ],
     "humanReadableSlotNames" : {
         "yes_no" : "yes or no",
-        "media_name" : "title"
+        "product_name" : "product name"
     },
     "necessarySlotsPerIntent" : {
         "confirm" : ["yes_no"],
-        "really_buy_media" : ["media_name"]
+        "really_buy" : ["product_name","recipient"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : {
@@ -42,9 +42,9 @@
             "newStates":[],
             "requestingYesNo":"no"
         },
-        "confirm_media_buy" : {
+        "confirm_buy" : {
             "templates":[
-                "Please confirm that you wish to buy {media_name}"
+                "Please confirm that you wish to buy {product_name}"
             ],
             "newStates":[],
             "requestingYesNo":"yes"
