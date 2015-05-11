@@ -234,7 +234,6 @@ public class Dialoguer implements AutoCloseable {
         }
 
         // 17. Add the response to the dialogue object and update states
-        //System.err.println("Will apply response "+r.getResponseName());
         applyResponse(r, dialogue);
 
         // Return the updated dialogue
