@@ -24,11 +24,11 @@
     ],
     "humanReadableSlotNames" : {
         "yes_no" : "yes or no",
-        "product_name" : "product name"
+        "product_query" : "product"
     },
     "necessarySlotsPerIntent" : {
         "confirm" : ["yes_no"],
-        "really_buy" : ["product_name","recipient","message"]
+        "really_buy" : ["product_query","recipient","message"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : {
@@ -49,14 +49,14 @@
         },
         "confirm_buy_no_message" : {
             "templates":[
-                "Please confirm that you wish to buy {product_name} for {recipient}"
+                "Please confirm that you wish to buy {product_query} for {recipient}"
             ],
             "newStates":[],
             "requestingYesNo":"yes"
         },
         "confirm_buy" : {
             "templates":[
-                "Please confirm that you wish to buy {product_name} for {recipient} with message {message}"
+                "Please confirm that you wish to buy {product_query} for {recipient} with message {message}"
             ],
             "newStates":[],
             "requestingYesNo":"yes"

@@ -16,6 +16,7 @@ import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by juliewe on 05/05/2015.
@@ -32,7 +33,9 @@ public class ProductSearchHandler extends Handler {
     public static final String mainAnalyser="wit.ai";
     public static final String yesNoAnalyser="simple_yes_no";
     public static final String giftAnalyser="gift";
+    public static final String merged="merged";
     public static final List<String> analysers = Lists.newArrayList(mainAnalyser, yesNoAnalyser,giftAnalyser);
+
 
     //intent names - match wit.ai intents
     public static final String quit="cancel_query";
@@ -41,9 +44,11 @@ public class ProductSearchHandler extends Handler {
 
 
     //slot names
-    public static final String productSlot="product_name";
+    public static final String productSlot="product_query";
     public static final String recipientSlot="recipient";
     public static final String messageSlot="message";
+    public static final String witTitle="title";
+    public static final String witAuthor="author";
 
     //recipient names
     public static final List<String> recipients = Lists.newArrayList("julie","simon","andrew");
@@ -93,9 +98,6 @@ public class ProductSearchHandler extends Handler {
         //do any preprocessing/filtering of intents here before the dialoguer gets to auto-query etc
 
         //useful debug - see what the intents actually are
-        for(Intent i:intents){
-            System.err.println(i.toString());
-        }
 
        boolean isGift=Intent.isPresent(giftIntent,intents);
 
@@ -109,13 +111,18 @@ public class ProductSearchHandler extends Handler {
                             if(!isGift&&!output.areSlotsFilled(Sets.newHashSet(messageSlot))){
                                 output.fillSlot(messageSlot,"none");
                             }
+                            output.setSource(merged);
                             return output;
                         })
                         .getIntents();
 
 
-
+        intents=intents.stream().map(intent->BuyMethod.makeQueryMap(intent)).collect(Collectors.toList()); //turn any witTitle and witAuthor into a product_query
         //intents = IntentMerger.merge(intents, Sets.newHashSet("1", "2"), "12");
+        for(Intent i:intents){
+            System.err.println(i.toString());
+        }
+
         return intents;
     }
 
@@ -124,11 +131,19 @@ public class ProductSearchHandler extends Handler {
         //how to handle a list of intents
         Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
 
+        if(r==null){
+            Intent i = Intent.getFirstIntentFromSource(merged,intents); //look for pre-processed/merged intents first
+            if(i!=null){
+                r=applyIntentHandler(i,dialogue,this.db);
+            }
+        }
+
+
         for(String analyser:analysers) { //try each analyser in order of priority for a non-null response
             if(r==null) {
                 Intent i = Intent.getFirstIntentFromSource(analyser, intents);
-                if (!(i == null)) {
-                    r = applyIntentHandler(Intent.getFirstIntentFromSource(analyser, intents), dialogue, this.db);//get wit's response
+                if (i != null) {
+                    r = applyIntentHandler(i, dialogue, this.db);//
                 }
             }
         }

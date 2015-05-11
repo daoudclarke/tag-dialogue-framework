@@ -1,5 +1,7 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
@@ -9,9 +11,12 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.ProductSearchHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by juliewe on 11/05/2015.
@@ -27,8 +32,8 @@ public class BuyMethod implements Handler.IntentHandler{
 
         Intent workingIntent = new Intent(ProductSearchHandler.buy);
         d.pushFocus("confirm_buy");
-        handleMessage(i,d,db);
-        handleRecipient(i,d,db);
+        workingIntent.fillSlot(handleMessage(i,d,db));
+        workingIntent.fillSlot(handleRecipient(i,d,db));
         workingIntent.fillSlot(handleProduct(i, d, db));
         d.addToWorkingIntents(workingIntent);
         return processStack(d,db);
@@ -57,8 +62,22 @@ public class BuyMethod implements Handler.IntentHandler{
     }
     public Intent.Slot handleProduct(Intent i, Dialogue d,ProductMongoDB db){
         //basic db look up
-        List<String> queries = i.getSlotValuesByType("title");
-        String searchstring=StringUtils.detokenise(queries);
+        Gson gson = new Gson();
+        Type termMapType = new TypeToken<Map<String, List<String>>>(){}.getType();
+
+        Map<String,List<String>> queryMap=new HashMap<>();
+        Optional<String> termJson =i.getSlotValuesByType(ProductSearchHandler.productSlot).stream().findFirst();
+        if(termJson.isPresent()){
+            queryMap=gson.fromJson(termJson.get(),termMapType);
+        }
+
+        //first make generic searchstring
+        String searchstring="";
+        List<String> queries=queryMap.values().stream().map(valuelist->StringUtils.phrasejoin(valuelist)).collect(Collectors.toList());
+        for(String query:queries){
+            searchstring+=query;
+        }
+
         System.err.println(searchstring);
         Intent.Slot s = new Intent.Slot(ProductSearchHandler.productSlot,searchstring,0,0);
         return s;
@@ -70,6 +89,7 @@ public class BuyMethod implements Handler.IntentHandler{
             focus = d.popTopFocus();
         }
         Map<String, String> responseVariables = new HashMap<>();
+        System.err.println(d.peekTopIntent().toString());
         switch(focus) {
             case "confirm_buy":
                 responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productSlot)));
@@ -85,8 +105,23 @@ public class BuyMethod implements Handler.IntentHandler{
             case "unknown_product":
                 break;
         }
-        return new Response(focus);
+        return new Response(focus,responseVariables);
 
+    }
+
+    public static Intent makeQueryMap(Intent i){
+        if(i.getName().equals(ProductSearchHandler.buy)){//only works on this intent
+            Map<String,List<String>> termMap = new HashMap<>();
+            if(i.getSlotByType(ProductSearchHandler.witTitle)!=null){termMap.put(ProductSearchHandler.witTitle, i.getSlotValuesByType(ProductSearchHandler.witTitle));}
+            if(i.getSlotByType(ProductSearchHandler.witAuthor)!=null){termMap.put(ProductSearchHandler.witAuthor,i.getSlotValuesByType(ProductSearchHandler.witAuthor));}
+            if(!termMap.keySet().isEmpty()) {
+                Gson gson = new Gson();
+                i.fillSlot(ProductSearchHandler.productSlot, gson.toJson(termMap));
+            }
+
+
+        }
+        return i;
     }
 
 }
