@@ -22,6 +22,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -44,6 +45,32 @@ import static uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.RuleBasedHandl
  * Time: 17:18
  */
 public class JsonUtils {
+
+/***************************************************************
+ * Support for ignoring trailing commas for lists of strings
+ *************************************************************/
+
+    public static class ArrayListAdaptor extends TypeAdapter<ArrayList<String>> {
+        public void write(JsonWriter out, ArrayList<String> value) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ArrayList<String> read(JsonReader in) throws IOException {
+            ArrayList<String> out = new ArrayList<>();
+            in.beginArray();
+            while(in.hasNext()){
+                if (!in.peek().name().equals("NULL")){
+                    String s = in.nextString();
+                    out.add(s);
+                } else {
+                    in.nextNull();
+                }
+            }
+            in.endArray();
+            return out;
+        }
+    }
 
 /***************************************************************
  * Support for deserialisation ResponseRules

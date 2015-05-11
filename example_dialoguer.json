@@ -22,7 +22,7 @@
     "responseTemplates" : {
         "confirm_buy" : {
             "templates" : [
-                "Do you want to buy {bought_item}?"
+                "Do you want to buy {bought_item}?",
             ]
         }
     }
