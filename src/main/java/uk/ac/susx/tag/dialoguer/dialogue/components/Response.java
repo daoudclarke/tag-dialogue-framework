@@ -105,6 +105,7 @@ public class Response {
         return fillTemplate(template, responseVariables);
     }
     public static String fillTemplate(String template, Map<String, String> variables){
+        //System.err.println(template);
         Matcher m = templateVariableRegex.matcher(template);
         StringBuffer filledTemplate = new StringBuffer();
         while(m.find()){

@@ -232,6 +232,7 @@ public class Dialoguer implements AutoCloseable {
         }
 
         // 17. Add the response to the dialogue object and update states
+        //System.err.println("Will apply response "+r.getResponseName());
         applyResponse(r, dialogue);
 
         // Return the updated dialogue
@@ -358,8 +359,11 @@ public class Dialoguer implements AutoCloseable {
         }
         public boolean hasMultipleAlternatives() { return templates.size() > 1; }
         public String getRandomTemplateExample() {
+            //System.err.println(templates.size());
             if (hasMultipleAlternatives()){
-                return templates.get(random.nextInt(templates.size()));
+                String t = templates.get(random.nextInt(templates.size()));
+                //System.err.println(t);
+                return t;
             } else {
                 return templates.get(0);
             }
@@ -389,6 +393,7 @@ public class Dialoguer implements AutoCloseable {
         if (responseTemplates.containsKey(r.getResponseName())){
             // Get the template
             ResponseTemplate template = responseTemplates.get(r.getResponseName());
+            //System.err.println(template.toString());
             dialogue.addNewSystemMessage(r.fillTemplate(template.getRandomTemplateExample()));
 
             if (template.areNewStates())

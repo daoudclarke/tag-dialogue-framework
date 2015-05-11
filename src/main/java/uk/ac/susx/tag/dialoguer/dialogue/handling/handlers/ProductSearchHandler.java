@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
+import com.google.common.collect.Lists;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -7,6 +8,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.ProductSearchHandlerFactory;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.BuyMediaMethod;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
 import java.net.UnknownHostException;
@@ -24,16 +26,22 @@ public class ProductSearchHandler extends Handler {
     protected transient ProductMongoDB db;
 
     //analyser names
+    public static final String mainAnalyser="wit.ai";
+    public static final String yesNoAnalyser="simple_yes_no";
+    public static final List<String> analysers = Lists.newArrayList(mainAnalyser, yesNoAnalyser);
 
+    //intent names - match wit.ai intents
+    public static final String quit="cancel_query";
+    public static final String buyMedia="buy_media";
 
-    //intent names
-        public static final String quit="quit";
 
     //slot names
 
     public ProductSearchHandler(){
         //register problem and intent handlers here
-        super.registerIntentHandler(quit, (i, d, r) -> new Response("confirm_cancellation"));
+        super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
+        super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
+        super.registerIntentHandler(buyMedia, new BuyMediaMethod());
     }
 
     @Override
@@ -45,7 +53,7 @@ public class ProductSearchHandler extends Handler {
     public Dialogue getNewDialogue(String dialogueId){
 
         Dialogue d = new Dialogue(dialogueId);
-        //d.setState("initial");
+        d.setState("initial_query");
 
         return d;
     }
@@ -72,12 +80,48 @@ public class ProductSearchHandler extends Handler {
     @Override
     public List<Intent> preProcessIntents(List<Intent> intents, List<IntentMatch> matches, Dialogue d){
         //do any preprocessing/filtering of intents here before the dialoguer gets to auto-query etc
+
+        //useful debug - see what the intents actually are
+        for(Intent i:intents){
+            System.err.println(i.toString());
+        }
         return intents;
     }
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue){
         //how to handle a list of intents
-        return new Response("unknown");
+        Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
+
+        for(String analyser:analysers) { //try each analyser in order of priority for a non-null response
+            if(r==null) {
+                Intent i = Intent.getFirstIntentFromSource(analyser, intents);
+                if (!(i == null)) {
+                    r = applyIntentHandler(Intent.getFirstIntentFromSource(analyser, intents), dialogue, this.db);//get wit's response
+                }
+            }
+        }
+
+        if(r==null){//no intent handler
+            if(dialogue.getStates().contains("initial")) { //state specific unknown
+                r = new Response("unknown");
+            } else {
+                r= new Response("unknown");
+            }
+
+        }
+        //System.err.println("Handler generated response "+ r.toString());
+        return r;
     }
+
+    public static ProductMongoDB castDB(Object resource) {
+        ProductMongoDB db;
+        try {
+            db = (ProductMongoDB) resource;
+        } catch (ClassCastException e) {
+            throw new Dialoguer.DialoguerException("Resource should be mongo db", e);
+        }
+        return db;
+    }
+
 }

@@ -18,16 +18,18 @@
         }
     ],
     "humanReadableSlotNames" : {
-        "yes_no" : "yes or no"
+        "yes_no" : "yes or no",
+        "media_name" : "title"
     },
     "necessarySlotsPerIntent" : {
-        "confirm" : ["yes_no"]
+        "confirm" : ["yes_no"],
+        "really_buy_media" : ["media_name"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : {
             "templates":[
                 "Cancelled. Thanks.",
-                "Cancelled. Bye!",
+                "Cancelled. Bye!"
             ],
             "newStates":[],
             "requestingYesNo":"no"
@@ -35,17 +37,24 @@
         "confirm_completion" : {
             "templates":[
                 "Completed. Thanks.",
-                "Completed. Bye!",
+                "Completed. Bye!"
             ],
             "newStates":[],
             "requestingYesNo":"no"
+        },
+        "confirm_media_buy" : {
+            "templates":[
+                "Please confirm that you wish to buy {media_name}"
+            ],
+            "newStates":[],
+            "requestingYesNo":"yes"
         },
         "unknown" : {
             "templates" : [
                 "I don't know how to handle that request.",
                 "I don't understand.  Please try again."
                 ],
-            "newStates":["initial"],
+            "newStates":["initial_query"],
             "requestingYesNo":"no"
         },
         "auto_query" : {
