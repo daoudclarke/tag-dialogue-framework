@@ -116,8 +116,15 @@ public class Intent {
         return fillSlot(name, value, 0, 0);
     }
 
+    public Intent fillSlot(Slot s){
+        slots.put(s.name, s); return this;
+    }
+
     public Collection<Slot> getSlotByType(String slotType){ return slots.get(slotType);}
     public Multimap<String, Slot> getSlots() { return slots; }
+    public Collection<Slot> getSlotCollection() {
+        return slots.values();
+    }
     public void setSlots(Multimap<String, Slot> slots) { this.slots = slots; }
     public boolean isAnySlotFilled() { return !slots.isEmpty(); }
 
