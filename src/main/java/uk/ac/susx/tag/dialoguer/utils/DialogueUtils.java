@@ -35,8 +35,19 @@ import java.util.stream.Collectors;
 public class DialogueUtils {
 
     // Version for tweets
-    public static List<String> splitByLengthOnTokens(String text, String userName){
-        return splitByLengthOnTokens(text, 140, userName);
+    public static List<String> splitByLengthOnTokensWithRandomDigits(String text, String userName){
+
+        return splitByLengthOnTokens(text, 136, userName).stream()
+                .map(s -> s + randomFourDigits())
+                .collect(Collectors.toList());
+    }
+
+    public static String randomFourDigits(){
+        return null;
+    }
+
+    public static void main(String[] args){
+
     }
 
     public static List<String> splitByLengthOnTokens(String text, int lengthLimit){
