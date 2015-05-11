@@ -19,6 +19,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.RuleBasedHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
 import uk.ac.susx.tag.dialoguer.utils.JsonUtils;
@@ -144,6 +145,7 @@ public class Dialoguer implements AutoCloseable {
                                         .registerTypeAdapter(ImmutableSet.class, JsonUtils.immutableSetJsonDeserializer()) // Custom deserialisation for immutableset
                                         .registerTypeAdapter(Pattern.class, new JsonUtils.PatternAdaptor().nullSafe())
                                         .registerTypeAdapter(Expression.class, new JsonUtils.ExpressionAdaptor().nullSafe())
+                                        .registerTypeAdapter(RuleBasedHandler.ResponseRule.class, new JsonUtils.ResponseRuleAdaptor().nullSafe())
                                     .create();
     private Handler handler;
     private List<Analyser> analysers;
@@ -486,9 +488,5 @@ public class Dialoguer implements AutoCloseable {
         }
 
         if (!valid) throw new DialoguerException("Config file malformed.");
-    }
-
-    public static void main(String[] args) throws IOException {
-        Dialoguer.loadDialoguerFromJsonResourceOrFile("example_dialoguer.json");
     }
 }

@@ -1,18 +1,25 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
 import com.bpodgursky.jbool_expressions.Expression;
+import com.bpodgursky.jbool_expressions.parsers.ExprParser;
 import com.bpodgursky.jbool_expressions.rules.RuleSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.RuleBasedHandlerFactory;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -23,7 +30,15 @@ import java.util.stream.Collectors;
  */
 public class RuleBasedHandler extends Handler{
 
+    public static List<String> variables = Lists.newArrayList("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+
+    private List<String> initialStates;
     private List<ResponseRule> rules;
+
+    private RuleBasedHandler() {
+        initialStates = new ArrayList<>();
+        rules = new ArrayList<>();
+    }
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
@@ -35,7 +50,9 @@ public class RuleBasedHandler extends Handler{
 
     @Override
     public Dialogue getNewDialogue(String dialogueId) {
-        return new Dialogue(dialogueId);
+        Dialogue d = new Dialogue(dialogueId);
+        d.setStates(initialStates);
+        return d;
     }
 
     @Override
@@ -50,10 +67,10 @@ public class RuleBasedHandler extends Handler{
 
     public static class ResponseRule {
 
-        private Expression rule;
-        private Map<String, String> intentToVarMap;
-        private String responseName;
-        private List<ResponseVariable> responseVariables;
+        public Expression rule;
+        public Map<String, String> intentToVarMap;
+        public String responseName;
+        public List<ResponseVariable> responseVariables;
 
         public Response getResponse(List<Intent> intents){
             Set<String> requiresFilling = intentToVarMap.keySet();
@@ -80,4 +97,31 @@ public class RuleBasedHandler extends Handler{
         public String intent;
         public String slot;
     }
+
+    public static Map<String, String> parseIntentToVarMap(String expressionDefinition){
+        Pattern p = Pattern.compile("\\{(.+?)\\}");
+        Map<String, String> intentToVarMap = new HashMap<>();
+        Matcher m = p.matcher(expressionDefinition);
+
+        int variable = 0;
+        while (m.find()){
+            String intentName = m.group(1);
+            if (!intentToVarMap.containsKey(intentName)){
+                if (variable >= variables.size()) throw new Dialoguer.DialoguerException("Rule based handler doesn't support rules using more than 26 intents");
+                intentToVarMap.put(intentName, variables.get(variable));
+                variable++;
+            }
+        }
+
+        return intentToVarMap;
+    }
+
+    public static String convertIntentNamesToVariables(String expressionDefinition, Map<String, String> intentToVarMap){
+        String expression = expressionDefinition;
+        for (Map.Entry<String, String> entry : intentToVarMap.entrySet()){
+            expression = expression.replaceAll("\\{" + entry.getKey() + "\\}", entry.getValue());
+        }
+        return expression;
+    }
+
 }

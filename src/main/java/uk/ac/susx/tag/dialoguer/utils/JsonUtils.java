@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapter;
@@ -14,14 +15,18 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.RuleBasedHandler;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.RuleBasedHandler.ResponseVariable;
 
 /**
  * Utilities that make Gson able to better handle the datatypes in this project during JSON (de)serialisation.
@@ -39,6 +44,44 @@ import java.util.regex.Pattern;
  * Time: 17:18
  */
 public class JsonUtils {
+
+/***************************************************************
+ * Support for deserialisation ResponseRules
+ *************************************************************/
+
+    public static class ResponseRuleAdaptor extends TypeAdapter<RuleBasedHandler.ResponseRule> {
+
+        private static final TypeAdapter<ResponseVariable> responseVariableAdaptor = new Gson().getAdapter(ResponseVariable.class);
+
+        @Override
+        public void write(JsonWriter out, RuleBasedHandler.ResponseRule value) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public RuleBasedHandler.ResponseRule read(JsonReader in) throws IOException {
+            RuleBasedHandler.ResponseRule r = new RuleBasedHandler.ResponseRule();
+            r.responseVariables = new ArrayList<>();
+            in.beginObject();
+            while(in.hasNext()){
+                String name = in.nextName();
+                switch (name) {
+                    case "responseName" : r.responseName = in.nextString(); break;
+                    case "responseVariables":
+                        in.beginArray();
+                        while (in.hasNext())
+                            r.responseVariables.add(responseVariableAdaptor.read(in));
+                        in.endArray(); break;
+                    case "rule":
+                        String rule = in.nextString();
+                        r.intentToVarMap = RuleBasedHandler.parseIntentToVarMap(rule);
+                        r.rule = ExprParser.parse(RuleBasedHandler.convertIntentNamesToVariables(rule, r.intentToVarMap)); break;
+                }
+            }
+            in.endObject();
+            return r;
+        }
+    }
 
 /***************************************************************
  * Support for (de)serialisation boolean expressions

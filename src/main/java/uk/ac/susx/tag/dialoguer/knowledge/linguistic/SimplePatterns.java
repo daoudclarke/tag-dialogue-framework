@@ -30,6 +30,7 @@ public class SimplePatterns {
     ));
 
     public static Pattern hesitationRegex = StringUtils.buildDisjunctionWithWordBoundaries(Lists.newArrayList(
+            "a+h+",
             "e+r+m*",
             "o+h+",
             "u+h+",
