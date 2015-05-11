@@ -28,7 +28,7 @@
     },
     "necessarySlotsPerIntent" : {
         "confirm" : ["yes_no"],
-        "really_buy" : ["product_name","recipient"]
+        "really_buy" : ["product_name","recipient","message"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : {
@@ -47,12 +47,27 @@
             "newStates":[],
             "requestingYesNo":"no"
         },
-        "confirm_buy" : {
+        "confirm_buy_no_message" : {
             "templates":[
-                "Please confirm that you wish to buy {product_name}"
+                "Please confirm that you wish to buy {product_name} for {recipient}"
             ],
             "newStates":[],
             "requestingYesNo":"yes"
+        },
+        "confirm_buy" : {
+            "templates":[
+                "Please confirm that you wish to buy {product_name} for {recipient} with message {message}"
+            ],
+            "newStates":[],
+            "requestingYesNo":"yes"
+        },
+        "unknown_recipient" : {
+            "templates":[
+                "{recipient} not in database.  Add details or respecify recipient?"
+            ],
+            "newStates":["unknown_recipient"],
+            "requestingYesNo":"no"
+
         },
         "unknown" : {
             "templates" : [

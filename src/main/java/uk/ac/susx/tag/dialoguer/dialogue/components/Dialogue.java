@@ -108,6 +108,7 @@ public class Dialogue {
  * Intent management
  ***********************************************/
     public List<Intent> getWorkingIntents() { return intents; }
+    public Intent peekTopIntent() {return intents.get(intents.size()-1);}
     public void addToWorkingIntents(Intent i) { intents.add(i); }
     public void addToWorkingIntents(List<Intent> intents){ this.intents.addAll(intents); }
     public void clearWorkingIntents() { intents.clear(); }

@@ -15,6 +15,7 @@ import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by juliewe on 05/05/2015.
@@ -27,17 +28,25 @@ public class ProductSearchHandler extends Handler {
     private String dbName;
     protected transient ProductMongoDB db;
 
-    //analyser names
+    //analyser sourceIds
     public static final String mainAnalyser="wit.ai";
     public static final String yesNoAnalyser="simple_yes_no";
-    public static final List<String> analysers = Lists.newArrayList(mainAnalyser, yesNoAnalyser);
+    public static final String giftAnalyser="gift";
+    public static final List<String> analysers = Lists.newArrayList(mainAnalyser, yesNoAnalyser,giftAnalyser);
 
     //intent names - match wit.ai intents
     public static final String quit="cancel_query";
     public static final String buy="really_buy";
+    public static final String giftIntent="gift";
 
 
     //slot names
+    public static final String productSlot="product_name";
+    public static final String recipientSlot="recipient";
+    public static final String messageSlot="message";
+
+    //recipient names
+    public static final List<String> recipients = Lists.newArrayList("julie","simon","andrew");
 
     public ProductSearchHandler(){
         //register problem and intent handlers here
@@ -88,15 +97,18 @@ public class ProductSearchHandler extends Handler {
             System.err.println(i.toString());
         }
 
-        boolean isGift;
+       boolean isGift=Intent.isPresent(giftIntent,intents);
 
        intents = new IntentMerger(intents)
-                        .merge(Sets.newHashSet("buy_media", "nogift"), (intentsToBeMerged) -> {
+                        .merge(Sets.newHashSet("buy_media"), (intentsToBeMerged) -> {
                             Intent output = new Intent("really_buy");
-
-
-//                            output.copySlots(intentsToBeMerged);
-
+                            output.copySlots(intentsToBeMerged);
+                            if(!isGift&&!output.areSlotsFilled(Sets.newHashSet(recipientSlot))){//default value for recipient if not identified as gift
+                                output.fillSlot(recipientSlot,d.getId());
+                            }
+                            if(!isGift&&!output.areSlotsFilled(Sets.newHashSet(messageSlot))){
+                                output.fillSlot(messageSlot,"none");
+                            }
                             return output;
                         })
                         .getIntents();
@@ -142,5 +154,8 @@ public class ProductSearchHandler extends Handler {
         }
         return db;
     }
+
+    @Override
+    public Set<String> getRequiredAnalyserSourceIds(){return Sets.newHashSet(analysers);}
 
 }
