@@ -87,6 +87,12 @@ public class Intent {
  * Slot management
  **********************************************/
 
+    public void copySlots(List<Intent> intents){
+        for (Intent i : intents) {
+            i.getSlotCollection().forEach(this::fillSlot);
+        }
+    }
+
     public IntentMatch getIntentMatch(Set<String> requiredSlotNames){
         return new IntentMatch(this, requiredSlotNames);
     }
@@ -175,6 +181,10 @@ public class Intent {
      */
     public static boolean isPresent(String name, List<Intent> intents){
         return intents.stream().anyMatch(i -> i.isName(name));
+    }
+
+    public static Intent getIfPresentElseNull(String name, List<Intent> intents){
+        return intents.stream().filter(i -> i.isName(name)).findFirst().orElse(null);
     }
 
     /**

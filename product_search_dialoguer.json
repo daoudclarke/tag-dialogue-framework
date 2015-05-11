@@ -15,6 +15,11 @@
             "name" : "wit.ai",
             "path" : "product_search_wit_config.json",
             "sourceId" : "wit.ai"
+        },
+        {
+            "name" : "pattern_finder",
+            "path" : "gift_pattern_analyser_config.json",
+            "sourceId" : "gift"
         }
     ],
     "humanReadableSlotNames" : {

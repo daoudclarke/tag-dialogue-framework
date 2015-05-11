@@ -495,4 +495,6 @@ public class Dialoguer implements AutoCloseable {
 
         if (!valid) throw new DialoguerException("Config file malformed.");
     }
+
+
 }

@@ -1,11 +1,13 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.IntentMerger;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.ProductSearchHandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.BuyMethod;
@@ -86,12 +88,18 @@ public class ProductSearchHandler extends Handler {
             System.err.println(i.toString());
         }
 
-       // intents = new IntentMerger(intents)
-       //                 .merge(Sets.newHashSet("buy_media", "send"), "really_buy", (intentsToBeMerged) -> {
-       //                     Intent output = new Intent("really_buy");
-       //                     return output;
-       //                 })
-       //                 .getIntents();
+        boolean isGift;
+
+       intents = new IntentMerger(intents)
+                        .merge(Sets.newHashSet("buy_media", "nogift"), (intentsToBeMerged) -> {
+                            Intent output = new Intent("really_buy");
+
+
+//                            output.copySlots(intentsToBeMerged);
+
+                            return output;
+                        })
+                        .getIntents();
 
 
 
