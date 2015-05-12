@@ -29,6 +29,7 @@ public class BuyMethod implements Handler.IntentHandler{
         //intent to buy.  Should have been auto-filled with product and recipient.
         //Need to check each slot and add to working memory
         //need to check what we have in workingintents already and clear
+        //System.err.println(i.toString());
 
         Intent workingIntent = new Intent(ProductSearchHandler.buy);
         d.pushFocus("confirm_buy");
@@ -49,14 +50,15 @@ public class BuyMethod implements Handler.IntentHandler{
         return new Intent.Slot(ProductSearchHandler.messageSlot,messagestring,0,0);
     }
     public Intent.Slot handleRecipient(Intent i,Dialogue d, ProductMongoDB db){
-        List<String> recipients = i.getSlotValuesByType("recipient");
+        List<String> recipients = i.getSlotValuesByType(ProductSearchHandler.recipientSlot);
         String recipientstring = StringUtils.detokenise(recipients);
         Intent.Slot s=null;
         if(ProductSearchHandler.recipients.contains(recipientstring)) {  //better test for recipient required - db matching
             s = new Intent.Slot(ProductSearchHandler.recipientSlot, recipientstring, 0, 0);
         } else {
             d.pushFocus("unknown_recipient");
-            d.putToWorkingMemory("recipient",recipientstring);
+            //d.putToWorkingMemory("recipient",recipientstring);
+            s = new Intent.Slot(ProductSearchHandler.recipientSlot, recipientstring, 0, 0);
         }
         return s;
     }

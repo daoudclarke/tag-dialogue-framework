@@ -16,10 +16,7 @@ import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -52,7 +49,7 @@ public class ProductSearchHandler extends Handler {
 
     //slot names
     public static final String productSlot="product_query";
-    public static final String recipientSlot="recipient";
+    public static final String recipientSlot="contact";
     public static final String messageSlot="message_body";
     public static final String yes_no_slot="yes_no";
     public static final String witTitle="title";
@@ -66,6 +63,7 @@ public class ProductSearchHandler extends Handler {
         super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
         super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
         super.registerIntentHandler(buy, new BuyMethod());
+        //super.registerProblemHandler(new AutoQueryProblemHandler());
         super.registerProblemHandler(new ConfirmProblemHandler());
     }
 
@@ -107,9 +105,9 @@ public class ProductSearchHandler extends Handler {
         //do any preprocessing/filtering of intents here before the dialoguer gets to auto-query etc
 
         //useful debug - see what the intents actually are
-        for(Intent i:intents){
-            System.err.println(i.toString());
-        }
+        //for(Intent i:intents){
+        //    System.err.println(i.toString());
+        //}
 
        boolean isGift=(Intent.isPresent(giftIntent,intents)||d.isInWorkingMemory("gift","yes"));
        if(isGift){d.putToWorkingMemory("gift","yes");}
@@ -142,10 +140,16 @@ public class ProductSearchHandler extends Handler {
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue){
         //how to handle a list of intents
-        Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
+        List<Intent> allIntents=new ArrayList<>();
+        //if(dialogue.areAutoQueriedIntentsPresent()){
+        //    System.err.println("Adding autoqueried intents");
+        //    allIntents.addAll(dialogue.popAutoQueriedIntents());
+        //}
+        allIntents.addAll(intents);
+        Response r=applyFirstProblemHandlerOrNull(allIntents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
 
         if(r==null){
-            Intent i = Intent.getFirstIntentFromSource(merged,intents); //look for pre-processed/merged intents first
+            Intent i = Intent.getFirstIntentFromSource(merged,allIntents); //look for pre-processed/merged intents first
             if(i!=null){
                 r=applyIntentHandler(i,dialogue,this.db);
             }
@@ -154,7 +158,7 @@ public class ProductSearchHandler extends Handler {
 
         for(String analyser:analysers) { //try each analyser in order of priority for a non-null response
             if(r==null) {
-                Intent i = Intent.getFirstIntentFromSource(analyser, intents);
+                Intent i = Intent.getFirstIntentFromSource(analyser, allIntents);
                 if (i != null) {
                     r = applyIntentHandler(i, dialogue, this.db);//
                 }
@@ -204,6 +208,7 @@ public class ProductSearchHandler extends Handler {
                     responseVariables.put(ProductSearchHandler.recipientSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.recipientSlot)));
                     break;
                 case "unknown_recipient":
+                    responseVariables.put(ProductSearchHandler.recipientSlot,StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.recipientSlot)));
                     break;
                 case "unknown_product":
                     break;
