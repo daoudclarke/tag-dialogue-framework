@@ -17,6 +17,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,7 +29,14 @@ import java.util.List;
  */
 public class OutOfDomainAnalyser extends Analyser {
 
-    ArrayEncodedNgramLanguageModel<String> lm;
+    public static String outOfDomainIntentName = "out_of_domain";
+
+    private ArrayEncodedNgramLanguageModel<String> lm;
+    private double threshold;
+
+    public OutOfDomainAnalyser(double threshold, String witAiToken){
+        this.threshold = Math.log(threshold);
+    }
 
     @Override
     public List<Intent> analyse(String message, Dialogue dialogue) {
@@ -36,7 +44,9 @@ public class OutOfDomainAnalyser extends Analyser {
         message = SimplePatterns.stripDigits(message);
         message = SimplePatterns.stripPunctuation(message);
 
-        return null;
+        List<String> words = Lists.newArrayList(SimplePatterns.splitByWhitespace(message.trim()));
+
+        return scoreSentence(words, lm) >= threshold? new ArrayList<>() : new Intent(outOfDomainIntentName).toList();
     }
 
     @Override
