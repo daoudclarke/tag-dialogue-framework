@@ -15,7 +15,7 @@ public class ConfirmProductHandler implements Handler.ProblemHandler{
 
     public static final String requiredState="confirm_product";
     public static final List<String> mystates= Lists.newArrayList(requiredState, "confirm_yes_no");
-    
+
     @Override
     public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue) {
         //this should only fire if user is definitiely accepting or rejecting the selected product
@@ -27,6 +27,7 @@ public class ConfirmProductHandler implements Handler.ProblemHandler{
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        //need to check for yes or no and handle accordingly.  Accept/reject.  Then update
         return null;
     }
 }
