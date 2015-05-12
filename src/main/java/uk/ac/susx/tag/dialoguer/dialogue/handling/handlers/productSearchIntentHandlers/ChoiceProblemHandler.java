@@ -61,6 +61,7 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
             Product pr =db.getProductList(workingIntent.getSlotValuesByType(ProductSearchHandler.productIdSlot)).stream().filter(p->p.toShortString().equals(chosenText)).findFirst().orElse(null);
             workingIntent.replaceSlot(new Intent.Slot(ProductSearchHandler.productIdSlot,pr.getProductId(),0,0));
             d.addToWorkingIntents(workingIntent);
+            d.clearChoices();
             //shouldn't need to push a focus - should be there from before!
 
         } catch (Exception e){
