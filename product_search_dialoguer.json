@@ -28,7 +28,7 @@
     },
     "necessarySlotsPerIntent" : {
         "confirm" : ["yes_no"],
-        "really_buy" : ["product_query","recipient","message"]
+        "really_buy" : ["product_query","recipient","message_body"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : {
@@ -51,14 +51,14 @@
             "templates":[
                 "Please confirm that you wish to buy {product_query} for {recipient}"
             ],
-            "newStates":[],
+            "newStates":[confirm_yes_no],
             "requestingYesNo":"yes"
         },
         "confirm_buy" : {
             "templates":[
-                "Please confirm that you wish to buy {product_query} for {recipient} with message {message}"
+                "Please confirm that you wish to buy {product_query} for {recipient} with message {message_body}"
             ],
-            "newStates":[],
+            "newStates":[confirm_yes_no],
             "requestingYesNo":"yes"
         },
         "unknown_recipient" : {

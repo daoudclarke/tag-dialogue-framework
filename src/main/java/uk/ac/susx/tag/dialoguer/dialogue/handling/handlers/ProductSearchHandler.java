@@ -11,10 +11,14 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.IntentMerger;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.ProductSearchHandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.BuyMethod;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.ConfirmProblemHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
+import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,12 +45,16 @@ public class ProductSearchHandler extends Handler {
     public static final String quit="cancel_query";
     public static final String buy="really_buy";
     public static final String giftIntent="gift";
-
+    public static final String confirm="confirm";
+   // public static final String yes="yes";
+   // public static final String no="no";
+    public static final List<String> confirmIntents=Lists.newArrayList(confirm, Intent.yes);
 
     //slot names
     public static final String productSlot="product_query";
     public static final String recipientSlot="recipient";
-    public static final String messageSlot="message";
+    public static final String messageSlot="message_body";
+    public static final String yes_no_slot="yes_no";
     public static final String witTitle="title";
     public static final String witAuthor="author";
 
@@ -58,6 +66,7 @@ public class ProductSearchHandler extends Handler {
         super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
         super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
         super.registerIntentHandler(buy, new BuyMethod());
+        super.registerProblemHandler(new ConfirmProblemHandler());
     }
 
     @Override
@@ -98,8 +107,12 @@ public class ProductSearchHandler extends Handler {
         //do any preprocessing/filtering of intents here before the dialoguer gets to auto-query etc
 
         //useful debug - see what the intents actually are
+        for(Intent i:intents){
+            System.err.println(i.toString());
+        }
 
-       boolean isGift=Intent.isPresent(giftIntent,intents);
+       boolean isGift=(Intent.isPresent(giftIntent,intents)||d.isInWorkingMemory("gift","yes"));
+       if(isGift){d.putToWorkingMemory("gift","yes");}
 
        intents = new IntentMerger(intents)
                         .merge(Sets.newHashSet("buy_media"), (intentsToBeMerged) -> {
@@ -172,5 +185,36 @@ public class ProductSearchHandler extends Handler {
 
     @Override
     public Set<String> getRequiredAnalyserSourceIds(){return Sets.newHashSet(analysers);}
+
+    public static Response processStack(Dialogue d, ProductMongoDB db){
+        String focus="unknown";
+        if (!d.isEmptyFocusStack()) {
+            focus = d.popTopFocus();
+        }
+        Map<String, String> responseVariables = new HashMap<>();
+        try {
+            switch (focus) {
+                case "confirm_buy":
+                    responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productSlot)));
+                    responseVariables.put(ProductSearchHandler.recipientSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.recipientSlot)));
+                    responseVariables.put(ProductSearchHandler.messageSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.messageSlot)));
+                    break;
+                case "confirm_buy_no_message":
+                    responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productSlot)));
+                    responseVariables.put(ProductSearchHandler.recipientSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.recipientSlot)));
+                    break;
+                case "unknown_recipient":
+                    break;
+                case "unknown_product":
+                    break;
+                case "confirm_completion":
+                    break;
+            }
+        } catch(ArrayIndexOutOfBoundsException e){
+            throw new Dialoguer.DialoguerException("Error with response variables: "+e.toString());
+        }
+        return new Response(focus,responseVariables);
+
+    }
 
 }

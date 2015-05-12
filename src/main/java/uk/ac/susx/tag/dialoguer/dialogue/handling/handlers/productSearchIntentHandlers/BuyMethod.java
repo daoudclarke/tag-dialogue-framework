@@ -36,7 +36,7 @@ public class BuyMethod implements Handler.IntentHandler{
         workingIntent.fillSlot(handleRecipient(i,d,db));
         workingIntent.fillSlot(handleProduct(i, d, db));
         d.addToWorkingIntents(workingIntent);
-        return processStack(d,db);
+        return ProductSearchHandler.processStack(d,db);
 
     }
 
@@ -83,31 +83,7 @@ public class BuyMethod implements Handler.IntentHandler{
         return s;
     }
 
-    private Response processStack(Dialogue d, ProductMongoDB db){
-        String focus="unknown";
-        if (!d.isEmptyFocusStack()) {
-            focus = d.popTopFocus();
-        }
-        Map<String, String> responseVariables = new HashMap<>();
-        System.err.println(d.peekTopIntent().toString());
-        switch(focus) {
-            case "confirm_buy":
-                responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productSlot)));
-                responseVariables.put(ProductSearchHandler.recipientSlot,StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.recipientSlot)));
-                responseVariables.put(ProductSearchHandler.messageSlot,StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.messageSlot)));
-                break;
-            case "confirm_buy_no_message":
-                responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productSlot)));
-                responseVariables.put(ProductSearchHandler.recipientSlot,StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.recipientSlot)));
-                break;
-            case "unknown_recipient":
-                break;
-            case "unknown_product":
-                break;
-        }
-        return new Response(focus,responseVariables);
 
-    }
 
     public static Intent makeQueryMap(Intent i){
         if(i.getName().equals(ProductSearchHandler.buy)){//only works on this intent
