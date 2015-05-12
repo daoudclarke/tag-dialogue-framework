@@ -7,7 +7,8 @@
         {"name" : "simple_cancel",
          "sourceId" : "simple_cancel"
         },
-        {"name" : "simple_choice"},
+        {"name" : "simple_choice",
+         "sourceId" : "simple_choice"},
         {"name" : "simple_yes_no",
          "sourceId" : "simple_yes_no"
         },
@@ -77,7 +78,14 @@
             "requestingYesNo":"no"
         },
         "choose_product" : {
-            "templates" :["Please choose"
+            "templates" :["Please choose {product_id}"
+            ],
+            "newStates":["confirm_choice"],
+            "requestingYesNo":"no"
+
+        },
+        "repeat_choice" : {
+            "templates" :["Quit to start again or select {product_id}"
             ],
             "newStates":["confirm_choice"],
             "requestingYesNo":"no"

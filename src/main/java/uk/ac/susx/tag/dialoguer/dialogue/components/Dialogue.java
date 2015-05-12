@@ -133,6 +133,7 @@ public class Dialogue {
     public boolean isChoicesPresented(){return !choices.isEmpty();}
     public void clearChoices(){ choices.clear(); }
     public List<String> getChoices() { return choices; }
+    public void setChoices(List<String> choices){this.choices=choices;}
     public boolean isRequestingYesNo() { return requestingYesNo; }
     public void setRequestingYesNo(boolean requestingYesNo){ this.requestingYesNo = requestingYesNo; }
 

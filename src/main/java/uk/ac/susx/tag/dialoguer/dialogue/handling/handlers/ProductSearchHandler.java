@@ -11,6 +11,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.IntentMerger;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.ProductSearchHandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.BuyMethod;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.ChoiceProblemHandler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.ConfirmProblemHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
@@ -34,8 +35,9 @@ public class ProductSearchHandler extends Handler {
     public static final String mainAnalyser="wit.ai";
     public static final String yesNoAnalyser="simple_yes_no";
     public static final String giftAnalyser="gift";
+    public static final String simpleChoiceAnalyser="simple_choice";
     public static final String merged="merged";
-    public static final List<String> analysers = Lists.newArrayList(mainAnalyser, yesNoAnalyser,giftAnalyser);
+    public static final List<String> analysers = Lists.newArrayList(mainAnalyser, yesNoAnalyser,simpleChoiceAnalyser,giftAnalyser);
 
 
     //intent names - match wit.ai intents
@@ -46,6 +48,7 @@ public class ProductSearchHandler extends Handler {
    // public static final String yes="yes";
    // public static final String no="no";
     public static final List<String> confirmIntents=Lists.newArrayList(confirm, Intent.yes);
+    public static final List<String> choiceIntents=Lists.newArrayList(Intent.choice,Intent.nullChoice,Intent.noChoice);
 
     //slot names
     public static final String productSlot="product_query";
@@ -64,8 +67,8 @@ public class ProductSearchHandler extends Handler {
         super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
         super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
         super.registerIntentHandler(buy, new BuyMethod());
-        //super.registerProblemHandler(new AutoQueryProblemHandler());
         super.registerProblemHandler(new ConfirmProblemHandler());
+        super.registerProblemHandler(new ChoiceProblemHandler());
     }
 
     @Override
@@ -200,7 +203,7 @@ public class ProductSearchHandler extends Handler {
         try {
             switch (focus) {
                 case "confirm_buy":
-                    responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(db.getProductList(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productIdSlot)).stream().map(p->p.toShortString()).collect(Collectors.toList())));
+                    responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(db.getProductList(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productIdSlot)).stream().map(p -> p.toShortString()).collect(Collectors.toList())));
                     responseVariables.put(ProductSearchHandler.recipientSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.recipientSlot)));
                     responseVariables.put(ProductSearchHandler.messageSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.messageSlot)));
                     break;
@@ -219,7 +222,14 @@ public class ProductSearchHandler extends Handler {
                     responseVariables.put(ProductSearchHandler.productSlot,StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productSlot)));
                     break;
                 case "choose_product":
+                    d.setChoices((db.getProductList(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productIdSlot))).stream().map(p->p.toShortString()).collect(Collectors.toList()));
+                    responseVariables.put(ProductSearchHandler.productIdSlot,StringUtils.numberList(d.getChoices()));
                     break;
+                case "repeat_choice":
+                    d.setChoices((db.getProductList(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productIdSlot))).stream().map(p->p.toShortString()).collect(Collectors.toList()));
+                    responseVariables.put(ProductSearchHandler.productIdSlot,StringUtils.numberList(d.getChoices()));
+                    break;
+
             }
         } catch(ArrayIndexOutOfBoundsException e){
             throw new Dialoguer.DialoguerException("Error with response variables: "+e.toString());
