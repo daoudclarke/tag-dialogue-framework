@@ -10,6 +10,7 @@ import com.googlecode.clearnlp.engine.EngineGetter;
 import com.googlecode.clearnlp.reader.AbstractReader;
 import com.googlecode.clearnlp.segmentation.AbstractSegmenter;
 import com.googlecode.clearnlp.tokenization.AbstractTokenizer;
+import org.apache.commons.lang.RandomStringUtils;
 import uk.ac.susx.tag.classificationframework.datastructures.Instance;
 import uk.ac.susx.tag.classificationframework.featureextraction.inference.FeatureInferrer;
 import uk.ac.susx.tag.classificationframework.featureextraction.pipelines.FeatureExtractionPipeline;
@@ -37,17 +38,9 @@ public class DialogueUtils {
     // Version for tweets
     public static List<String> splitByLengthOnTokensWithRandomDigits(String text, String userName){
 
-        return splitByLengthOnTokens(text, 136, userName).stream()
-                .map(s -> s + randomFourDigits())
+        return splitByLengthOnTokens(text, 135, userName).stream()
+                .map(s -> s + " " + RandomStringUtils.randomAlphanumeric(4))
                 .collect(Collectors.toList());
-    }
-
-    public static String randomFourDigits(){
-        return null;
-    }
-
-    public static void main(String[] args){
-
     }
 
     public static List<String> splitByLengthOnTokens(String text, int lengthLimit){
