@@ -103,7 +103,7 @@ public class ChoiceMakingAnalyserStringMatching  extends Analyser {
             int closestDistance = Integer.MAX_VALUE;
 
             for (int i = 0; i < choices.size(); i++) {
-                String choice = choices.get(i);
+                String choice = choices.get(i).toLowerCase();
                 int distance = StringUtils.getLevenshteinDistance(userMessage, Strings.padEnd(choice, minLength, ' ')); //Pad the strings for fair comparison
                 if (distance < closestDistance) {
                     closestChoice = i;
