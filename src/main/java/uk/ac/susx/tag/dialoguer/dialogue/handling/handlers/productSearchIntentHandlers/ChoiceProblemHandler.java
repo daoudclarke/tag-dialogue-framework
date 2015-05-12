@@ -46,7 +46,7 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
 
     private void handleNullChoice(Dialogue d){
         d.clearChoices();
-        //probably should research for more potential products
+        //probably should add to rejected list and re-search for more potential products
         d.pushFocus("respecify_product");
 
     }

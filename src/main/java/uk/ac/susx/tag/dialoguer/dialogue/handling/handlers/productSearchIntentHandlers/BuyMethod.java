@@ -117,7 +117,7 @@ public class BuyMethod implements Handler.IntentHandler{
         return slotlist;
     }
 
-    
+
 
     public static Intent makeQueryMap(Intent i){
         if(i.getName().equals(ProductSearchHandler.buy)){//only works on this intent
