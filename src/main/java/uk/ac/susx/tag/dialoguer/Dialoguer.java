@@ -136,7 +136,7 @@ import java.util.stream.Collectors;
  */
 public class Dialoguer implements AutoCloseable {
 
-    public static final Random random = new Random();
+    private static final Random random = new Random();
     public static final Gson gson = new GsonBuilder().setPrettyPrinting()
                                         .registerTypeAdapter(Analyser.class, new JsonUtils.AnalyserAdaptor().nullSafe()) // Custom deserialisation for analysers
                                         .registerTypeAdapter(Handler.class, new JsonUtils.HandlerAdaptor().nullSafe())   // Custom deserialisation for handlers
@@ -147,7 +147,8 @@ public class Dialoguer implements AutoCloseable {
                                         .registerTypeAdapter(Expression.class, new JsonUtils.ExpressionAdaptor().nullSafe())
                                         .registerTypeAdapter(RuleBasedHandler.ResponseRule.class, new JsonUtils.ResponseRuleAdaptor().nullSafe())
                                         .registerTypeAdapter(new TypeToken<List<String>>(){}.getType(), new JsonUtils.ArrayListAdaptor().nullSafe())
-                                        .registerTypeAdapter(new TypeToken<ArrayList<String>>(){}.getType(), new JsonUtils.ArrayListAdaptor().nullSafe())
+                                        .registerTypeAdapter(new TypeToken<ArrayList<String>>() {
+                                        }.getType(), new JsonUtils.ArrayListAdaptor().nullSafe())
                                     .create();
     private Handler handler;
     private List<Analyser> analysers;
