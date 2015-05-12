@@ -68,7 +68,6 @@ public class IntentMerger {
     }
 
     public static interface MergeFunction {
-
         Intent merge(List<Intent> toBeMerged);
     }
 }
