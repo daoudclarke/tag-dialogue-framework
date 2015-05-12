@@ -49,17 +49,25 @@ public class IntentMerger {
     }
 
     public static List<Intent> merge(List<Intent> intents, Set<String> intentNamesToBeMerged, MergeFunction f){
-        Map<Boolean, List<Intent>> requiresMapping = intents.stream()
-                .collect(Collectors.partitioningBy(i -> intentNamesToBeMerged.contains(i.getName())));
+        // Split intents into those that match the names to be merged and those that don't.
+        Map<Boolean, List<Intent>> requiresMapping = intents.stream().collect(Collectors.partitioningBy(i -> intentNamesToBeMerged.contains(i.getName())));
+
+        // If there was any intents that need merging
         if (!requiresMapping.get(true).isEmpty()){
+            // Leave these ones unmerged
             List<Intent> output = requiresMapping.get(false);
-            output.add(f.merge(requiresMapping.get(true)));
+            // Merge the matches into a single intent by calling the merge function
+            Intent merged = f.merge(requiresMapping.get(true));
+            // Set the new source
+            merged.setSource("merged");
+            // Add to the list of remaining unmerged intents
+            output.add(merged);
+            // Return list
             return output;
         } else return intents;
     }
 
     public static interface MergeFunction {
-
         Intent merge(List<Intent> toBeMerged);
     }
 }
