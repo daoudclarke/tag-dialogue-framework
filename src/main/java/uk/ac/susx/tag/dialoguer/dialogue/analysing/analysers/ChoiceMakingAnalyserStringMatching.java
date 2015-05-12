@@ -51,23 +51,34 @@ public class ChoiceMakingAnalyserStringMatching  extends Analyser {
         // Strip message to basics
         String userMessage = d.getStrippedNoStopwordsText();
 
-        // Set of unique words in remaining message, normalising any number strings
-        Set<String> uniqueWordsRemaining = Sets.newHashSet(
-                Arrays.stream(SimplePatterns.whitespaceRegex.split(userMessage))
-                        .map(Numbers::convertIfNumber)
-                        .collect(Collectors.toList())
-        );
+        try {
+            
+            String firstWord = SimplePatterns.whitespaceRegex.split(SimplePatterns.stripPunctuation(userMessage), 2)[0];
+            Integer.toString(Numbers.parseNumber(firstWord));
+            return true;
 
-        // Given each possible choice, find the maximum fraction of words in the user message that appear in a choice
-        double maxFractionDescribed = choices.stream()
-                .mapToDouble((c) -> {
-                    Set<String> uniqueWordsInChoice = Sets.newHashSet(SimplePatterns.splitByWhitespace(SimplePatterns.stripPunctuation(c)));
-                    return 1 - (Sets.difference(uniqueWordsRemaining, uniqueWordsInChoice).size() / (double) uniqueWordsRemaining.size());
-                })
-                .max().getAsDouble();
+        } catch (NumberFormatException e) {
 
-        // Return true is the maximum fraction found is above the given threshold
-        return maxFractionDescribed >= threshold;
+            // Set of unique words in remaining message, normalising any number strings
+//            Set<String> uniqueWordsRemaining = Sets.newHashSet(
+//                    Arrays.stream(SimplePatterns.whitespaceRegex.split(userMessage))
+//                            .map(Numbers::convertIfNumber)
+//                            .collect(Collectors.toList())
+//            );
+
+            Set<String> uniqueWordsRemaining = Sets.newHashSet(SimplePatterns.whitespaceRegex.split(userMessage));
+
+            // Given each possible choice, find the maximum fraction of words in the user message that appear in a choice
+            double maxFractionDescribed = choices.stream()
+                    .mapToDouble((c) -> {
+                        Set<String> uniqueWordsInChoice = Sets.newHashSet(SimplePatterns.splitByWhitespace(SimplePatterns.stripPunctuation(c)));
+                        return 1 - (Sets.difference(uniqueWordsRemaining, uniqueWordsInChoice).size() / (double) uniqueWordsRemaining.size());
+                    })
+                    .max().getAsDouble();
+
+            // Return true is the maximum fraction found is above the given threshold
+            return maxFractionDescribed >= threshold;
+        }
     }
 
     /**

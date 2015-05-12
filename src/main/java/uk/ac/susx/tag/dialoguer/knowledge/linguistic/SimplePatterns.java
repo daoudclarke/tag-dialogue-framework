@@ -16,6 +16,7 @@ public class SimplePatterns {
 
     public static Pattern punctuationRegex = Pattern.compile("[!?\"#$%&'()*+,-./:;<=>@\\[\\]^_`{|}~]+");
     public static Pattern whitespaceRegex = Pattern.compile("\\s+");
+    public static Pattern numberRegex = Pattern.compile("[0-9]");
 
     public static Pattern politenessRegex = StringUtils.buildDisjunctionWithWordBoundaries(Lists.newArrayList(
             "i('| w(oul|u))?d (like|lyk)( to)?",
@@ -65,6 +66,8 @@ public class SimplePatterns {
     public static String stripPunctuation(String text){
         return punctuationRegex.matcher(text).replaceAll("");
     }
+
+    public static String stripDigits(String text) { return numberRegex.matcher(text).replaceAll(""); }
 
     public static boolean isPunctuation(String text) {
         return punctuationRegex.matcher(text).matches();
