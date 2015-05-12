@@ -49,6 +49,7 @@ public class ProductSearchHandler extends Handler {
 
     //slot names
     public static final String productSlot="product_query";
+    public static final String productIdSlot="product_id";
     public static final String recipientSlot="contact";
     public static final String messageSlot="message_body";
     public static final String yes_no_slot="yes_no";
@@ -199,12 +200,12 @@ public class ProductSearchHandler extends Handler {
         try {
             switch (focus) {
                 case "confirm_buy":
-                    responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productSlot)));
+                    responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(db.getProductList(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productIdSlot)).stream().map(p->p.toShortString()).collect(Collectors.toList())));
                     responseVariables.put(ProductSearchHandler.recipientSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.recipientSlot)));
                     responseVariables.put(ProductSearchHandler.messageSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.messageSlot)));
                     break;
                 case "confirm_buy_no_message":
-                    responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productSlot)));
+                    responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(db.getProductList(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productIdSlot)).stream().map(p->p.toShortString()).collect(Collectors.toList())));
                     responseVariables.put(ProductSearchHandler.recipientSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.recipientSlot)));
                     break;
                 case "unknown_recipient":
@@ -213,6 +214,11 @@ public class ProductSearchHandler extends Handler {
                 case "unknown_product":
                     break;
                 case "confirm_completion":
+                    break;
+                case "respecify_product":
+                    responseVariables.put(ProductSearchHandler.productSlot,StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productSlot)));
+                    break;
+                case "choose_product":
                     break;
             }
         } catch(ArrayIndexOutOfBoundsException e){

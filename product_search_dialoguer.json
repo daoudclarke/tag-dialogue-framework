@@ -69,6 +69,20 @@
             "requestingYesNo":"no"
 
         },
+        "respecify_product" : {
+            "templates":[
+                "Cannot find match for {product_query}.  Please respecify product."
+                ],
+            "newStates":["confirm_product_query"],
+            "requestingYesNo":"no"
+        },
+        "choose_product" : {
+            "templates" :["Please choose"
+            ],
+            "newStates":["confirm_choice"],
+            "requestingYesNo":"no"
+
+        },
         "unknown" : {
             "templates" : [
                 "I don't know how to handle that request.",

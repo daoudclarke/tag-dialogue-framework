@@ -34,7 +34,11 @@ public class ConfirmProblemHandler implements Handler.ProblemHandler{
 
     private boolean isComplete(Intent i){
         if (i.getName().equals(ProductSearchHandler.buy)){
-            return true;
+            if(i.getSlotValuesByType(ProductSearchHandler.productIdSlot).stream().count()==1) {
+                return true;
+            } else {
+                return false; //multiple or no product ids in the working intent
+            }
         } else {
             return false;
         }

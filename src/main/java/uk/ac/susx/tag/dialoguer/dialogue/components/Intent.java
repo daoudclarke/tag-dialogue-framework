@@ -126,6 +126,11 @@ public class Intent {
         slots.put(s.name, s); return this;
     }
 
+    public Intent fillSlots(List<Slot> slotlist){
+        slotlist.stream().forEach(s->slots.put(s.name,s));
+        return this;
+    }
+
     public Collection<Slot> getSlotByType(String slotType){ return slots.get(slotType);}
     public List<String> getSlotValuesByType(String slotType){return this.getSlotByType(slotType).stream().map(slot->slot.value).collect(Collectors.toList());}
     public Multimap<String, Slot> getSlots() { return slots; }
