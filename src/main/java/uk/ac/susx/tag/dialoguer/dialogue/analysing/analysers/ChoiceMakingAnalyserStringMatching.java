@@ -71,7 +71,7 @@ public class ChoiceMakingAnalyserStringMatching  extends Analyser {
             // Given each possible choice, find the maximum fraction of words in the user message that appear in a choice
             double maxFractionDescribed = choices.stream()
                     .mapToDouble((c) -> {
-                        Set<String> uniqueWordsInChoice = Sets.newHashSet(SimplePatterns.splitByWhitespace(SimplePatterns.stripPunctuation(c)));
+                        Set<String> uniqueWordsInChoice = Sets.newHashSet(SimplePatterns.splitByWhitespace(SimplePatterns.stripPunctuation(c.toLowerCase())));
                         return 1 - (Sets.difference(uniqueWordsRemaining, uniqueWordsInChoice).size() / (double) uniqueWordsRemaining.size());
                     })
                     .max().getAsDouble();
