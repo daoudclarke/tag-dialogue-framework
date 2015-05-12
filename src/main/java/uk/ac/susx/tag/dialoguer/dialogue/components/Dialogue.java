@@ -108,6 +108,8 @@ public class Dialogue {
  * Intent management
  ***********************************************/
     public List<Intent> getWorkingIntents() { return intents; }
+    public Intent peekTopIntent() {return intents.get(intents.size()-1);}
+    public Intent popTopIntent() {return intents.remove(intents.size()-1);}
     public void addToWorkingIntents(Intent i) { intents.add(i); }
     public void addToWorkingIntents(List<Intent> intents){ this.intents.addAll(intents); }
     public void clearWorkingIntents() { intents.clear(); }
@@ -131,6 +133,7 @@ public class Dialogue {
     public boolean isChoicesPresented(){return !choices.isEmpty();}
     public void clearChoices(){ choices.clear(); }
     public List<String> getChoices() { return choices; }
+    public void setChoices(List<String> choices){this.choices=choices;}
     public boolean isRequestingYesNo() { return requestingYesNo; }
     public void setRequestingYesNo(boolean requestingYesNo){ this.requestingYesNo = requestingYesNo; }
 
@@ -246,6 +249,10 @@ public class Dialogue {
                                               .collect(Collectors.toList());
         autoQueryTracker.reset();
         return autoQueriedIntents;
+    }
+
+    public boolean areAutoQueriedIntentsPresent(){
+        return !autoQueryTracker.intents.isEmpty();
     }
 
 
