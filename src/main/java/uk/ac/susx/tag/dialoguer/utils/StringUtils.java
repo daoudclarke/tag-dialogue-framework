@@ -2,6 +2,7 @@ package uk.ac.susx.tag.dialoguer.utils;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import java.util.List;
@@ -46,9 +47,7 @@ public class StringUtils {
 
 
     private static Detokeniser d = new Detokeniser();
-    public static String detokenise(List<String> tokens){
-        return d.dektokenise(tokens);
-    }
+
     public static class Detokeniser {
 
         private static Set<String> noSpaceBefore = Sets.newHashSet(",", ".", ";", ":", ")", "}", "]", "-", "n't", "'m", "'d", "'s");
@@ -68,8 +67,34 @@ public class StringUtils {
         }
     }
 
+    /**
+     * De-tokenise a list of tokens.
+     *
+     * This is intended specifically for joining tokens that represent a body of text; it knows to not add spaces
+     * before/after certain punctuation.
+     *
+     * If you wish to simply join some text together with a custom separator, either use Java's joining stream function
+     * or Guava's "Joiner" class.
+     *
+     *  Java joining stream example (joining by a comma-space):
+     *     String joined = tokens.stream().collect(Collectors.joining(", "));
+     *
+     *  Guava Joiner example (joining by a comma-space):
+     *     String joined = Joiner.on(", ").join(tokens);
+     */
+    public static String detokenise(List<String> tokens){
+        return d.dektokenise(tokens);
+    }
 
-   public static String phrasejoin(List<String> items){
-       return detokenise(items.stream().map(item->"\""+item+"\"").collect(Collectors.toList()));
-   }
+    public static String phrasejoin(List<String> items){
+        return detokenise(items.stream().map(item->"\""+item+"\"").collect(Collectors.toList()));
+    }
+
+    /**
+     * Given a list of strings, surround each string with quotations and join the results into a single string
+     * where each quoted item is separated by a space.
+     */
+    public static String quoteStringsAndJoin(List<String> items){
+        return String.format("\"%s\"", Joiner.on("\" \"").join(items));
+    }
 }
