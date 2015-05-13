@@ -51,8 +51,12 @@ public class JsonUtils {
  *************************************************************/
 
     public static class ArrayListAdaptor extends TypeAdapter<ArrayList<String>> {
+
         public void write(JsonWriter out, ArrayList<String> value) throws IOException {
-            throw new UnsupportedOperationException();
+            out.beginArray();
+            for (String s : value)
+                out.value(s);
+            out.endArray();
         }
 
         @Override

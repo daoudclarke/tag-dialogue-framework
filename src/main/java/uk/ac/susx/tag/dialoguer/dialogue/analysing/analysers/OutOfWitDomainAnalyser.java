@@ -30,14 +30,21 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Created with IntelliJ IDEA.
+ * This analyser creates an ngram language model from the training data of a Wit.Ai instance, and fires an "out_of_domain"
+ * intent if a given message does not seem to be drawn from the same domain as the Wit.Ai instance.
+ *
+ * Performance is greater:
+ *
+ *  1. The more expressions you have in the Wit.Ai instance : more examples means better understanding of domain
+ *  2. The more constrained your language domain is : it's must easier to determine an out-of-domain sentence for a system
+ *     that only deals with taxi ordering, than one that deals with many different problems.
+ *
  * User: Andrew D. Robertson
  * Date: 12/05/2015
  * Time: 13:33
  */
 public class OutOfWitDomainAnalyser extends Analyser {
 
-    private static Random random = new Random();
     public static String outOfDomainIntentName = "out_of_domain";
 
     private static String witAiIntentsApi = "https://api.wit.ai/intents";
@@ -173,6 +180,9 @@ public class OutOfWitDomainAnalyser extends Analyser {
 
     }
 
+    /**
+     * String pre-processing for training data.
+     */
     private static String stripMessage(String message){
         message = SimplePatterns.stripAll(message);
         message = SimplePatterns.stripDigits(message);
@@ -180,6 +190,9 @@ public class OutOfWitDomainAnalyser extends Analyser {
         return message.toLowerCase();
     }
 
+    /**
+     * The score of a sentence is the average ngram probability (including sentence boundary ngrams).
+     */
     private static <T> float scoreSentence(final List<T> sentence, final ArrayEncodedNgramLanguageModel<T> lm) {
         final List<T> sentenceWithBounds = new BoundedList<>(sentence, lm.getWordIndexer().getStartSymbol(), lm.getWordIndexer().getEndSymbol());
 
