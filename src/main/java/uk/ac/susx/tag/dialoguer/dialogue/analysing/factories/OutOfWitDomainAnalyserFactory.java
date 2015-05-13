@@ -5,6 +5,8 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.OutOfWitDomainAnalyser;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,7 +19,7 @@ public class OutOfWitDomainAnalyserFactory implements AnalyserFactory {
     public Analyser readJson(String resourcePath) throws IOException {
         OutOfDomainAnalyserDefinition def = Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, OutOfDomainAnalyserDefinition.class);
 
-        return new OutOfWitDomainAnalyser(def.ngramOrder, def.serverAccessToken, def.modelName);
+        return new OutOfWitDomainAnalyser(def.ngramOrder, def.serverAccessToken, def.modelName, def.excludedIntents);
     }
 
     @Override
@@ -26,8 +28,9 @@ public class OutOfWitDomainAnalyserFactory implements AnalyserFactory {
     }
 
     public static class OutOfDomainAnalyserDefinition {
-        public int ngramOrder;
-        public String serverAccessToken;
-        public String modelName;
+        public int ngramOrder = 3;
+        public String serverAccessToken = null;
+        public String modelName = "out_of_wit_domain.model";
+        public Set<String> excludedIntents = new HashSet<>();
     }
 }

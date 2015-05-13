@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -44,14 +45,14 @@ public class OutOfWitDomainAnalyser extends Analyser {
     private ArrayEncodedNgramLanguageModel<String> lm;
     private double threshold;
 
-    public OutOfWitDomainAnalyser(int ngramOrder, String serverAccessToken, String modelName) throws IOException {
+    public OutOfWitDomainAnalyser(int ngramOrder, String serverAccessToken, String modelName, Set<String> excludedIntents) throws IOException {
 
         String training = modelName+".training_intents";
         String calibration = modelName+".calibration_intents";
         String arpa = modelName+".arpa";
         String binary = modelName+".arpa.binary";
 
-        writeIntents(serverAccessToken, new File(training), new File(calibration));
+        writeIntents(serverAccessToken, new File(training), new File(calibration), excludedIntents);
 
         List<String> inputFiles = Lists.newArrayList(modelName+".training_intents");
 
@@ -82,12 +83,7 @@ public class OutOfWitDomainAnalyser extends Analyser {
         return min;
     }
 
-    public static void main(String[] args) throws IOException {
-        writeIntents("QJG7W4SON6THNBPGMBQFPFZT5OKEBGVE", new File("training.txt"), new File("calibration.txt"));
-    }
-
-
-    public static void writeIntents(String serverAccessToken, File training, File calibration) throws IOException {
+    public static void writeIntents(String serverAccessToken, File training, File calibration, Set<String> excludedIntentNames) throws IOException {
 
         Client client = ClientBuilder.newClient();
 
@@ -101,7 +97,7 @@ public class OutOfWitDomainAnalyser extends Analyser {
                         .header("Accept",  "application/json")
                         .buildGet().invoke(String.class);
 
-        for (String intentId : Dialoguer.gson.fromJson(response, IntentList.class).getIntentIds()){
+        for (String intentId : Dialoguer.gson.fromJson(response, IntentList.class).getIntentIds(excludedIntentNames)){
             target = client.target(witAiIntentsApi + "/" + intentId);
 
             response = target.request()
@@ -130,8 +126,10 @@ public class OutOfWitDomainAnalyser extends Analyser {
     }
 
     public static class IntentList extends ArrayList<HashMap<String, Object>>{
-        public List<String> getIntentIds(){
-            return this.stream().map(i -> (String)i.get("id")).collect(Collectors.toList());
+        public List<String> getIntentIds(Set<String> excludedIntentNames){
+            return this.stream()
+                    .filter(i -> !excludedIntentNames.contains((String)i.get("name")))
+                    .map(i -> (String) i.get("id")).collect(Collectors.toList());
         }
     }
 

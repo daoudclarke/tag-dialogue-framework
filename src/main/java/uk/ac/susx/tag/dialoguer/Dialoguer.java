@@ -146,7 +146,8 @@ public class Dialoguer implements AutoCloseable {
                                         .registerTypeAdapter(Pattern.class, new JsonUtils.PatternAdaptor().nullSafe())
                                         .registerTypeAdapter(Expression.class, new JsonUtils.ExpressionAdaptor().nullSafe())
                                         .registerTypeAdapter(RuleBasedHandler.ResponseRule.class, new JsonUtils.ResponseRuleAdaptor().nullSafe())
-                                        .registerTypeAdapter(new TypeToken<List<String>>(){}.getType(), new JsonUtils.ArrayListAdaptor().nullSafe())
+                                        .registerTypeAdapter(new TypeToken<List<String>>() {
+                                        }.getType(), new JsonUtils.ArrayListAdaptor().nullSafe())
                                         .registerTypeAdapter(new TypeToken<ArrayList<String>>() {
                                         }.getType(), new JsonUtils.ArrayListAdaptor().nullSafe())
                                     .create();
