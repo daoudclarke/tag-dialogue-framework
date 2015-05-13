@@ -36,7 +36,29 @@ public class YesNoAnalyserStringMatching extends Analyser {
             "definitely",
             "great",
             "of course",
-            "cool"
+            "cool",
+            "awesome",
+            "affirmative",
+            "amen",
+            "fine",
+            "good",
+            "all right",
+            "aye",
+            "certainly",
+            "by all means",
+            "definitely", "definately",
+            "exactly",
+            "good enough",
+            "indubitably",
+            "just so",
+            "most assuredly",
+            "precisely",
+            "very well",
+            "brilliant",
+            "acceptable",
+            "delightful",
+            "kosher",
+            "sufficient"
     );
 
     private static Pattern yesPattern =

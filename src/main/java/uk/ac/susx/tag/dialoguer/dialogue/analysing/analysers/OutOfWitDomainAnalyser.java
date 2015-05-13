@@ -82,6 +82,10 @@ public class OutOfWitDomainAnalyser extends Analyser {
         return min;
     }
 
+    public static void main(String[] args) throws IOException {
+        writeIntents("QJG7W4SON6THNBPGMBQFPFZT5OKEBGVE", new File("training.txt"), new File("calibration.txt"));
+    }
+
 
     public static void writeIntents(String serverAccessToken, File training, File calibration) throws IOException {
 
@@ -125,9 +129,9 @@ public class OutOfWitDomainAnalyser extends Analyser {
         client.close();
     }
 
-    public static class IntentList extends ArrayList<HashMap<String, String>>{
+    public static class IntentList extends ArrayList<HashMap<String, Object>>{
         public List<String> getIntentIds(){
-            return this.stream().map(i -> i.get("id")).collect(Collectors.toList());
+            return this.stream().map(i -> (String)i.get("id")).collect(Collectors.toList());
         }
     }
 
