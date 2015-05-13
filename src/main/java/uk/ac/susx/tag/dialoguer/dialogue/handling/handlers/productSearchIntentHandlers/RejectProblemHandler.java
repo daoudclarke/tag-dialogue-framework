@@ -22,21 +22,18 @@ public class RejectProblemHandler implements Handler.ProblemHandler{
     @Override
     public Response handle(List<Intent> intents, Dialogue d, Object resource) {
         //first of all need to find out which slot is being rejected
-        if(d.isInWorkingMemory("product","confirmed")) {
-            if (d.isInWorkingMemory("recipient", "confirmed")) {
-                if (d.isInWorkingMemory("message", "confirmed")) {
-                    //give up
-                    d.pushFocus("unknown");
-                } else {
-                    d.pushFocus("confirm_message");
+        //push need to confirm individual items of intent which have not yet been confirmed
+        if(!d.isInWorkingMemory(ProductSearchHandler.messageSlot,"confirmed")) {
+            d.pushFocus("confirm_message");
+        }
+        if(!d.isInWorkingMemory(ProductSearchHandler.recipientSlot,"confirmed")) {
+            d.pushFocus("confirm_recipient");
+        }
 
-                }
-            } else {
-                d.pushFocus("confirm_recipient");
-            }
-        } else {
+        if(!d.isInWorkingMemory(ProductSearchHandler.productIdSlot,"confirmed")) {
             d.pushFocus("confirm_product");
         }
+
         return ProductSearchHandler.processStack(d,ProductSearchHandler.castDB(resource));
     }
 

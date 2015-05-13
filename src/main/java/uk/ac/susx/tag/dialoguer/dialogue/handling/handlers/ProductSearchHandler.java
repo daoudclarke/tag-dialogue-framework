@@ -43,6 +43,7 @@ public class ProductSearchHandler extends Handler {
     public static final String buy="really_buy";
     public static final String giftIntent="gift";
     public static final String confirm="confirm";
+    public static final String confirmProduct="confirm_product";
    // public static final String yes="yes";
    // public static final String no="no";
     public static final List<String> confirmIntents=Lists.newArrayList(confirm, Intent.yes);
@@ -131,6 +132,7 @@ public class ProductSearchHandler extends Handler {
                             output.setSource(merged);
                             return output;
                         })
+                        .merge(Sets.newHashSet("confirm_product_buy_media"),confirmProduct)
                         .getIntents();
 
 
