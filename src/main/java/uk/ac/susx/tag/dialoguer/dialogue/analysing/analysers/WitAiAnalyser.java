@@ -70,7 +70,7 @@ public class WitAiAnalyser extends Analyser {
 //        target.register(new LoggingFilter());
 
         target = target
-                .queryParam("v", 20140818)
+                .queryParam("v", 20150512)
                 .queryParam("q", message)
                 .queryParam("n", 3);
 
