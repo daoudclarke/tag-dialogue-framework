@@ -8,8 +8,8 @@
          "sourceId" : "simple_cancel"
         },
         {"name" : "out_of_wit_domain",
-                "path" " "product_search_ooda_config.json",
-                "sourceId" : "out_of_wit_domain",
+                "path" : "product_search_ooda_config.json",
+                "sourceId" : "out_of_wit_domain"
                 },
         {"name" : "simple_choice",
          "sourceId" : "simple_choice"},
