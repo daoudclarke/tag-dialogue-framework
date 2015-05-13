@@ -9,6 +9,12 @@ import java.io.IOException;
 /**
  * Creates an instance of the WitAiAnalyser.
  *
+ * The setup config should look like:
+ *
+ *  {
+ *    "serverAccessToken" : "MLLG4RQ4CHCEL6I4O4T7SABCDXYEVBT5"
+ *  }
+ *
  * User: Andrew D. Robertson
  * Date: 13/04/2015
  * Time: 11:24

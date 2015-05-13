@@ -50,6 +50,9 @@ public abstract class Handler implements AutoCloseable {
      * right thing to do, but under certain circumstances it needs to be overridden. You could for example, filter out
      * any incomplete intents, or add in a "cancel auto query" intent (see Intent docs).
      *
+     * Another legitimate use of this function, is to merge intents from multiple sources, or merge intents that
+     * analysers treat separately but that the handler would rather handle as one. (See IntentMerger class).
+     *
      * By default, the list is left untouched.
      */
     public List<Intent> preProcessIntents(List<Intent> intents, List<IntentMatch> intentMatches, Dialogue dialogue){

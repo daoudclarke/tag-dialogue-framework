@@ -14,13 +14,6 @@ import java.util.regex.Pattern;
  * An analyser that fires and intent when a pattern is found in the stripped text of the last user message. The intent
  * will contain a slot for each match, filled with the text of the match. The slot type is "match".
  *
- * The setup JSON file should contain an object with two fields:
- *
- *  {
- *    regex : <string> (the pattern that it will attempt to match)
- *    intentName : <string> (the name of the intent that will be fired)
- *  }
- *
  * User: Andrew D. Robertson
  * Date: 16/04/2015
  * Time: 12:00

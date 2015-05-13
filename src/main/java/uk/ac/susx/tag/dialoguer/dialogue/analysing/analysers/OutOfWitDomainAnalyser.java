@@ -54,31 +54,49 @@ public class OutOfWitDomainAnalyser extends Analyser {
 
     public OutOfWitDomainAnalyser(int ngramOrder, String serverAccessToken, Set<String> excludedIntents) throws IOException {
 
+        // Set up temporary files for training process
         File trainingFile = File.createTempFile("oowd.training_intents", null);     trainingFile.deleteOnExit();
         File calibrationFile = File.createTempFile("oowd.calibration_intents", null);     calibrationFile.deleteOnExit();
         File arpaFile = File.createTempFile("oowd.arpa", null);     arpaFile.deleteOnExit();
         File binaryFile = File.createTempFile("oowd.arpa.binary", null);    binaryFile.deleteOnExit();
 
+        // Obtain training and calibration data from the wit.ai instance
         writeIntents(serverAccessToken, trainingFile, calibrationFile, excludedIntents);
 
         List<String> inputFiles = Lists.newArrayList(trainingFile.getAbsolutePath());
 
+        // Set up a word indexer
         final StringWordIndexer wordIndexer = new StringWordIndexer();
         wordIndexer.setStartSymbol(ArpaLmReader.START_SYMBOL);
         wordIndexer.setEndSymbol(ArpaLmReader.END_SYMBOL);
         wordIndexer.setUnkSymbol(ArpaLmReader.UNK_SYMBOL);
 
+        // Create ngram stats
         LmReaders.createKneserNeyLmFromTextFiles(inputFiles, wordIndexer, ngramOrder, arpaFile, new ConfigOptions());
+        // Binarise file
         MakeLmBinaryFromArpa.main(new String[]{arpaFile.getAbsolutePath(), binaryFile.getAbsolutePath()});
-
+        // Create language model from ngram stats
         lm = (ArrayEncodedNgramLanguageModel)LmReaders.readLmBinary(binaryFile.getAbsolutePath());
 
+        // Calibrate a probability threshold for this data
         threshold = calibrateThreshold(calibrationFile, lm);
 
+        // Delete temp files
         if (!trainingFile.delete()) throw new Dialoguer.DialoguerException("Unable to delete temp file: " + trainingFile.getAbsolutePath());
         if (!calibrationFile.delete()) throw new Dialoguer.DialoguerException("Unable to delete temp file: " + calibrationFile.getAbsolutePath());
         if (!arpaFile.delete()) throw new Dialoguer.DialoguerException("Unable to delete temp file: " + arpaFile.getAbsolutePath());
         if (!binaryFile.delete()) throw new Dialoguer.DialoguerException("Unable to delete temp file: " + binaryFile.getAbsolutePath());
+    }
+
+    @Override
+    public List<Intent> analyse(String message, Dialogue dialogue) {
+        message = dialogue.getStrippedText();
+        message = SimplePatterns.stripDigits(message);
+        message = SimplePatterns.stripPunctuation(message);
+
+        List<String> words = Lists.newArrayList(SimplePatterns.splitByWhitespace(message.trim()));
+
+        return scoreSentence(words, lm) >= threshold? new ArrayList<>() : new Intent(outOfDomainIntentName).toList();
     }
 
     public static double calibrateThreshold(File calibrationFile, ArrayEncodedNgramLanguageModel<String> lm) throws IOException {
@@ -159,16 +177,7 @@ public class OutOfWitDomainAnalyser extends Analyser {
         public String id;
     }
 
-    @Override
-    public List<Intent> analyse(String message, Dialogue dialogue) {
-        message = dialogue.getStrippedText();
-        message = SimplePatterns.stripDigits(message);
-        message = SimplePatterns.stripPunctuation(message);
 
-        List<String> words = Lists.newArrayList(SimplePatterns.splitByWhitespace(message.trim()));
-
-        return scoreSentence(words, lm) >= threshold? new ArrayList<>() : new Intent(outOfDomainIntentName).toList();
-    }
 
     @Override
     public AnalyserFactory getFactory() {
