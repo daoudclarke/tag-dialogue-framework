@@ -166,6 +166,11 @@ public class Dialoguer implements AutoCloseable {
         responseTemplates = new HashMap<>();
     }
 
+    public static void main(String[] args) throws IOException {
+        Dialoguer d = Dialoguer.loadDialoguerFromJsonResourceOrFile("example_dialoguer.json");
+        System.out.println();
+    }
+
     public Dialogue startNewDialogue(String dialogueId){
         return handler.getNewDialogue(dialogueId);
     }

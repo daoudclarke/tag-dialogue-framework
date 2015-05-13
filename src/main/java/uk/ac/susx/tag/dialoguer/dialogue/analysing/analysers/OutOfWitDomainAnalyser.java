@@ -45,28 +45,33 @@ public class OutOfWitDomainAnalyser extends Analyser {
     private ArrayEncodedNgramLanguageModel<String> lm;
     private double threshold;
 
-    public OutOfWitDomainAnalyser(int ngramOrder, String serverAccessToken, String modelName, Set<String> excludedIntents) throws IOException {
+    public OutOfWitDomainAnalyser(int ngramOrder, String serverAccessToken, Set<String> excludedIntents) throws IOException {
 
-        String training = modelName+".training_intents";
-        String calibration = modelName+".calibration_intents";
-        String arpa = modelName+".arpa";
-        String binary = modelName+".arpa.binary";
+        File trainingFile = File.createTempFile("oowd.training_intents", null);     trainingFile.deleteOnExit();
+        File calibrationFile = File.createTempFile("oowd.calibration_intents", null);     calibrationFile.deleteOnExit();
+        File arpaFile = File.createTempFile("oowd.arpa", null);     arpaFile.deleteOnExit();
+        File binaryFile = File.createTempFile("oowd.arpa.binary", null);    binaryFile.deleteOnExit();
 
-        writeIntents(serverAccessToken, new File(training), new File(calibration), excludedIntents);
+        writeIntents(serverAccessToken, trainingFile, calibrationFile, excludedIntents);
 
-        List<String> inputFiles = Lists.newArrayList(modelName+".training_intents");
+        List<String> inputFiles = Lists.newArrayList(trainingFile.getAbsolutePath());
 
         final StringWordIndexer wordIndexer = new StringWordIndexer();
         wordIndexer.setStartSymbol(ArpaLmReader.START_SYMBOL);
         wordIndexer.setEndSymbol(ArpaLmReader.END_SYMBOL);
         wordIndexer.setUnkSymbol(ArpaLmReader.UNK_SYMBOL);
 
-        LmReaders.createKneserNeyLmFromTextFiles(inputFiles, wordIndexer, ngramOrder, new File(arpa), new ConfigOptions());
-        MakeLmBinaryFromArpa.main(new String[]{arpa, binary});
+        LmReaders.createKneserNeyLmFromTextFiles(inputFiles, wordIndexer, ngramOrder, arpaFile, new ConfigOptions());
+        MakeLmBinaryFromArpa.main(new String[]{arpaFile.getAbsolutePath(), binaryFile.getAbsolutePath()});
 
-        lm = (ArrayEncodedNgramLanguageModel)LmReaders.readLmBinary(binary);
+        lm = (ArrayEncodedNgramLanguageModel)LmReaders.readLmBinary(binaryFile.getAbsolutePath());
 
-        threshold = calibrateThreshold(new File(calibration), lm);
+        threshold = calibrateThreshold(calibrationFile, lm);
+
+        if (!trainingFile.delete()) throw new Dialoguer.DialoguerException("Unable to delete temp file: " + trainingFile.getAbsolutePath());
+        if (!calibrationFile.delete()) throw new Dialoguer.DialoguerException("Unable to delete temp file: " + calibrationFile.getAbsolutePath());
+        if (!arpaFile.delete()) throw new Dialoguer.DialoguerException("Unable to delete temp file: " + arpaFile.getAbsolutePath());
+        if (!binaryFile.delete()) throw new Dialoguer.DialoguerException("Unable to delete temp file: " + binaryFile.getAbsolutePath());
     }
 
     public static double calibrateThreshold(File calibrationFile, ArrayEncodedNgramLanguageModel<String> lm) throws IOException {
