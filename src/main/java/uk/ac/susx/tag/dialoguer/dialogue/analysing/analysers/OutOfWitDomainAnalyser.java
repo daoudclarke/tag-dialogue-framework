@@ -54,6 +54,8 @@ public class OutOfWitDomainAnalyser extends Analyser {
 
     public OutOfWitDomainAnalyser(int ngramOrder, String serverAccessToken, Set<String> excludedIntents) throws IOException {
 
+        if (serverAccessToken == null) throw new Dialoguer.DialoguerException("You must specify the Wit.Ai instance server access token.");
+
         // Set up temporary files for training process
         File trainingFile = File.createTempFile("oowd.training_intents", null);     trainingFile.deleteOnExit();
         File calibrationFile = File.createTempFile("oowd.calibration_intents", null);     calibrationFile.deleteOnExit();
