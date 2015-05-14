@@ -1,3 +1,7 @@
 {
-    "serverAccessToken" : "ZEWBPWRRPGZMLKNFFJ3DLUTMSISBM2MC"
+    "serverAccessToken" : "ZEWBPWRRPGZMLKNFFJ3DLUTMSISBM2MC",
+    "outOfDomainAnalyser" : {
+           "ngramOrder" : 3,
+           "excludedIntents" : [ "confirm_choice", "other", "confirm_option_value" ]
+    }
 }
