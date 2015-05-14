@@ -30,7 +30,7 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
                     handleChoice(i, dialogue, ProductSearchHandler.castDB(resource));
                     break;
                 case Intent.nullChoice:
-                    handleNullChoice(dialogue);
+                    handleNullChoice(dialogue, ProductSearchHandler.castDB(resource));
                     break;
                 case Intent.noChoice:
                     handleNoChoice(dialogue);
@@ -44,10 +44,13 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
         return ProductSearchHandler.processStack(dialogue,ProductSearchHandler.castDB(resource));
     }
 
-    private void handleNullChoice(Dialogue d){
+    private void handleNullChoice(Dialogue d, ProductMongoDB db){
         d.clearChoices();
+
+        ConfirmProductHandler.handleReject(d,ProductSearchHandler.productIdSlot); //add current productIds to rejected list
+        d.peekTopIntent().fillSlots(BuyMethod.handleProduct(d.peekTopIntent(),d,db));
         //probably should add to rejected list and re-search for more potential products
-        d.pushFocus("respecify_product");
+        //d.pushFocus("respecify_product");
 
     }
     private void handleNoChoice(Dialogue d){

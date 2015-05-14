@@ -23,6 +23,7 @@ public class RejectProblemHandler implements Handler.ProblemHandler{
     public Response handle(List<Intent> intents, Dialogue d, Object resource) {
         //first of all need to find out which slot is being rejected
         //push need to confirm individual items of intent which have not yet been confirmed
+        System.err.println("RejectProblemHandler has fired");
         if(!d.isInWorkingMemory(ProductSearchHandler.messageSlot,"confirmed")) {
             d.pushFocus("confirm_message");
         }

@@ -68,12 +68,17 @@ public class BuyMethod implements Handler.IntentHandler{
         }
         return s;
     }
-    public List<Intent.Slot> handleProduct(Intent i, Dialogue d,ProductMongoDB db){
+    public static List<Intent.Slot> handleProduct(Intent i, Dialogue d,ProductMongoDB db){
+        //takes the queryMap in the productSlot of the given intent and finds matches in the database which have not been rejected
+        //returns a list of slots to be added to productIdSlot
+        //processProductList will have added the correct focus to the stack with regard to the length of this list
+
         //basic db look up
         Gson gson = new Gson();
         Type termMapType = new TypeToken<Map<String, List<String>>>(){}.getType();
 
         Map<String,List<String>> queryMap=new HashMap<>();
+        //System.err.println(i.getSlotValuesByType(ProductSearchHandler.productSlot).stream().findFirst());
         Optional<String> termJson =i.getSlotValuesByType(ProductSearchHandler.productSlot).stream().findFirst();
         if(termJson.isPresent()){
             queryMap=gson.fromJson(termJson.get(),termMapType);
@@ -89,11 +94,18 @@ public class BuyMethod implements Handler.IntentHandler{
         System.err.println(searchstring);
         List<Merchant> merchants = findNearbyMerchants(db,d.getUserData());
         System.err.println("Nearby merchants: "+merchants.size());
-        List<Product> products = db.productQueryWithMerchants(searchstring,merchants,new HashSet<>(),limit);
+        String rejected = d.getFromWorkingMemory("rejected"+ProductSearchHandler.productIdSlot);
+        List<String> rejectedlist = new ArrayList<>();
+        if(rejected!=null){
+            for(String id:rejected.split(" ")){
+                rejectedlist.add(id);
+            }
+        }
+        List<Product> products = filterRejected(db.productQueryWithMerchants(searchstring,merchants,new HashSet<>(),limit+rejectedlist.size()),rejectedlist);
         System.err.println("Products found: "+products.size());
         List<Intent.Slot> slotlist = new ArrayList<>();
-        Intent.Slot s = new Intent.Slot(ProductSearchHandler.productSlot,searchstring,0,0);
-        slotlist.add(s);
+        //Intent.Slot s = new Intent.Slot(ProductSearchHandler.productSlot,searchstring,0,0);
+        slotlist.addAll(i.getSlotByType(ProductSearchHandler.productSlot));
         slotlist.addAll(processProductList(products,d,db));
         return slotlist;
     }
@@ -135,10 +147,11 @@ public class BuyMethod implements Handler.IntentHandler{
     }
 
     public static List<Merchant> findNearbyMerchants(ProductMongoDB db, User user){
-
         return db.merchantQueryByLocation(user.getLatitude(), user.getLongitude(), searchradius, 0);
-
-
     }
 
+
+    public static List<Product> filterRejected(List<Product> products, List<String> rejectedIds){
+        return products.stream().filter(product->!rejectedIds.contains(product.getProductId())).collect(Collectors.toList());
+    }
 }

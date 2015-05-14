@@ -42,7 +42,7 @@ public class ProductSearchHandler extends Handler {
     public static final String quit="cancel_query";
     public static final String buy="really_buy";
     public static final String giftIntent="gift";
-    public static final String confirm="confirm";
+    public static final String confirm="confirmation";
     public static final String confirmProduct="confirm_product";
    // public static final String yes="yes";
    // public static final String no="no";

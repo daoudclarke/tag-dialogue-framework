@@ -6,6 +6,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.ProductSearchHandler;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public class ConfirmProductHandler implements Handler.ProblemHandler {
 
-    public static final String requiredState = "confirm_product";
+    public static final String requiredState = "confirm_product_query";
     public static final List<String> mystates = Lists.newArrayList(requiredState, "confirm_yes_no");
     public static final List<String> myintents = Lists.newArrayList(ProductSearchHandler.confirm, Intent.yes, Intent.no, ProductSearchHandler.confirmProduct);
 
@@ -22,20 +23,24 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
     public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue) {
         //this should only fire if user is definitely accepting or rejecting the selected product
 
-        boolean statematch = (dialogue.getStates().stream().anyMatch(s -> s.equals(requiredState)) && dialogue.getStates().stream().allMatch(s -> mystates.contains(s)));
+        boolean statematch1 = dialogue.getStates().stream().anyMatch(s -> s.equals(requiredState));
+        boolean statematch2 = dialogue.getStates().stream().allMatch(s-> mystates.contains(s));
         boolean intentmatch1 = intents.stream().anyMatch(s -> myintents.contains(s.getName()));
         boolean intentmatch = false; //TODO
-        return (statematch && intentmatch1) || intentmatch;
+        //dialogue.getStates().stream().forEach(s->System.err.println(s));
+        //System.err.println("Handleable by the ConfirmProductHandler: "+statematch1+", "+statematch2+", "+intentmatch1);
+        return (statematch1 &&statematch2 && intentmatch1) || intentmatch;
     }
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
         //need to check for yes or no and handle accordingly.  Accept/reject.  Then update
+        System.err.println("ConfirmProductHandler has fired");
         int accepting = determineAccepting(intents);
-        if(accepting>0){handleAccept(intents,dialogue, ProductSearchHandler.productIdSlot);}
-        if(accepting<0){handleReject(intents,dialogue,ProductSearchHandler.productIdSlot);}
-        boolean updated=handleUpdate(intents,dialogue);
-        if(!updated && accepting <0){handleNoInfo(intents,dialogue);}
+        if(accepting>0){handleAccept(dialogue, ProductSearchHandler.productIdSlot);}
+        if(accepting<0){handleReject(dialogue,ProductSearchHandler.productIdSlot);}
+        boolean updated=handleUpdate(intents, dialogue, ProductSearchHandler.castDB(resource));
+        if(!updated && accepting <0){handleNoInfo(dialogue,ProductSearchHandler.castDB(resource));}
         return ProductSearchHandler.processStack(dialogue,ProductSearchHandler.castDB(resource));
     }
 
@@ -65,11 +70,11 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         return accepting;
     }
 
-    private void handleAccept(List<Intent> intents, Dialogue d, String slot){
+    private void handleAccept(Dialogue d, String slot){
         //should also check for "Yes Aphrodite"
         d.putToWorkingMemory(slot,"confirmed");
     }
-    public static void handleReject(List<Intent> intents, Dialogue d, String slot){
+    public static void handleReject(Dialogue d, String slot){
         //should also check for "No not Aphrodite"
         //get rejectedproductlist from working memory, add current product(s)
         String rejectedlist=d.getFromWorkingMemory("rejected"+slot);
@@ -80,12 +85,17 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         }
         workingIntent.clearSlots(slot);
         d.putToWorkingMemory("rejected"+slot,rejectedlist);
+        d.addToWorkingIntents(workingIntent);
     }
-    private boolean handleUpdate(List<Intent> intents, Dialogue d){
+    private boolean handleUpdate(List<Intent> intents, Dialogue d, ProductMongoDB db){
         //find the intent which offers more positive information
         return false;
     }
-    private void handleNoInfo(List<Intent> intents,Dialogue d){
+    private void handleNoInfo(Dialogue d, ProductMongoDB db){
         //search for alternative products?
+
+        d.peekTopIntent().fillSlots(BuyMethod.handleProduct(d.peekTopIntent(),d,db));
+        //note this will mean that ProductSlot (searchQuery) gets duplicated in workingIntent
+        //not actually a problem but not very clean ... TODO: should either remove it before refilling, or check for duplicates on filling slots
     }
 }

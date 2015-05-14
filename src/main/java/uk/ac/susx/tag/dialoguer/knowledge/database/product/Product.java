@@ -329,7 +329,7 @@ public class Product {
 
     public String toShortString(){
         try {
-            return this.propertyDescription() + ", @ " + this.fetchRetailerInfo(new ArrayList<Double>());
+            return this.propertyDescription() + ", " + this.fetchRetailerInfo(new ArrayList<Double>());
         } catch (NullPointerException e){
             return this.getName();
         }

@@ -7,10 +7,6 @@
         {"name" : "simple_cancel",
          "sourceId" : "simple_cancel"
         },
-        {"name" : "out_of_wit_domain",
-                "path" : "product_search_ooda_config.json",
-                "sourceId" : "out_of_wit_domain"
-                },
         {"name" : "simple_choice",
          "sourceId" : "simple_choice"},
         {"name" : "simple_yes_no",
@@ -90,9 +86,9 @@
         },
         "unknown_recipient" : {
             "templates":[
-                "{contact} not in database.  Add details or respecify recipient?"
+                "{contact} not in database.  Respecify recipient?"
             ],
-            "newStates":["unknown_recipient"],
+            "newStates":["confirm_contact_details"],
             "requestingYesNo":"no"
 
         },
