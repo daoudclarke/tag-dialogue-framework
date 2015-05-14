@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.WitAiAnalyserFactory;
@@ -76,6 +77,13 @@ public class WitAiAnalyser extends Analyser {
     public AnalyserFactory getFactory() {
         return new WitAiAnalyserFactory();
     }
+
+//    public static void main(String[] args){
+//        WitAiAnalyser a = new WitAiAnalyser();
+//        a.serverAccessToken = "KJ7VH77LT43M2Z4T3B7EZEHETOMEASZ2";
+//        WitAiResponse r = a.queryAPI("I actually want to go from 5 davidor road", Lists.newArrayList("followup"), a.serverAccessToken, a.client);
+//        System.out.println(r.outcomes.get(0).getIntent());
+//    }
 
     public static WitAiResponse queryAPI(String message,  List<String> states, String serverAccessToken, Client client){
 
