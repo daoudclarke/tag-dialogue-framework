@@ -90,7 +90,13 @@
             ],
             "newStates":["confirm_contact_details"],
             "requestingYesNo":"no"
-
+        },
+        "request_recipient" : {
+            "templates":[
+                "Please specify recipient of purchase."
+             ],
+             "newStates":["confirm_contact_details"],
+             "requestingYesNo":"no"
         },
         "respecify_product" : {
             "templates":[

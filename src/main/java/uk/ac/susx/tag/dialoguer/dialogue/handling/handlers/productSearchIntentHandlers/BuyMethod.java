@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 
 /**
  * Created by juliewe on 11/05/2015.
+ *
+ * TODO://Make sure that recipients are not case-sensitive when checked
  */
 public class BuyMethod implements Handler.IntentHandler{
 
@@ -45,7 +47,7 @@ public class BuyMethod implements Handler.IntentHandler{
 
     }
 
-    public Intent.Slot handleMessage(Intent i,Dialogue d, ProductMongoDB db){
+    public static Intent.Slot handleMessage(Intent i,Dialogue d, ProductMongoDB db){
         List<String> messages = i.getSlotValuesByType(ProductSearchHandler.messageSlot);
         String messagestring=StringUtils.detokenise(messages);
         if(messagestring.equals("none")){
@@ -55,7 +57,7 @@ public class BuyMethod implements Handler.IntentHandler{
         }
         return new Intent.Slot(ProductSearchHandler.messageSlot,messagestring,0,0);
     }
-    public Intent.Slot handleRecipient(Intent i,Dialogue d, ProductMongoDB db){
+    public static Intent.Slot handleRecipient(Intent i,Dialogue d, ProductMongoDB db){
         List<String> recipients = i.getSlotValuesByType(ProductSearchHandler.recipientSlot);
         String recipientstring = StringUtils.detokenise(recipients);
         Intent.Slot s=null;

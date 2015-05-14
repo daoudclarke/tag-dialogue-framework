@@ -70,7 +70,7 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         return accepting;
     }
 
-    private void handleAccept(Dialogue d, String slot){
+    public static void handleAccept(Dialogue d, String slot){
         //should also check for "Yes Aphrodite"
         d.putToWorkingMemory(slot,"confirmed");
     }
@@ -87,15 +87,13 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         d.putToWorkingMemory("rejected"+slot,rejectedlist);
         d.addToWorkingIntents(workingIntent);
     }
-    private boolean handleUpdate(List<Intent> intents, Dialogue d, ProductMongoDB db){
+    public static boolean handleUpdate(List<Intent> intents, Dialogue d, ProductMongoDB db){
         //find the intent which offers more positive information
         return false;
     }
     private void handleNoInfo(Dialogue d, ProductMongoDB db){
         //search for alternative products?
-
         d.peekTopIntent().fillSlots(BuyMethod.handleProduct(d.peekTopIntent(),d,db));
-        //note this will mean that ProductSlot (searchQuery) gets duplicated in workingIntent
-        //not actually a problem but not very clean ... TODO: should either remove it before refilling, or check for duplicates on filling slots
+
     }
 }
