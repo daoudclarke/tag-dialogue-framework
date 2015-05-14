@@ -166,48 +166,8 @@ public class Dialoguer implements AutoCloseable {
 
     public static void main(String[] args) throws IOException {
         Dialoguer d = Dialoguer.loadDialoguerFromJsonResourceOrFile("example_dialoguer.json");
-
-        Dialogue dialogue = new Dialogue("test");
-
-        List<Intent> intents = new ArrayList<>();
-
-        String message = "I'd like to buy Thriller by michael jackson";
-        String stripped = SimplePatterns.stripAll(message);
-        dialogue.putToWorkingMemory("stripped", stripped);
-        dialogue.putToWorkingMemory("strippedNoStopwords", Stopwords.removeStopwords(stripped));
-
-        // 1. Add the new user message to the dialogue object
-        dialogue.addNewUserMessage(message, null);
-        for (Analyser analyser : d.analysers) {
-
-            List<Intent> analysis = analyser.analyse(message, dialogue);
-            //System.err.println("Using analyser: "+analyser.getName()+" generated intents: "+analysis.size());
-            for (Intent intent : analysis)
-                intent.setSource(analyser.getSourceId());  // Source of the intent is the position of the analyser that produced it in the array of analysers
-            intents.addAll(analysis);
-        }
-        message = "What the confizzle? WHat's going on?";
-        stripped = SimplePatterns.stripAll(message);
-        dialogue.putToWorkingMemory("stripped", stripped);
-        dialogue.putToWorkingMemory("strippedNoStopwords", Stopwords.removeStopwords(stripped));
-
-        // 1. Add the new user message to the dialogue object
-        dialogue.addNewUserMessage(message, null);
-        List<Intent> intents2 = new ArrayList<>();
-        for (Analyser analyser : d.analysers) {
-
-            List<Intent> analysis = analyser.analyse(message, dialogue);
-            //System.err.println("Using analyser: "+analyser.getName()+" generated intents: "+analysis.size());
-            for (Intent intent : analysis)
-                intent.setSource(analyser.getSourceId());  // Source of the intent is the position of the analyser that produced it in the array of analysers
-            intents2.addAll(analysis);
-        }
-
-
-
         System.out.println();
     }
-
 
     public Dialogue startNewDialogue(String dialogueId){
         return handler.getNewDialogue(dialogueId);
