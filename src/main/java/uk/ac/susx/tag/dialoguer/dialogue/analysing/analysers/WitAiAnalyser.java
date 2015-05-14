@@ -9,6 +9,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,15 +30,23 @@ public class WitAiAnalyser extends Analyser {
 
     private transient Client client;
     private String serverAccessToken;
+    public OutOfWitDomainAnalyser outOfDomainAnalyser;
 
     private WitAiAnalyser(){
         client = ClientBuilder.newClient();
         serverAccessToken = null;
+        outOfDomainAnalyser = null;
     }
 
-    public WitAiAnalyser(String serverAccessToken){
+    public WitAiAnalyser(WitAiAnalyserFactory.WitAiAnalyserDefinition config) throws IOException {
         client = ClientBuilder.newClient();
-        this.serverAccessToken = serverAccessToken;
+        if (config.hasServerAccessToken()){
+            serverAccessToken = config.serverAccessToken;
+
+            outOfDomainAnalyser = config.hasOutOfDomainAnalyser()?
+                                        new OutOfWitDomainAnalyser(config.outOfDomainAnalyser.ngramOrder, serverAccessToken, config.outOfDomainAnalyser.excludedIntents)
+                                        : null;
+        }
     }
 
     @Override
@@ -55,7 +64,12 @@ public class WitAiAnalyser extends Analyser {
             }
         }
 
-        return i.toList();
+        if (isOutOfDomainAnalyserPresent()){
+            List<Intent> intents = i.toList();
+            intents.addAll(outOfDomainAnalyser.analyse(message, dialogue));
+            return intents;
+
+        } else return i.toList();
     }
 
     @Override
@@ -93,6 +107,8 @@ public class WitAiAnalyser extends Analyser {
     public void close() throws Exception {
         client.close();
     }
+
+    private boolean isOutOfDomainAnalyserPresent(){ return outOfDomainAnalyser !=null; }
 
     public static class Context {
         private final List<String> state;

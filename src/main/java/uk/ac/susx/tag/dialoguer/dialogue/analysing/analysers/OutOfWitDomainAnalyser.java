@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import edu.berkeley.nlp.lm.ArrayEncodedNgramLanguageModel;
 import edu.berkeley.nlp.lm.ConfigOptions;
@@ -12,6 +13,7 @@ import edu.berkeley.nlp.lm.io.MakeLmBinaryFromArpa;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.OutOfWitDomainAnalyserFactory;
+import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.WitAiAnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
@@ -48,6 +50,7 @@ public class OutOfWitDomainAnalyser extends Analyser {
     public static String outOfDomainIntentName = "out_of_domain";
 
     private static String witAiIntentsApi = "https://api.wit.ai/intents";
+    private static double calibrationProportion = 0.4;
 
     private ArrayEncodedNgramLanguageModel<String> lm;
     private double threshold;
@@ -94,7 +97,7 @@ public class OutOfWitDomainAnalyser extends Analyser {
     public List<Intent> analyse(String message, Dialogue dialogue) {
         message = dialogue.getStrippedText();
         message = SimplePatterns.stripDigits(message);
-        message = SimplePatterns.stripPunctuation(message);
+        message = SimplePatterns.stripPunctuation(message).trim();
 
         List<String> words = Lists.newArrayList(SimplePatterns.splitByWhitespace(message.trim()));
 
@@ -129,28 +132,36 @@ public class OutOfWitDomainAnalyser extends Analyser {
                         .header("Accept",  "application/json")
                         .buildGet().invoke(String.class);
 
-        for (String intentId : Dialoguer.gson.fromJson(response, IntentList.class).getIntentIds(excludedIntentNames)){
-            target = client.target(witAiIntentsApi + "/" + intentId);
+        try (BufferedWriter bwTraining = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(training), "UTF-8"));
+             BufferedWriter bwCalibration = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(calibration), "UTF-8"))){
 
-            response = target.request()
-                    .header("Authorization", "Bearer " + serverAccessToken)
-                    .header("Accept",  "application/json")
-                    .buildGet().invoke(String.class);
+            for (String intentId : Dialoguer.gson.fromJson(response, IntentList.class).getIntentIds(excludedIntentNames)){
+                target = client.target(witAiIntentsApi + "/" + intentId);
 
-            IntentDefinition d = Dialoguer.gson.fromJson(response, IntentDefinition.class);
+                response = target.request()
+                        .header("Authorization", "Bearer " + serverAccessToken)
+                        .header("Accept", "application/json")
+                        .buildGet().invoke(String.class);
 
-            try (BufferedWriter bwTraining = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(training), "UTF-8"));
-                 BufferedWriter bwCalibration = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(calibration), "UTF-8"))){
+                IntentDefinition d = Dialoguer.gson.fromJson(response, IntentDefinition.class);
 
                 List<ExpressionDefinition> shuffledExpressions = new ArrayList<>(d.expressions);
                 Collections.shuffle(shuffledExpressions);
-                for (int i = 0; i < shuffledExpressions.size()/10; i++){
+//                System.out.println("Calibration:");
+                for (int i = 0; i < shuffledExpressions.size() * calibrationProportion; i++){
                     String expression = stripMessage(shuffledExpressions.get(i).body);
-                    bwCalibration.write(expression); bwCalibration.write("\n");
+                    if (!expression.equals("")) {
+//                        System.out.println("  " + expression);
+                        bwCalibration.write(expression); bwCalibration.write("\n");
+                    }
                 }
-                for (int i = shuffledExpressions.size()/10; i < shuffledExpressions.size(); i++){
+//                System.out.println("Training:");
+                for (int i = (int)(shuffledExpressions.size() * calibrationProportion); i < shuffledExpressions.size(); i++){
                     String expression = stripMessage(shuffledExpressions.get(i).body);
-                    bwTraining.write(expression); bwTraining.write("\n");
+                    if (!expression.equals("")) {
+//                        System.out.println("  " + expression);
+                        bwTraining.write(expression); bwTraining.write("\n");
+                    }
                 }
             }
         }
@@ -198,7 +209,7 @@ public class OutOfWitDomainAnalyser extends Analyser {
         message = SimplePatterns.stripAll(message);
         message = SimplePatterns.stripDigits(message);
         message = SimplePatterns.stripPunctuation(message);
-        return message.toLowerCase();
+        return message.toLowerCase().trim();
     }
 
     /**
@@ -209,17 +220,21 @@ public class OutOfWitDomainAnalyser extends Analyser {
 
         final int lmOrder = lm.getLmOrder();
         float sentenceScore = 0.0f;
+        int ngramCount = 0;
+
         for (int i = 1; i < lmOrder - 1 && i <= sentenceWithBounds.size() + 1; ++i) {
             final List<T> ngram = sentenceWithBounds.subList(-1, i);
             final float scoreNgram = lm.getLogProb(ngram);
             sentenceScore += scoreNgram;
+            ngramCount++;
         }
         for (int i = lmOrder - 1; i < sentenceWithBounds.size() + 2; ++i) {
             final List<T> ngram = sentenceWithBounds.subList(i - lmOrder, i);
             final float scoreNgram = lm.getLogProb(ngram);
             sentenceScore += scoreNgram;
+            ngramCount++;
         }
-        return sentenceScore / sentenceWithBounds.size();
+        return sentenceScore / ngramCount;
     }
 
     private static <T> float getLogProb(final int[] ngram, final ArrayEncodedNgramLanguageModel<T> lm) {

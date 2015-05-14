@@ -67,7 +67,9 @@ public class SimplePatterns {
         return punctuationRegex.matcher(text).replaceAll("");
     }
 
-    public static String stripDigits(String text) { return numberRegex.matcher(text).replaceAll(""); }
+    public static String stripDigits(String text) {
+        return numberRegex.matcher(text).replaceAll("");
+    }
 
     public static boolean isPunctuation(String text) {
         return punctuationRegex.matcher(text).matches();
