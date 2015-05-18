@@ -46,11 +46,15 @@ public class AcceptProblemHandler implements Handler.ProblemHandler{
     public static void handleAccept(Dialogue d){
         //perform side effects
         System.out.println("Making purchase for "+d.getId());
-
-        System.out.println( d.peekTopIntent().toString());
+        display(d.peekTopIntent());
+        //System.out.println( d.peekTopIntent().toString());
         //may want to check for other working intents
         //return Response
         d.setComplete(true);
         d.pushFocus("confirm_completion");
+    }
+
+    private static void display(Intent i){
+        i.getSlotCollection().stream().forEach(slot -> System.out.println(slot.name+" : "+slot.value));
     }
 }

@@ -64,7 +64,7 @@
         },
         "confirm_product" : {
             "templates":[
-                "Please confirm that you wish to buy {product_query}"
+                "Do you you wish to buy {product_query}?"
                 ],
             "newStates":["confirm_yes_no","confirm_product_query"],
             "requestingYesNo":"yes"
@@ -72,14 +72,14 @@
         },
         "confirm_recipient" : {
             "templates":[
-                "Please confirm your purchase should go to {contact}"
+                "Should your purchase go to {contact}?"
                 ],
             "newStates":["confirm_yes_no","confirm_contact_details"],
             "requestingYesNo":"yes"
         },
         "confirm_message" : {
             "templates":[
-                "Please confirm the message should be {message_body}"
+                "Should the message be \"{message_body}\""
                 ],
             "newStates":["confirm_yes_no","confirm_message_body"],
             "requestingYesNo":"yes"
@@ -97,6 +97,13 @@
              ],
              "newStates":["confirm_contact_details"],
              "requestingYesNo":"no"
+        },
+        "request_message" : {
+            "templates":[
+                "Please specify the message to go with your gift."
+                ],
+                "newStates":["confirm_message_details"],
+                "requestingYesNo":"no"
         },
         "respecify_product" : {
             "templates":[
