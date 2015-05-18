@@ -30,8 +30,8 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
 
         boolean statematch1 = dialogue.getStates().stream().anyMatch(s -> s.equals(requiredState));
         boolean statematch2 = dialogue.getStates().stream().allMatch(s-> mystates.contains(s));
-        boolean intentmatch1 = intents.stream().anyMatch(s -> myintents.contains(s.getName()));
-        boolean intentmatch = intents.stream().anyMatch(s->updateIntents.contains(s.getName()));
+        boolean intentmatch1 = intents.stream().anyMatch(s -> myintents.contains(s.getName()));//any of these intents along with the other state
+        boolean intentmatch = intents.stream().anyMatch(s->s.getName().equals(ProductSearchHandler.confirmProduct));//or just this intent (which should only fire in presence of other state anyway) so probably don't need this
 
         //dialogue.getStates().stream().forEach(s->System.err.println(s));
         //System.err.println("Handleable by the ConfirmProductHandler: "+statematch1+", "+statematch2+", "+intentmatch1);
@@ -92,6 +92,7 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         workingIntent.clearSlots(slot);
         d.putToWorkingMemory("rejected"+slot,rejectedlist);
         d.addToWorkingIntents(workingIntent);
+        d.clearChoices();
     }
     public static boolean handleUpdate(List<Intent> intents, Dialogue d, ProductMongoDB db){
         //find the intent which offers more positive information
@@ -99,13 +100,15 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         if(i==null){
             return false;
         } else {
-            d.peekTopIntent().fillSlots(i.getSlotByType(ProductSearchHandler.productSlot)); //add info
-            List<Intent.Slot> queries = new ArrayList<>();
-            queries=BuyMethod.handleProduct(i,d,db);
-            d.peekTopIntent().clearSlots(ProductSearchHandler.productSlot);
-            d.peekTopIntent().fillSlots(queries);
+            System.err.println("Updating working intent with new info");
+            Intent workingIntent=d.popTopIntent();
+            workingIntent.fillSlots(i.getSlotByType(ProductSearchHandler.productSlot)); //add info
+            List<Intent.Slot> queries=BuyMethod.handleProduct(workingIntent,d,db);
+            workingIntent.clearSlots(ProductSearchHandler.productSlot);
+            workingIntent.fillSlots(queries);
             if(d.isEmptyFocusStack()){
                 d.pushFocus("confirm_buy");}
+            d.addToWorkingIntents(workingIntent);
             return true;
         }
 

@@ -25,11 +25,13 @@
     ],
     "humanReadableSlotNames" : {
         "yes_no" : "yes or no",
-        "product_query" : "product"
+        "product_query" : "product",
+        "message_body" : "gift message",
+        "contact" : "gift recipient"
     },
     "necessarySlotsPerIntent" : {
         "confirm" : ["yes_no"],
-        "really_buy" : ["product_query","contact","message_body"]
+        "really_buy" : ["contact", "product_query"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : {
@@ -57,7 +59,7 @@
         },
         "confirm_buy" : {
             "templates":[
-                "Please confirm that you wish to buy {product_query} for {contact} with message \"{message_body}\""
+                "Please confirm that you wish to buy {product_query} for {contact} with message: {message_body}"
             ],
             "newStates":[confirm_yes_no,confirm_contact_details,confirm_product_query,confirm_message_body],
             "requestingYesNo":"yes"
@@ -79,7 +81,7 @@
         },
         "confirm_message" : {
             "templates":[
-                "Should the message be \"{message_body}\"?"
+                "Should the message be: {message_body}?"
                 ],
             "newStates":["confirm_yes_no","confirm_message_body"],
             "requestingYesNo":"yes"
@@ -115,8 +117,8 @@
         "choose_product" : {
             "templates" :["Please choose {product_id}"
             ],
-            "newStates":["confirm_choice"],
-            "requestingYesNo":"no"
+            "newStates":["confirm_choice","confirm_product_query","confirm_yes_no"],
+            "requestingYesNo":"yes"
 
         },
         "repeat_choice" : {

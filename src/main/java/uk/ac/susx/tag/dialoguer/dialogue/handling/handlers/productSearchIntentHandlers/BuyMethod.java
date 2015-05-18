@@ -1,7 +1,9 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers;
 
+import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import org.antlr.misc.MultiMap;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
@@ -53,6 +55,7 @@ public class BuyMethod implements Handler.IntentHandler{
         if(messagestring.equals("none")){
             d.pushFocus("confirm_buy_no_message");
         } else {
+            messagestring="\""+messagestring+"\"";
             d.pushFocus("confirm_buy");
         }
         return new Intent.Slot(ProductSearchHandler.messageSlot,messagestring,0,0);
@@ -76,15 +79,9 @@ public class BuyMethod implements Handler.IntentHandler{
         //processProductList will have added the correct focus to the stack with regard to the length of this list
 
         //basic db look up
-        Gson gson = new Gson();
-        Type termMapType = new TypeToken<Map<String, List<String>>>(){}.getType();
 
-        Map<String,List<String>> queryMap=new HashMap<>();
-        //System.err.println(i.getSlotValuesByType(ProductSearchHandler.productSlot).stream().findFirst());
-        Optional<String> termJson =i.getSlotValuesByType(ProductSearchHandler.productSlot).stream().findFirst();
-        if(termJson.isPresent()){
-            queryMap=gson.fromJson(termJson.get(),termMapType);
-        }
+        Map<String, List<String>> queryMap = retrieveQueryMap(i);
+
 
         //first make generic searchstring
         String searchstring="";
@@ -134,7 +131,7 @@ public class BuyMethod implements Handler.IntentHandler{
 
 
     public static Intent makeQueryMap(Intent i){
-        if(i.getName().equals(ProductSearchHandler.buy)){//only works on this intent
+        if(i.getName().equals(ProductSearchHandler.buy)||i.getName().equals(ProductSearchHandler.confirmProduct)){//only works on this intent
             Map<String,List<String>> termMap = new HashMap<>();
             if(i.getSlotByType(ProductSearchHandler.witTitle)!=null){termMap.put(ProductSearchHandler.witTitle, i.getSlotValuesByType(ProductSearchHandler.witTitle));}
             if(i.getSlotByType(ProductSearchHandler.witAuthor)!=null){termMap.put(ProductSearchHandler.witAuthor,i.getSlotValuesByType(ProductSearchHandler.witAuthor));}
@@ -148,12 +145,37 @@ public class BuyMethod implements Handler.IntentHandler{
         return i;
     }
 
+    public static Map<String,List<String>> retrieveQueryMap(Intent i){
+        Map<String,List<String>> queryMap=new HashMap<>();
+        Map<String, List<String>> aMap;
+        Gson gson = new Gson();
+        Type termMapType = new TypeToken<Map<String, List<String>>>(){}.getType();
+        //System.err.println(i.getSlotValuesByType(ProductSearchHandler.productSlot).stream().findFirst());
+        List<String> termJsonList =i.getSlotValuesByType(ProductSearchHandler.productSlot);
+        if(!termJsonList.isEmpty()){
+            for(String termJson:termJsonList) {
+                aMap=gson.fromJson(termJson, termMapType);
+                for(String key:aMap.keySet()){
+                    List<String> current = queryMap.getOrDefault(key, Lists.newArrayList());
+                    current.addAll(aMap.get(key));
+                    queryMap.put(key,current);
+                }
+            }
+        }
+        return queryMap;
+    }
+
     public static List<Merchant> findNearbyMerchants(ProductMongoDB db, User user){
         return db.merchantQueryByLocation(user.getLatitude(), user.getLongitude(), searchradius, 0);
     }
 
 
     public static List<Product> filterRejected(List<Product> products, List<String> rejectedIds){
-        return products.stream().filter(product->!rejectedIds.contains(product.getProductId())).collect(Collectors.toList());
+        List<Product> filtered= products.stream().filter(product->!rejectedIds.contains(product.getProductId())).collect(Collectors.toList());
+        if(filtered.size()>limit){
+            return filtered.subList(0,limit);
+        } else {
+            return filtered;
+        }
     }
 }
