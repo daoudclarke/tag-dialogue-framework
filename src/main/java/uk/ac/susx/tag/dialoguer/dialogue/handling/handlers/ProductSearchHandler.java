@@ -45,6 +45,7 @@ public class ProductSearchHandler extends Handler {
     public static final String confirm="confirmation";
     public static final String confirmProduct="confirm_product";
     public static final String confirmRecipient="confirm_contact_details";
+    public static final String confirmMessage="confirm_message_body";
    // public static final String yes="yes";
    // public static final String no="no";
     public static final List<String> confirmIntents=Lists.newArrayList(confirm, Intent.yes);
