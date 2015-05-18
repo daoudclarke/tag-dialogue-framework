@@ -20,6 +20,10 @@ import java.util.stream.Collectors;
 
 /**
  * Created by juliewe on 05/05/2015.
+ * TODO:: Make sure respecify product wipes the current search query
+ * TODO:: Improve search by title and author
+ * TODO:: Buy general
+ * TODO:: OutOFDomain Analyser
  */
 public class ProductSearchHandler extends Handler {
 

@@ -372,7 +372,7 @@ public class Product {
 
             values = this.fetchPropertyValues(titleprop);
             for (String value : values) {
-                res += value + " ";
+                res += value.trim() + " ";
             }
             mainprops.remove(titleprop);
 
@@ -393,7 +393,7 @@ public class Product {
                     addcomma=true;
                     for (String value : values) {
                         //res+=mainprops.get(j)+" : ";
-                        res += value;
+                        res += value.trim();
                         todo--;
                         if (todo > 0) {
                             res += ", ";
