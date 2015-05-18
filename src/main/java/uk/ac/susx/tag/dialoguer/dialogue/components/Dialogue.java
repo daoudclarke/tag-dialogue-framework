@@ -286,9 +286,4 @@ public class Dialogue {
     @Override
     public String toString(){ return Dialoguer.gson.toJson(this); }
 
-    public static void main(String[] args){
-        Dialogue d = new Dialogue("fish");
-        System.out.println(d);
-    }
-
 }

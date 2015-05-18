@@ -50,7 +50,7 @@ public class OutOfWitDomainAnalyser extends Analyser {
     public static String outOfDomainIntentName = "out_of_domain";
 
     private static String witAiIntentsApi = "https://api.wit.ai/intents";
-    private static double calibrationProportion = 0.4;
+    private static double calibrationProportion = 0.5;
 
     private ArrayEncodedNgramLanguageModel<String> lm;
     private double threshold;
