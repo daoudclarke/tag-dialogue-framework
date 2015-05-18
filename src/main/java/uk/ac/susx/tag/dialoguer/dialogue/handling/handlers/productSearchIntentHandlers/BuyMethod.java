@@ -3,13 +3,13 @@ package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentH
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import org.antlr.misc.MultiMap;
+import com.google.gson.JsonSyntaxException;
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.PaypalCheckinHandler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.ProductSearchHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.Merchant;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.Product;
@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 /**
  * Created by juliewe on 11/05/2015.
  *
- * TODO://Make sure that recipients are not case-sensitive when checked
  */
 public class BuyMethod implements Handler.IntentHandler{
 
@@ -44,14 +43,17 @@ public class BuyMethod implements Handler.IntentHandler{
         workingIntent.fillSlot(handleMessage(i, d, db));
         workingIntent.fillSlot(handleRecipient(i, d, db));
         workingIntent.fillSlots(handleProduct(i, d, db));
+        if(d.getFromWorkingMemory("focus")!=null){
+            d.pushFocus(d.getFromWorkingMemory("focus"));
+            d.putToWorkingMemory("focus",null);
+        }
         d.addToWorkingIntents(workingIntent);
         return ProductSearchHandler.processStack(d, db);
 
     }
 
     public static Intent.Slot handleMessage(Intent i,Dialogue d, ProductMongoDB db){
-        List<String> messages = i.getSlotValuesByType(ProductSearchHandler.messageSlot);
-        String messagestring=StringUtils.detokenise(messages);
+        String messagestring=i.getSlotValuesByType(ProductSearchHandler.messageSlot).stream().collect(Collectors.joining(" "));
         if(messagestring.equals("none")){
             d.pushFocus("confirm_buy_no_message");
         } else {
@@ -61,9 +63,8 @@ public class BuyMethod implements Handler.IntentHandler{
         return new Intent.Slot(ProductSearchHandler.messageSlot,messagestring,0,0);
     }
     public static Intent.Slot handleRecipient(Intent i,Dialogue d, ProductMongoDB db){
-        List<String> recipients = i.getSlotValuesByType(ProductSearchHandler.recipientSlot);
-        String recipientstring = StringUtils.detokenise(recipients);
-        Intent.Slot s=null;
+        String recipientstring = i.getSlotValuesByType(ProductSearchHandler.recipientSlot).stream().collect(Collectors.joining(" "));
+        Intent.Slot s;
         if(ProductSearchHandler.recipients.contains(recipientstring.toLowerCase())) {  //better test for recipient required - db matching
             s = new Intent.Slot(ProductSearchHandler.recipientSlot, recipientstring, 0, 0);
         } else {
@@ -81,11 +82,9 @@ public class BuyMethod implements Handler.IntentHandler{
         //basic db look up
 
         Map<String, List<String>> queryMap = retrieveQueryMap(i);
-
-
         //first make generic searchstring
         String searchstring="";
-        List<String> queries=queryMap.values().stream().map(valuelist->StringUtils.phrasejoin(valuelist)).collect(Collectors.toList());
+        List<String> queries=queryMap.values().stream().map(StringUtils::phrasejoin).collect(Collectors.toList());
         for(String query:queries){
             searchstring+=query;
         }
@@ -104,8 +103,13 @@ public class BuyMethod implements Handler.IntentHandler{
         System.err.println("Products found: "+products.size());
         List<Intent.Slot> slotlist = new ArrayList<>();
         //Intent.Slot s = new Intent.Slot(ProductSearchHandler.productSlot,searchstring,0,0);
-        slotlist.addAll(i.getSlotByType(ProductSearchHandler.productSlot));
+
         slotlist.addAll(processProductList(products,d,db));
+        if(slotlist.isEmpty()){//don't keep this query as it doesn't work
+            d.putToWorkingMemory("unmatched",StringUtils.phrasejoin(i.getSlotValuesByType(ProductSearchHandler.productSlot)));
+        }else {
+            slotlist.addAll(i.getSlotByType(ProductSearchHandler.productSlot));
+        }
         return slotlist;
     }
 
@@ -114,15 +118,15 @@ public class BuyMethod implements Handler.IntentHandler{
         List<Intent.Slot> slotlist=new ArrayList<>();
 
         if(products.size()==0){
-            d.pushFocus("respecify_product");
+            d.putToWorkingMemory("focus","respecify_product");
         } else {
             if(products.size()==1){
                 slotlist.add(new Intent.Slot(ProductSearchHandler.productIdSlot,products.get(0).getProductId(),0,0));
                 //leave focus as is: confirm_completion
-
+                d.putToWorkingMemory("focus",null);
             } else {
                 slotlist=products.stream().map(p->new Intent.Slot(ProductSearchHandler.productIdSlot,p.getProductId(),0,0)).collect(Collectors.toList());
-                d.pushFocus("choose_product");
+                d.putToWorkingMemory("focus","choose_product");
             }
         }
         return slotlist;
@@ -133,15 +137,14 @@ public class BuyMethod implements Handler.IntentHandler{
     public static Intent makeQueryMap(Intent i){
         if(i.getName().equals(ProductSearchHandler.buy)||i.getName().equals(ProductSearchHandler.confirmProduct)){//only works on this intent
             Map<String,List<String>> termMap = new HashMap<>();
-            if(i.getSlotByType(ProductSearchHandler.witTitle)!=null){termMap.put(ProductSearchHandler.witTitle, i.getSlotValuesByType(ProductSearchHandler.witTitle));}
-            if(i.getSlotByType(ProductSearchHandler.witAuthor)!=null){termMap.put(ProductSearchHandler.witAuthor,i.getSlotValuesByType(ProductSearchHandler.witAuthor));}
+            if(i.getSlotByType(ProductSearchHandler.witTitle)!=null&&!i.getSlotByType(ProductSearchHandler.witTitle).isEmpty()){termMap.put(ProductSearchHandler.witTitle, i.getSlotValuesByType(ProductSearchHandler.witTitle));}
+            if(i.getSlotByType(ProductSearchHandler.witAuthor)!=null&&!i.getSlotByType(ProductSearchHandler.witAuthor).isEmpty()){termMap.put(ProductSearchHandler.witAuthor,i.getSlotValuesByType(ProductSearchHandler.witAuthor));}
+            if(i.getSlotByType(ProductSearchHandler.witProduct)!=null&&!i.getSlotByType(ProductSearchHandler.witProduct).isEmpty()){termMap.put(ProductSearchHandler.witProduct,i.getSlotValuesByType(ProductSearchHandler.witProduct));}
             if(!termMap.keySet().isEmpty()) {
                 Gson gson = new Gson();
                 i.fillSlot(ProductSearchHandler.productSlot, gson.toJson(termMap));
             }
-
-
-        }
+     }
         return i;
     }
 
@@ -154,11 +157,20 @@ public class BuyMethod implements Handler.IntentHandler{
         List<String> termJsonList =i.getSlotValuesByType(ProductSearchHandler.productSlot);
         if(!termJsonList.isEmpty()){
             for(String termJson:termJsonList) {
-                aMap=gson.fromJson(termJson, termMapType);
-                for(String key:aMap.keySet()){
-                    List<String> current = queryMap.getOrDefault(key, Lists.newArrayList());
-                    current.addAll(aMap.get(key));
-                    queryMap.put(key,current);
+                System.err.println(termJson);
+                try {
+                    aMap = gson.fromJson(termJson, termMapType);
+                    for (String key : aMap.keySet()) {
+                        List<String> current = queryMap.getOrDefault(key, Lists.newArrayList());
+                        current.addAll(aMap.get(key));
+                        queryMap.put(key, current);
+                    }
+                } catch (JsonSyntaxException e){
+                    //throw new Dialoguer.DialoguerException("queryMap not in correct format "+e.toString());
+                    //probably from auto-query
+                    List<String> current = queryMap.getOrDefault(ProductSearchHandler.witProduct,Lists.newArrayList());
+                    current.add(termJson);
+                    queryMap.put(ProductSearchHandler.witProduct,current);
                 }
             }
         }
@@ -166,7 +178,7 @@ public class BuyMethod implements Handler.IntentHandler{
     }
 
     public static List<Merchant> findNearbyMerchants(ProductMongoDB db, User user){
-        return db.merchantQueryByLocation(user.getLatitude(), user.getLongitude(), searchradius, 0);
+        return db.merchantQueryByLocation(user.getLatitude(), user.getLongitude(), searchradius+user.getUncertaintyRadius(), 0);
     }
 
 

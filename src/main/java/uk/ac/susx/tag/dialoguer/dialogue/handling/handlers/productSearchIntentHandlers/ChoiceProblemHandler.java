@@ -48,9 +48,13 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
         d.clearChoices();
 
         ConfirmProductHandler.handleReject(d,ProductSearchHandler.productIdSlot); //add current productIds to rejected list
-        boolean updated = ConfirmProductHandler.handleUpdate(intents,d,db);
+        boolean updated = ConfirmProductHandler.handleUpdate(intents,d,db,-1);
         if(!updated){
             d.peekTopIntent().fillSlots(BuyMethod.handleProduct(d.peekTopIntent(),d,db));
+            if(d.getFromWorkingMemory("focus")!=null){
+                d.pushFocus(d.getFromWorkingMemory("focus"));
+                d.putToWorkingMemory("focus",null);
+            }
         }
 
 

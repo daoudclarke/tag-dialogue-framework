@@ -225,7 +225,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static List<Merchant> findNearbyMerchants(ProductMongoDB db, User user){
 
-        return db.merchantQueryByLocation(user.getLatitude(), user.getLongitude(), searchradius, limit);
+        return db.merchantQueryByLocation(user.getLatitude(), user.getLongitude(), searchradius+user.getUncertaintyRadius(), limit);
 
 
     }
