@@ -5,6 +5,9 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.YesNoAnalyserString
 
 import java.io.IOException;
 
+/**
+ * No config file necessary.
+ */
 public class YesNoAnalyserStringMatchingFactory implements AnalyserFactory{
 
     @Override

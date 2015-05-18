@@ -35,7 +35,12 @@ import java.util.stream.Collectors;
  */
 public class DialogueUtils {
 
-    // Version for tweets
+    /**
+     * Splits a message such that each split:
+     *  - is less than or equal to 140 characters
+     *  - begins with @userName
+     *  - ends with the split number followed by 4 random characters
+     */
     public static List<String> splitByLengthOnTokensWithRandomDigits(String text, String userName){
 
         return splitByLengthOnTokens(text, 135, userName).stream()
@@ -255,7 +260,6 @@ public class DialogueUtils {
         final String language = AbstractReader.LANG_EN;
         AbstractTokenizer tokenizer  = EngineGetter.getTokenizer(language, Resources.getResource("dictionary-1.4.0.zip").openStream());
         AbstractSegmenter segmenter = EngineGetter.getSegmenter(language, tokenizer);
-
 
         try (final BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(corpus), "UTF-8"))) {
             Iterator<List<String>> sentences = segmenter.getSentences(r).iterator();

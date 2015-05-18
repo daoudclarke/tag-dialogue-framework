@@ -15,6 +15,9 @@ import java.util.Set;
  *
  * See Intent documentation.
  *
+ * Documentation for how to configure the Analyser should reside in the factory that can produce it, and documentation
+ * pertaining to the function and purpose of the Analyser itself should reside in the actual analyser.
+ *
  * User: Andrew D. Robertson
  * Date: 16/03/2015
  * Time: 18:02

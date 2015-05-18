@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.WitAiAnalyserFactory;
@@ -9,11 +10,13 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Determine user intent using a WitAi instance.
@@ -28,15 +31,23 @@ public class WitAiAnalyser extends Analyser {
 
     private transient Client client;
     private String serverAccessToken;
+    public OutOfWitDomainAnalyser outOfDomainAnalyser;
 
     private WitAiAnalyser(){
         client = ClientBuilder.newClient();
         serverAccessToken = null;
+        outOfDomainAnalyser = null;
     }
 
-    public WitAiAnalyser(String serverAccessToken){
+    public WitAiAnalyser(WitAiAnalyserFactory.WitAiAnalyserDefinition config) throws IOException {
         client = ClientBuilder.newClient();
-        this.serverAccessToken = serverAccessToken;
+        if (config.hasServerAccessToken()){
+            serverAccessToken = config.serverAccessToken;
+
+            outOfDomainAnalyser = config.hasOutOfDomainAnalyser()?
+                                        new OutOfWitDomainAnalyser(config.outOfDomainAnalyser.ngramOrder, serverAccessToken, config.outOfDomainAnalyser.excludedIntents)
+                                        : null;
+        }
     }
 
     @Override
@@ -54,13 +65,25 @@ public class WitAiAnalyser extends Analyser {
             }
         }
 
-        return i.toList();
+        if (isOutOfDomainAnalyserPresent()){
+            List<Intent> intents = i.toList();
+            intents.addAll(outOfDomainAnalyser.analyse(message, dialogue));
+            return intents;
+
+        } else return i.toList();
     }
 
     @Override
     public AnalyserFactory getFactory() {
         return new WitAiAnalyserFactory();
     }
+
+//    public static void main(String[] args){
+//        WitAiAnalyser a = new WitAiAnalyser();
+//        a.serverAccessToken = "KJ7VH77LT43M2Z4T3B7EZEHETOMEASZ2";
+//        WitAiResponse r = a.queryAPI("I actually want to go from 5 davidor road", Lists.newArrayList("followup"), a.serverAccessToken, a.client);
+//        System.out.println(r.outcomes.get(0).getIntent());
+//    }
 
     public static WitAiResponse queryAPI(String message,  List<String> states, String serverAccessToken, Client client){
 
@@ -92,6 +115,8 @@ public class WitAiAnalyser extends Analyser {
     public void close() throws Exception {
         client.close();
     }
+
+    private boolean isOutOfDomainAnalyserPresent(){ return outOfDomainAnalyser !=null; }
 
     public static class Context {
         private final List<String> state;

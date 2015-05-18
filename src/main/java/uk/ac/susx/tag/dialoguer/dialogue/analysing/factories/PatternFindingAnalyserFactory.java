@@ -7,7 +7,15 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.PatternFindingAnaly
 import java.io.IOException;
 
 /**
- * Created with IntelliJ IDEA.
+ * Config file example:
+ *
+ *  {
+ *    "regex": "(send|gift|present)",
+ *    "intentName": "gift"
+ *  }
+ *
+ * The above would create an analyser that fires the "gift" intent when it sees one of the three words "send", "gift", or "present".
+ *
  * User: Andrew D. Robertson
  * Date: 16/04/2015
  * Time: 12:00

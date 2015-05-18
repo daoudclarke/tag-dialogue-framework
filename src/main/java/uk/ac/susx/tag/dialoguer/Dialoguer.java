@@ -146,9 +146,8 @@ public class Dialoguer implements AutoCloseable {
                                         .registerTypeAdapter(Pattern.class, new JsonUtils.PatternAdaptor().nullSafe())
                                         .registerTypeAdapter(Expression.class, new JsonUtils.ExpressionAdaptor().nullSafe())
                                         .registerTypeAdapter(RuleBasedHandler.ResponseRule.class, new JsonUtils.ResponseRuleAdaptor().nullSafe())
-                                        .registerTypeAdapter(new TypeToken<List<String>>(){}.getType(), new JsonUtils.ArrayListAdaptor().nullSafe())
-                                        .registerTypeAdapter(new TypeToken<ArrayList<String>>() {
-                                        }.getType(), new JsonUtils.ArrayListAdaptor().nullSafe())
+                                        .registerTypeAdapter(new TypeToken<List<String>>() { }.getType(), new JsonUtils.ArrayListAdaptor().nullSafe())
+                                        .registerTypeAdapter(new TypeToken<ArrayList<String>>() { }.getType(), new JsonUtils.ArrayListAdaptor().nullSafe())
                                     .create();
     private Handler handler;
     private List<Analyser> analysers;
@@ -476,6 +475,8 @@ public class Dialoguer implements AutoCloseable {
             }
             List<Map<String, String>> analysers = (List<Map<String, String>>) obj.get("analysers");
             for (Map<String, String> analyser : analysers){
+                if (analyser==null)
+                    System.err.print("You may have a trailing comma at the end of your analyser list!! This will cause null pointers exceptions in unpleasant places.");
                 if (!Sets.difference(analyser.keySet(), handlerAnalyserFields).isEmpty()) {
                     System.err.println("Analyser has unexpected fields: " + Sets.difference(analyser.keySet(), handlerAnalyserFields)); valid = false;
                 }

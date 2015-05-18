@@ -5,6 +5,9 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.ChoiceMakingAnalyse
 
 import java.io.IOException;
 
+/**
+ * No config file necessary.
+ */
 public class ChoiceMakingAnalyserStringMatchingFactory implements AnalyserFactory{
 
     @Override

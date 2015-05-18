@@ -8,6 +8,7 @@
     <groupId>uk.ac.susx.tag</groupId>
     <artifactId>dialoguer</artifactId>
     <version>0.1.0</version>
+    <inceptionYear>2015</inceptionYear>
 
     <parent>
         <relativePath>../tag-dist</relativePath>

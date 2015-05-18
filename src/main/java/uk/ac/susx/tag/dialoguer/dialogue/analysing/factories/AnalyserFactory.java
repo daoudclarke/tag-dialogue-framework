@@ -8,6 +8,9 @@ import java.io.IOException;
  * It is the responsibility of the AnalyserFactory to be able to create a new instance of a specific type of Analyser,
  * setting it up using a JSON setup file. It also must provide a name for that type of Analyser.
  *
+ * Documentation for how to configure the corresponding Analyser should reside in the factory, and documentation
+ * pertaining to the function and purpose of the Analyser itself should reside in the actual analyser.
+ *
  * User: Andrew D. Robertson
  * Date: 13/04/2015
  * Time: 11:17

@@ -10,10 +10,6 @@
         {
             "name" : "wit.ai",
             "path" : "example_wit_config.json"
-        },
-        {
-            "name": "out_of_wit_domain",
-            "path": "out_of_domain_analyser_config.json"
         }
     ],
     "humanReadableSlotNames" : {
