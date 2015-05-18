@@ -24,6 +24,7 @@ public class RejectProblemHandler implements Handler.ProblemHandler{
         //first of all need to find out which slot is being rejected
         //push need to confirm individual items of intent which have not yet been confirmed
         System.err.println("RejectProblemHandler has fired");
+        d.pushFocus("confirm_buy"); //for final confirmation after individual confirmations
         if(!d.isInWorkingMemory(ProductSearchHandler.messageSlot,"confirmed")) {
             d.pushFocus("confirm_message");
         }

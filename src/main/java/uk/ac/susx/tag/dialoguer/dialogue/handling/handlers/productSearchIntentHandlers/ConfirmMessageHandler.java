@@ -17,14 +17,14 @@ import java.util.List;
 public class ConfirmMessageHandler implements Handler.ProblemHandler {
     public static final String requiredState = ProductSearchHandler.confirmMessage;
     public static final List<String> mystates = Lists.newArrayList(requiredState, "confirm_yes_no");
-    public static final List<String> myintents = Lists.newArrayList(ProductSearchHandler.confirm, Intent.yes, Intent.no, ProductSearchHandler.confirmRecipient);
+    public static final List<String> myintents = Lists.newArrayList(ProductSearchHandler.confirm, Intent.yes, Intent.no, ProductSearchHandler.confirmMessage);
     @Override
     public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue) {
 
         boolean statematch1 = dialogue.getStates().stream().anyMatch(s -> s.equals(requiredState));
         boolean statematch2 = dialogue.getStates().stream().allMatch(s-> mystates.contains(s));
         boolean intentmatch1 = intents.stream().anyMatch(s -> myintents.contains(s.getName()));
-        boolean intentmatch = false; //TODO
+        boolean intentmatch = intents.stream().anyMatch(s->s.getName().equals(requiredState));
         //dialogue.getStates().stream().forEach(s->System.err.println(s));
         //System.err.println("Handleable by the ConfirmProductHandler: "+statematch1+", "+statematch2+", "+intentmatch1);
         return (statematch1 &&statematch2 && intentmatch1) || intentmatch;
@@ -45,7 +45,7 @@ public class ConfirmMessageHandler implements Handler.ProblemHandler {
 
     public static boolean handleUpdate(List<Intent> intents, Dialogue d, ProductMongoDB db){
 
-        Intent i = intents.stream().filter(intent->intent.getName().equals(ProductSearchHandler.confirmRecipient)).findFirst().orElse(null);
+        Intent i = intents.stream().filter(intent->intent.getName().equals(ProductSearchHandler.confirmMessage)).findFirst().orElse(null);
         if(i==null) {
             return false;
         } else {
@@ -53,6 +53,8 @@ public class ConfirmMessageHandler implements Handler.ProblemHandler {
             messages.add(BuyMethod.handleMessage(i,d,db));
             d.peekTopIntent().clearSlots(ProductSearchHandler.messageSlot);
             d.peekTopIntent().fillSlots(messages);
+            if(d.isEmptyFocusStack()){
+                d.pushFocus("confirm_buy");}
             return true;
         }
     }

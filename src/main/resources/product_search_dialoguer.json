@@ -57,7 +57,7 @@
         },
         "confirm_buy" : {
             "templates":[
-                "Please confirm that you wish to buy {product_query} for {contact} with message {message_body}"
+                "Please confirm that you wish to buy {product_query} for {contact} with message \"{message_body}\""
             ],
             "newStates":[confirm_yes_no,confirm_contact_details,confirm_product_query,confirm_message_body],
             "requestingYesNo":"yes"
@@ -79,7 +79,7 @@
         },
         "confirm_message" : {
             "templates":[
-                "Should the message be \"{message_body}\""
+                "Should the message be \"{message_body}\"?"
                 ],
             "newStates":["confirm_yes_no","confirm_message_body"],
             "requestingYesNo":"yes"
@@ -102,7 +102,7 @@
             "templates":[
                 "Please specify the message to go with your gift."
                 ],
-                "newStates":["confirm_message_details"],
+                "newStates":["confirm_message_body"],
                 "requestingYesNo":"no"
         },
         "respecify_product" : {

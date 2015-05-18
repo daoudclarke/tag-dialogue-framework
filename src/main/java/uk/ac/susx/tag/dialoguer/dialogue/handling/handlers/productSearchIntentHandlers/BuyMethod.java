@@ -61,7 +61,7 @@ public class BuyMethod implements Handler.IntentHandler{
         List<String> recipients = i.getSlotValuesByType(ProductSearchHandler.recipientSlot);
         String recipientstring = StringUtils.detokenise(recipients);
         Intent.Slot s=null;
-        if(ProductSearchHandler.recipients.contains(recipientstring)) {  //better test for recipient required - db matching
+        if(ProductSearchHandler.recipients.contains(recipientstring.toLowerCase())) {  //better test for recipient required - db matching
             s = new Intent.Slot(ProductSearchHandler.recipientSlot, recipientstring, 0, 0);
         } else {
             d.pushFocus("unknown_recipient");
