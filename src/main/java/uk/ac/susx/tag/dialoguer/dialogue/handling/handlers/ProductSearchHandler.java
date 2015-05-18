@@ -49,7 +49,7 @@ public class ProductSearchHandler extends Handler {
    // public static final String yes="yes";
    // public static final String no="no";
     public static final List<String> confirmIntents=Lists.newArrayList(confirm, Intent.yes);
-    public static final List<String> choiceIntents=Lists.newArrayList(Intent.choice,Intent.nullChoice,Intent.noChoice);
+    public static final List<String> choiceIntents=Lists.newArrayList(Intent.choice,Intent.nullChoice);
 
     //slot names
     public static final String productSlot="product_query";
@@ -67,12 +67,14 @@ public class ProductSearchHandler extends Handler {
         //register problem and intent handlers here
         super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
         super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
+        super.registerIntentHandler(Intent.noChoice, (i,d,r)->{d.pushFocus("repeat_choice");
+            return processStack(d,castDB(r));});
         super.registerIntentHandler(buy, new BuyMethod());
+        super.registerProblemHandler(new ChoiceProblemHandler());
         super.registerProblemHandler(new ConfirmProductHandler());
         super.registerProblemHandler(new ConfirmRecipientHandler());
         super.registerProblemHandler(new ConfirmMessageHandler());
         super.registerProblemHandler(new AcceptProblemHandler());
-        super.registerProblemHandler(new ChoiceProblemHandler());
         super.registerProblemHandler(new RejectProblemHandler());
     }
 
@@ -120,10 +122,14 @@ public class ProductSearchHandler extends Handler {
 
        boolean isGift=(Intent.isPresent(giftIntent,intents)||d.isInWorkingMemory("gift","yes"));
        if(isGift){d.putToWorkingMemory("gift","yes");}
-
+        if(!d.getWorkingIntents().isEmpty()){
+            if(d.peekTopIntent().isName(buy)){
+                intents.add(d.peekTopIntent());
+            }
+        }
        intents = new IntentMerger(intents)
                         .merge(Sets.newHashSet("buy_media"), (intentsToBeMerged) -> {
-                            Intent output = new Intent("really_buy");
+                            Intent output = new Intent(buy);
                             output.copySlots(intentsToBeMerged);
                             if(!isGift&&!output.areSlotsFilled(Sets.newHashSet(recipientSlot))){//default value for recipient if not identified as gift
                                 output.fillSlot(recipientSlot,d.getId());
@@ -135,14 +141,18 @@ public class ProductSearchHandler extends Handler {
                             return output;
                         })
                         .merge(Sets.newHashSet("confirm_product_buy_media"),confirmProduct)
+                        .merge(Sets.newHashSet(buy),buy)
                         .getIntents();
+
 
 
         intents=intents.stream().map(intent->BuyMethod.makeQueryMap(intent)).collect(Collectors.toList()); //turn any witTitle and witAuthor into a product_query
         //intents = IntentMerger.merge(intents, Sets.newHashSet("1", "2"), "12");
-        for(Intent i:intents){
-            System.err.println(i.toString());
-        }
+
+
+        //for(Intent i:intents){
+        //    System.err.println(i.toString());
+        //}
 
         return intents;
     }

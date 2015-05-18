@@ -132,7 +132,7 @@ public class Intent {
         return this;
     }
 
-    public Intent fillSlots(List<Slot> slotlist){
+    public Intent fillSlots(Collection<Slot> slotlist){
         slotlist.stream().filter(s->!slots.values().contains(s)).forEach(s->slots.put(s.name,s));
         return this;
     }

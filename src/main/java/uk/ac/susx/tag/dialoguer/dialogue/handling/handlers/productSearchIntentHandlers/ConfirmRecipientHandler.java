@@ -28,7 +28,7 @@ public class ConfirmRecipientHandler implements Handler.ProblemHandler {
         boolean statematch1 = dialogue.getStates().stream().anyMatch(s -> s.equals(requiredState));
         boolean statematch2 = dialogue.getStates().stream().allMatch(s-> mystates.contains(s));
         boolean intentmatch1 = intents.stream().anyMatch(s -> myintents.contains(s.getName()));
-        boolean intentmatch = false; //TODO
+        boolean intentmatch = intents.stream().anyMatch(s->s.getName().equals(requiredState));
         //dialogue.getStates().stream().forEach(s->System.err.println(s));
         //System.err.println("Handleable by the ConfirmProductHandler: "+statematch1+", "+statematch2+", "+intentmatch1);
         return (statematch1 &&statematch2 && intentmatch1) || intentmatch;
@@ -56,8 +56,11 @@ public class ConfirmRecipientHandler implements Handler.ProblemHandler {
             recipients.add(BuyMethod.handleRecipient(i,d,db));
             d.peekTopIntent().clearSlots(ProductSearchHandler.recipientSlot);
             d.peekTopIntent().fillSlots(recipients);
+            if(d.isEmptyFocusStack()){
+                d.pushFocus("confirm_buy");}
             return true;
         }
+
     }
 
     public static void handleNoInfo(Dialogue d,ProductMongoDB db){
