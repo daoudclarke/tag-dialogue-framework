@@ -7,7 +7,10 @@
         {"name" : "simple_cancel",
          "sourceId" : "simple_cancel"
         },
-        {"name" : "simple_choice"},
+        {"name" : "out_of_wit_domain",
+        "path" : "paypal_checkin_ooda_config.json",
+        "sourceId" : "out_of_wit_domain"
+        },
         {"name" : "simple_yes_no",
          "sourceId" : "simple_yes_no"
         },

@@ -52,23 +52,51 @@
             "templates":[
                 "Please confirm that you wish to buy {product_query} for {contact}"
             ],
-            "newStates":[confirm_yes_no],
+            "newStates":[confirm_yes_no,confirm_contact_details,confirm_product_query],
             "requestingYesNo":"yes"
         },
         "confirm_buy" : {
             "templates":[
                 "Please confirm that you wish to buy {product_query} for {contact} with message {message_body}"
             ],
-            "newStates":[confirm_yes_no],
+            "newStates":[confirm_yes_no,confirm_contact_details,confirm_product_query,confirm_message_body],
+            "requestingYesNo":"yes"
+        },
+        "confirm_product" : {
+            "templates":[
+                "Please confirm that you wish to buy {product_query}"
+                ],
+            "newStates":["confirm_yes_no","confirm_product_query"],
+            "requestingYesNo":"yes"
+
+        },
+        "confirm_recipient" : {
+            "templates":[
+                "Please confirm your purchase should go to {contact}"
+                ],
+            "newStates":["confirm_yes_no","confirm_contact_details"],
+            "requestingYesNo":"yes"
+        },
+        "confirm_message" : {
+            "templates":[
+                "Please confirm the message should be {message_body}"
+                ],
+            "newStates":["confirm_yes_no","confirm_message_body"],
             "requestingYesNo":"yes"
         },
         "unknown_recipient" : {
             "templates":[
-                "{contact} not in database.  Add details or respecify recipient?"
+                "{contact} not in database.  Respecify recipient?"
             ],
-            "newStates":["unknown_recipient"],
+            "newStates":["confirm_contact_details"],
             "requestingYesNo":"no"
-
+        },
+        "request_recipient" : {
+            "templates":[
+                "Please specify recipient of purchase."
+             ],
+             "newStates":["confirm_contact_details"],
+             "requestingYesNo":"no"
         },
         "respecify_product" : {
             "templates":[

@@ -37,7 +37,7 @@ public class StringUtils {
      */
     public static String numberList(List<String> choices, String separator){
         return IntStream.range(0, choices.size())
-                    .mapToObj(i -> i+". "+choices.get(i))
+                    .mapToObj(i -> i+1+". "+choices.get(i))
                     .collect(Collectors.joining(separator));
     }
 

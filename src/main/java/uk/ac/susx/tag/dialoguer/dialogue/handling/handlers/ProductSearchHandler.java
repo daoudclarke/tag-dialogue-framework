@@ -10,9 +10,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.IntentMerger;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.ProductSearchHandlerFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.BuyMethod;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.ChoiceProblemHandler;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.ConfirmProblemHandler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentHandlers.*;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
@@ -44,7 +42,9 @@ public class ProductSearchHandler extends Handler {
     public static final String quit="cancel_query";
     public static final String buy="really_buy";
     public static final String giftIntent="gift";
-    public static final String confirm="confirm";
+    public static final String confirm="confirmation";
+    public static final String confirmProduct="confirm_product";
+    public static final String confirmRecipient="confirm_contact_details";
    // public static final String yes="yes";
    // public static final String no="no";
     public static final List<String> confirmIntents=Lists.newArrayList(confirm, Intent.yes);
@@ -67,8 +67,12 @@ public class ProductSearchHandler extends Handler {
         super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
         super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
         super.registerIntentHandler(buy, new BuyMethod());
-        super.registerProblemHandler(new ConfirmProblemHandler());
+        super.registerProblemHandler(new ConfirmProductHandler());
+        super.registerProblemHandler(new ConfirmRecipientHandler());
+        super.registerProblemHandler(new ConfirmMessageHandler());
+        super.registerProblemHandler(new AcceptProblemHandler());
         super.registerProblemHandler(new ChoiceProblemHandler());
+        super.registerProblemHandler(new RejectProblemHandler());
     }
 
     @Override
@@ -129,6 +133,7 @@ public class ProductSearchHandler extends Handler {
                             output.setSource(merged);
                             return output;
                         })
+                        .merge(Sets.newHashSet("confirm_product_buy_media"),confirmProduct)
                         .getIntents();
 
 
@@ -229,7 +234,15 @@ public class ProductSearchHandler extends Handler {
                     d.setChoices((db.getProductList(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productIdSlot))).stream().map(p->p.toShortString()).collect(Collectors.toList()));
                     responseVariables.put(ProductSearchHandler.productIdSlot,StringUtils.numberList(d.getChoices()));
                     break;
-
+                case "confirm_product":
+                    responseVariables.put(ProductSearchHandler.productSlot, StringUtils.detokenise(db.getProductList(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productIdSlot)).stream().map(p -> p.toShortString()).collect(Collectors.toList())));
+                    break;
+                case "confirm_recipient":
+                    responseVariables.put(ProductSearchHandler.recipientSlot,StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.recipientSlot)));
+                    break;
+                case "confirm_message":
+                    responseVariables.put(ProductSearchHandler.messageSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.messageSlot)));
+                    break;
             }
         } catch(ArrayIndexOutOfBoundsException e){
             throw new Dialoguer.DialoguerException("Error with response variables: "+e.toString());

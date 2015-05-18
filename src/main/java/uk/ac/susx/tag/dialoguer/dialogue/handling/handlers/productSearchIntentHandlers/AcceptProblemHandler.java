@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by juliewe on 12/05/2015.
  */
-public class ConfirmProblemHandler implements Handler.ProblemHandler{
+public class AcceptProblemHandler implements Handler.ProblemHandler{
     @Override
     public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue) {
         boolean intentMatch=intents.stream().anyMatch(i->(i.getName().equals(ProductSearchHandler.confirm)&&i.getSlotValuesByType(ProductSearchHandler.yes_no_slot).contains("yes"))||i.getName().equals(Intent.yes));

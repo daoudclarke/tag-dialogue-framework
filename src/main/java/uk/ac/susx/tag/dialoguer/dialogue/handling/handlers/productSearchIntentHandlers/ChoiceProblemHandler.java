@@ -30,7 +30,7 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
                     handleChoice(i, dialogue, ProductSearchHandler.castDB(resource));
                     break;
                 case Intent.nullChoice:
-                    handleNullChoice(dialogue);
+                    handleNullChoice(dialogue, ProductSearchHandler.castDB(resource));
                     break;
                 case Intent.noChoice:
                     handleNoChoice(dialogue);
@@ -44,10 +44,13 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
         return ProductSearchHandler.processStack(dialogue,ProductSearchHandler.castDB(resource));
     }
 
-    private void handleNullChoice(Dialogue d){
+    private void handleNullChoice(Dialogue d, ProductMongoDB db){
         d.clearChoices();
-        //probably should research for more potential products
-        d.pushFocus("respecify_product");
+
+        ConfirmProductHandler.handleReject(d,ProductSearchHandler.productIdSlot); //add current productIds to rejected list
+        d.peekTopIntent().fillSlots(BuyMethod.handleProduct(d.peekTopIntent(),d,db));
+        //probably should add to rejected list and re-search for more potential products
+        //d.pushFocus("respecify_product");
 
     }
     private void handleNoChoice(Dialogue d){
@@ -61,6 +64,7 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
             Product pr =db.getProductList(workingIntent.getSlotValuesByType(ProductSearchHandler.productIdSlot)).stream().filter(p->p.toShortString().equals(chosenText)).findFirst().orElse(null);
             workingIntent.replaceSlot(new Intent.Slot(ProductSearchHandler.productIdSlot,pr.getProductId(),0,0));
             d.addToWorkingIntents(workingIntent);
+            d.clearChoices();
             //shouldn't need to push a focus - should be there from before!
 
         } catch (Exception e){

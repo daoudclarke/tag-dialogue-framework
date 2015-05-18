@@ -133,10 +133,14 @@ public class Intent {
     }
 
     public Intent fillSlots(List<Slot> slotlist){
-        slotlist.stream().forEach(s->slots.put(s.name,s));
+        slotlist.stream().filter(s->!slots.values().contains(s)).forEach(s->slots.put(s.name,s));
         return this;
     }
 
+    public Intent clearSlots(String name){
+        slots.removeAll(name);
+        return this;
+    }
 
     public Collection<Slot> getSlotByType(String slotType){ return slots.get(slotType);}
     public List<String> getSlotValuesByType(String slotType){return this.getSlotByType(slotType).stream().map(slot->slot.value).collect(Collectors.toList());}
