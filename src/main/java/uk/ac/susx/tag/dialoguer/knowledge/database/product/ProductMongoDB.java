@@ -694,7 +694,7 @@ public class ProductMongoDB implements AutoCloseable {
         List<String> propertyValues = (List<String>)dbFormatProperties.get("values");
 
         for (int i = 0; i < propertyKeys.size(); i++){
-            properties.put(propertyKeys.get(i), propertyValues.get(i));
+            properties.put(propertyKeys.get(i), propertyValues.get(i).trim());
         }
         return properties;
     }
