@@ -14,6 +14,8 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.ProductSearchHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.Merchant;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.Product;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductSet;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.processing.PropertyProcessor;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 import java.lang.reflect.Type;
@@ -28,6 +30,7 @@ public class BuyMethod implements Handler.IntentHandler{
 
     public static final int searchradius=50;
     public static final int limit=3;
+    public static final int searchlimit=100;
 
     public Response handle(Intent i, Dialogue d, Object resource){
         //grab db
@@ -99,8 +102,31 @@ public class BuyMethod implements Handler.IntentHandler{
                 rejectedlist.add(id);
             }
         }
-        List<Product> products = filterRejected(db.productQueryWithMerchants(searchstring,merchants,new HashSet<>(),limit+rejectedlist.size()),rejectedlist);
+
+        Set<String> tags = new HashSet<>();
+        if(queryMap.keySet().contains(ProductSearchHandler.witProduct)){
+            tags=queryMap.get(ProductSearchHandler.witProduct).stream().collect(Collectors.toSet());
+        }
+        List<Product> products = filterRejected(db.productQueryWithMerchants(searchstring,merchants,tags,searchlimit+rejectedlist.size()),rejectedlist);
+        if(products.isEmpty()&&!tags.isEmpty()){
+            //try without tags
+            products = filterRejected(db.productQueryWithMerchants(searchstring,merchants,new HashSet<>(),searchlimit+rejectedlist.size()),rejectedlist);
+        }
         System.err.println("Products found: "+products.size());
+
+
+        for(String key:queryMap.keySet()){//filter by fields in search query
+            if(!products.isEmpty()){
+                products=filter(products,key,queryMap.get(key),db);
+            }
+        }
+
+        //maybe check for in relevant merchant ??
+
+        //reduct list to the right size
+        if(products.size()>limit){
+            products= products.subList(0,limit);
+        }
         List<Intent.Slot> slotlist = new ArrayList<>();
         //Intent.Slot s = new Intent.Slot(ProductSearchHandler.productSlot,searchstring,0,0);
 
@@ -184,10 +210,33 @@ public class BuyMethod implements Handler.IntentHandler{
 
     public static List<Product> filterRejected(List<Product> products, List<String> rejectedIds){
         List<Product> filtered= products.stream().filter(product->!rejectedIds.contains(product.getProductId())).collect(Collectors.toList());
-        if(filtered.size()>limit){
-            return filtered.subList(0,limit);
+        return filtered;
+    }
+    public static List<Product> filter(List<Product> products, String key,List<String> queries, ProductMongoDB db){
+
+
+        ProductSet filtered = new ProductSet();
+        filtered.updateProducts(products);
+        String query="";
+        if (queries.size() > 0) {
+            query=queries.stream().collect(Collectors.joining(" "));
+            switch(key) {
+                case ProductSearchHandler.witAuthor:
+                    filtered.updateProducts(PropertyProcessor.getFilteredProducts("contributorMain", query, filtered.getProducts()));  //if author given, filter by the first author/contributor
+                    break;
+                case ProductSearchHandler.witTitle:
+                    filtered.updateProducts(PropertyProcessor.getFilteredProducts("title",query,filtered.getProducts()));
+                    break;
+                case ProductSearchHandler.witProduct:
+                    filtered.updateProducts(PropertyProcessor.getFilteredProducts("name",query,filtered.getProducts()));
+            }
+        }
+
+
+        if(filtered.getProducts().isEmpty()){
+            return products;
         } else {
-            return filtered;
+            return filtered.getProducts();
         }
     }
 }

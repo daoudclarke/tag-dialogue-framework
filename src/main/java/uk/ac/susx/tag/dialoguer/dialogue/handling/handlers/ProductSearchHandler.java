@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 
 /**
  * Created by juliewe on 05/05/2015.
- * TODO:: Improve search by title and author
  * TODO:: No message /none - do not want cancellation!!
  * TODO:: OutOFDomain Analyser
+ * TODO:: distances?
  */
 public class ProductSearchHandler extends Handler {
 
