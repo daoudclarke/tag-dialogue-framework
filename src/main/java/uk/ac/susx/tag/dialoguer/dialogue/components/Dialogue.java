@@ -114,6 +114,7 @@ public class Dialogue {
     public void addToWorkingIntents(List<Intent> intents){ this.intents.addAll(intents); }
     public void clearWorkingIntents() { intents.clear(); }
     public void replaceWorkingIntents(List<Intent> intents){ this.intents = intents; }
+    public boolean isEmptyWorkingIntents() { return getWorkingIntents().isEmpty();}
 
 /***********************************************
  * Question focus stack

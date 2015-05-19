@@ -11,7 +11,9 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.IntentMerger;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.TaxiServiceHandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.AcceptProblemHandler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.FollowupProblemHandler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.OrderTaxiMethod;
+import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,12 +34,18 @@ public class TaxiServiceHandler extends Handler{
 
     //intent names
     public static final String orderTaxiIntent="order_taxi";
+    public static final String followupCapacityIntent="followup_people";
+    public static final String followupTimeIntent="followup_time";
+    public static final String followupLocationIntent="followup_location";
+    public static final List<String> followupIntents=Lists.newArrayList(followupCapacityIntent,followupLocationIntent,followupTimeIntent);
 
     //slot names
     public static final String destinationSlot="from";
     public static final String pickupSlot="to";
     public static final String timeSlot="datetime";
-    public static final String capacitySlot="persons";
+    public static final String altTimeSlot="timeref";
+    public static final String capacitySlot="number";
+
     public static final List<String> allSlots=Lists.newArrayList(destinationSlot,pickupSlot,timeSlot,capacitySlot);
 
     //response/focus/state names
@@ -53,6 +61,7 @@ public class TaxiServiceHandler extends Handler{
     public TaxiServiceHandler(){
         //register problem handlers and intent handlers here
         super.registerIntentHandler(orderTaxiIntent, new OrderTaxiMethod());
+        super.registerProblemHandler(new FollowupProblemHandler());
         super.registerProblemHandler(new AcceptProblemHandler());
     }
 
@@ -75,6 +84,11 @@ public class TaxiServiceHandler extends Handler{
                         })
                     .getIntents();
 
+        //merge timeSlots
+        intents=intents.stream().map(i->{if(i.areSlotsFilled(Sets.newHashSet(altTimeSlot))){
+                                            i.fillSlot(timeSlot,i.getSlotValuesByType(altTimeSlot).get(0));}
+                                        return i;})
+                    .collect(Collectors.toList());
 
         intents.stream().forEach(intent->System.err.println(intent.toString()));
         return intents;
@@ -140,12 +154,20 @@ public class TaxiServiceHandler extends Handler{
                 case confirmCompletionResponse:
                     AcceptProblemHandler.complete(d);
                 case chooseCapacityResponse:
+                    d.setChoices(d.peekTopIntent().getSlotValuesByType(capacitySlot));
+                    responseVariables.put(capacitySlot, StringUtils.numberList(d.getChoices()));
                     break;
                 case chooseTimeResponse:
+                    d.setChoices(d.peekTopIntent().getSlotValuesByType(timeSlot));
+                    responseVariables.put(timeSlot,StringUtils.numberList(d.getChoices()));
                     break;
                 case chooseDestinationResponse:
+                    d.setChoices(d.peekTopIntent().getSlotValuesByType(destinationSlot));
+                    responseVariables.put(destinationSlot,StringUtils.numberList(d.getChoices()));
                     break;
                 case choosePickupResponse:
+                    d.setChoices(d.peekTopIntent().getSlotValuesByType(pickupSlot));
+                    responseVariables.put(pickupSlot,StringUtils.numberList(d.getChoices()));
                     break;
                 case respecifyDestinationResponse:
                     break;

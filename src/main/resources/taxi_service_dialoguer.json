@@ -57,32 +57,32 @@
             },
         "request_confirm" : {
             "templates":[
-                "Please confirm that you want a taxi from {from} to {to} (capacity: {persons}, time: {datetime})"
+                "Please confirm that you want a taxi from {from} to {to} (capacity: {number}, time: {datetime})"
                 ],
             "requestingYesNo":"yes",
             "newStates":["followup"]
         },
         "choose_capacity": {
             "templates":[
-                "Choose capacity: "
+                "Choose capacity: {number}"
                 ],
             "requestingYesNo":"no"
         },
         "choose_time":{
             "templates":[
-                "Choose time:"
+                "Choose time: {datetime}"
                 ],
             "requestingYesNo":"no"
         },
         "choose_destination":{
             "templates":[
-                "Choose destination location:"
+                "Choose destination location: {to}"
                 ],
             "requestingYesNo":"no"
         },
         "choose_pickup":{
             "templates":[
-                "Choose pickup location:"
+                "Choose pickup location: {from}"
                 ],
             "requestingYesNo":"no"
         },
