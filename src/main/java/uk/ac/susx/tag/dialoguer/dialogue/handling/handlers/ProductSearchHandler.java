@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
  * TODO:: No message /none - do not want cancellation!!
  * TODO:: OutOFDomain Analyser
  * TODO:: distances?
+ * TODO:: Abba/Abbas matching
  */
 public class ProductSearchHandler extends Handler {
 
