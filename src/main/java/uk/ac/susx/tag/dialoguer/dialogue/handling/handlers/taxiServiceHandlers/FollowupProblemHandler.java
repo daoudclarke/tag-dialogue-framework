@@ -116,6 +116,7 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
 
             if (values.size() > 1) {
                 d.pushFocus(responsenames.get(0));
+                d.putToWorkingMemory("slot_to_choose",slotname);
             } else {
                 String newvalue = values.get(0);
                 if (accepting > 0) {
@@ -126,6 +127,7 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
                     } else {
                         d.peekTopIntent().fillSlot(new Intent.Slot(slotname, newvalue, 0, 0));
                         d.pushFocus(responsenames.get(0)); //multiple possibilities for capacity so choose
+                        d.putToWorkingMemory("slot_to_choose",slotname);
                     }
 
                 } else {

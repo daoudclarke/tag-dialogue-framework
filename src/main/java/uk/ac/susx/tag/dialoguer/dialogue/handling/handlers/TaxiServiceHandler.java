@@ -29,8 +29,9 @@ public class TaxiServiceHandler extends Handler{
     //analyser names
     public static final String mainAnalyser="wit.ai";
     public static final String yesNoAnalyser="simple_yes_no";
+    public static final String simpleChoiceAnalyser="simple_choice";
     public static final String merged="merged";
-    public static final List<String> analysers = Lists.newArrayList(mainAnalyser, yesNoAnalyser);
+    public static final List<String> analysers = Lists.newArrayList(mainAnalyser, yesNoAnalyser,simpleChoiceAnalyser);
 
     //intent names
     public static final String orderTaxiIntent="order_taxi";
@@ -38,6 +39,7 @@ public class TaxiServiceHandler extends Handler{
     public static final String followupTimeIntent="followup_time";
     public static final String followupLocationIntent="followup_location";
     public static final List<String> followupIntents=Lists.newArrayList(followupCapacityIntent,followupLocationIntent,followupTimeIntent);
+    public static final List<String> choiceIntents=Lists.newArrayList(Intent.choice,Intent.noChoice,Intent.nullChoice);
 
     //slot names
     public static final String destinationSlot="from";
@@ -45,6 +47,7 @@ public class TaxiServiceHandler extends Handler{
     public static final String timeSlot="datetime";
     public static final String altTimeSlot="timeref";
     public static final String capacitySlot="number";
+    public static final String choiceSlot="choice";
 
     public static final List<String> allSlots=Lists.newArrayList(destinationSlot,pickupSlot,timeSlot,capacitySlot);
 
@@ -57,6 +60,7 @@ public class TaxiServiceHandler extends Handler{
     public static final String respecifyDestinationResponse="respecify_destination";
     public static final String respecifyPickupResponse="respecify_pickup";
     public static final String confirmCompletionResponse="confirm_completion";
+    public static final String repeatChoiceResponse="repeat_choice";
 
     public TaxiServiceHandler(){
         //register problem handlers and intent handlers here
@@ -173,6 +177,8 @@ public class TaxiServiceHandler extends Handler{
                     break;
                 case respecifyPickupResponse:
                     break;
+                case repeatChoiceResponse:
+                    responseVariables.put(choiceSlot,StringUtils.numberList(d.getChoices()));
 
             }
 

@@ -10,6 +10,8 @@
         {"name" : "simple_yes_no",
          "sourceId" : "simple_yes_no"
         },
+       {"name" : "simple_choice",
+         "sourceId" : "simple_choice"},
         {
             "name" : "wit.ai",
             "path" : "taxi_service_wit_config.json",
@@ -83,6 +85,12 @@
         "choose_pickup":{
             "templates":[
                 "Choose pickup location: {from}"
+                ],
+            "requestingYesNo":"no"
+        },
+         "repeat_choice":{
+            "templates":[
+                "Quit to exit or choose: {choice}"
                 ],
             "requestingYesNo":"no"
         },
