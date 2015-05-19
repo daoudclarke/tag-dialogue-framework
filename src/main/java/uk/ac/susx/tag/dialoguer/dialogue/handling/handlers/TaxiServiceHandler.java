@@ -10,7 +10,8 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.IntentMerger;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.TaxiServiceHandlerFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.orderTaxiMethod;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.AcceptProblemHandler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.OrderTaxiMethod;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,10 +48,12 @@ public class TaxiServiceHandler extends Handler{
     public static final String choosePickupResponse="choose_pickup";
     public static final String respecifyDestinationResponse="respecify_destination";
     public static final String respecifyPickupResponse="respecify_pickup";
+    public static final String confirmCompletionResponse="confirm_completion";
 
     public TaxiServiceHandler(){
         //register problem handlers and intent handlers here
-        super.registerIntentHandler(orderTaxiIntent, new orderTaxiMethod());
+        super.registerIntentHandler(orderTaxiIntent, new OrderTaxiMethod());
+        super.registerProblemHandler(new AcceptProblemHandler());
     }
 
     public List<Intent> preProcessIntents(List<Intent> intents, List<IntentMatch> intentmatches, Dialogue d){
@@ -134,6 +137,8 @@ public class TaxiServiceHandler extends Handler{
                 case confirmResponse:
                     allSlots.stream().forEach(slot->responseVariables.put(slot,d.peekTopIntent().getSlotValuesByType(slot).stream().collect(Collectors.joining(" "))));
                     break;
+                case confirmCompletionResponse:
+                    AcceptProblemHandler.complete(d);
                 case chooseCapacityResponse:
                     break;
                 case chooseTimeResponse:
