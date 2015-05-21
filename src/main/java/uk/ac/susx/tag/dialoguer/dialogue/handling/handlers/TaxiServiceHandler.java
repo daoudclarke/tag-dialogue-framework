@@ -11,6 +11,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.IntentMerger;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.TaxiServiceHandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.AcceptProblemHandler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.ChoiceProblemHandler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.FollowupProblemHandler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.OrderTaxiMethod;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
@@ -42,8 +43,8 @@ public class TaxiServiceHandler extends Handler{
     public static final List<String> choiceIntents=Lists.newArrayList(Intent.choice,Intent.noChoice,Intent.nullChoice);
 
     //slot names
-    public static final String destinationSlot="from";
-    public static final String pickupSlot="to";
+    public static final String destinationSlot="to";
+    public static final String pickupSlot="from";
     public static final String timeSlot="datetime";
     public static final String altTimeSlot="timeref";
     public static final String capacitySlot="number";
@@ -65,6 +66,7 @@ public class TaxiServiceHandler extends Handler{
     public TaxiServiceHandler(){
         //register problem handlers and intent handlers here
         super.registerIntentHandler(orderTaxiIntent, new OrderTaxiMethod());
+        super.registerProblemHandler(new ChoiceProblemHandler());
         super.registerProblemHandler(new FollowupProblemHandler());
         super.registerProblemHandler(new AcceptProblemHandler());
     }

@@ -56,10 +56,12 @@ public class ChoiceProblemHandler implements ProblemHandler {
             String value = d.peekTopIntent().getSlotValuesByType(d.getFromWorkingMemory("slot_to_choose")).stream().filter(v->v.equals(chosenText)).findFirst().orElse(null);
             d.peekTopIntent().replaceSlot(new Intent.Slot(d.getFromWorkingMemory("slot_to_choose"),value,0,0));
             d.clearChoices();
-
+            if(d.peekTopFocus().equals(TaxiServiceHandler.confirmCompletionResponse)){ // if this is the last question, rerequest final confirmation
+                d.pushFocus(TaxiServiceHandler.confirmResponse);
+            }
         } catch (Exception e){
 
-            throw new Dialoguer.DialoguerException("Cannot match chosen product "+e.toString());
+            throw new Dialoguer.DialoguerException("Cannot match choice "+e.toString());
         }
 
 

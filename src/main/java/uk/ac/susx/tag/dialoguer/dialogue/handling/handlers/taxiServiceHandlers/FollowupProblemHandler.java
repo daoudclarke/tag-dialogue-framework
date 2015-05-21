@@ -29,6 +29,7 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        System.err.println("Followup Problem Handler fired");
         int accepting = determineAccepting(intents);
         Intent followup = intents.stream().filter(i->TaxiServiceHandler.followupIntents.contains(i.getName())).findFirst().orElse(null); // will not be null as otherwise not inHandleableState
         dialogue.addToWorkingIntents(intents.stream().filter(i->i.isName(TaxiServiceHandler.orderTaxiIntent)).collect(Collectors.toList())); //save any orderTaxiIntents to working intents
@@ -96,13 +97,15 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
         List<String> values = i.getSlotValuesByType(slotname);
         if (values.isEmpty()){
             //insert default - this should not have happened in a followup though so print warning
+            //System.err.println(defaultvalue(slotname));
             if(defaultvalue(slotname)!=null) {
                 i.fillSlot(slotname, defaultvalue(slotname));
+                values.add(defaultvalue(slotname));
             }
         } else {
             //check values are valid - currently assume all ok
             values.stream().forEach(value -> System.err.println(slotname+" : " + value));
-            values.stream().filter(value->isValidValue(slotname, value)).collect(Collectors.toList());
+            values=values.stream().filter(value->isValidValue(slotname, value)).collect(Collectors.toList());
         }
         return values;
     }
@@ -113,31 +116,30 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
         if(values.isEmpty()){
             d.pushFocus(responsenames.get(1));
         } else {
-
-            if (values.size() > 1) {
-                d.pushFocus(responsenames.get(0));
-                d.putToWorkingMemory("slot_to_choose",slotname);
-            } else {
-                String newvalue = values.get(0);
-                if (accepting > 0) {
-                    //check matches working intent
-                    if (d.peekTopIntent().getSlotValuesByType(slotname).stream().filter(value -> value.equals(newvalue)).count() > 0) {
-                        //ok
-                        d.peekTopIntent().replaceSlot(new Intent.Slot(slotname, newvalue, 0, 0)); //replace multiple options if present
-                    } else {
-                        d.peekTopIntent().fillSlot(new Intent.Slot(slotname, newvalue, 0, 0));
-                        d.pushFocus(responsenames.get(0)); //multiple possibilities for capacity so choose
-                        d.putToWorkingMemory("slot_to_choose",slotname);
-                    }
-
+            if (accepting > 0) {
+                //check matches working intent
+                if (values.size()==1&&d.peekTopIntent().getSlotValuesByType(slotname).stream().filter(value -> value.equals(values.get(0))).count() > 0) {
+                    //ok
+                    d.peekTopIntent().replaceSlot(new Intent.Slot(slotname, values.get(0), 0, 0)); //replace multiple options if present
                 } else {
-                    //replace info in working intent - if accepting not known, assuming rejection
-                    d.peekTopIntent().replaceSlot(new Intent.Slot(slotname, newvalue, 0, 0));
-                    if(d.peekTopFocus().equals(TaxiServiceHandler.confirmCompletionResponse)){
-                        d.pushFocus(TaxiServiceHandler.confirmResponse);
-                    }
+                    values.stream().forEach(newvalue->d.peekTopIntent().fillSlot(new Intent.Slot(slotname, newvalue, 0, 0)));
+                    d.pushFocus(responsenames.get(0)); //multiple possibilities for capacity so choose
+                    d.putToWorkingMemory("slot_to_choose",slotname);
+                }
+
+            } else {
+                //replace info in working intent - if accepting not known, assuming rejection
+                d.peekTopIntent().clearSlots(slotname);
+                values.stream().forEach(newvalue -> d.peekTopIntent().fillSlot(new Intent.Slot(slotname, newvalue, 0, 0)));
+                if (values.size() > 1) {
+                    d.pushFocus(responsenames.get(0));
+                    d.putToWorkingMemory("slot_to_choose", slotname);
+                }
+                if (d.peekTopFocus().equals(TaxiServiceHandler.confirmCompletionResponse)) {
+                    d.pushFocus(TaxiServiceHandler.confirmResponse);
                 }
             }
+
         }
     }
     private static String defaultvalue(String slotname){

@@ -30,6 +30,7 @@ public class OrderTaxiMethod implements Handler.IntentHandler{
     static void handleCapacity(Intent i, Dialogue d){
         //check for multiple and empty slots
         List<String> values = FollowupProblemHandler.validate(i,TaxiServiceHandler.capacitySlot);
+        //System.err.println(values);
         generateResponse(values,TaxiServiceHandler.capacitySlot, Lists.newArrayList(TaxiServiceHandler.chooseCapacityResponse),d);
     }
 
@@ -44,7 +45,7 @@ public class OrderTaxiMethod implements Handler.IntentHandler{
     }
     static void handlePickup(Intent i, Dialogue d){
         List<String> values = FollowupProblemHandler.validate(i,TaxiServiceHandler.pickupSlot);
-        generateResponse(values,TaxiServiceHandler.pickupSlot,Lists.newArrayList(TaxiServiceHandler.choosePickupResponse,TaxiServiceHandler.respecifyDestinationResponse),d);
+        generateResponse(values,TaxiServiceHandler.pickupSlot,Lists.newArrayList(TaxiServiceHandler.choosePickupResponse,TaxiServiceHandler.respecifyPickupResponse),d);
     }
 
     static void generateResponse(List<String> values,String slotname, List<String> responsenames, Dialogue d){
