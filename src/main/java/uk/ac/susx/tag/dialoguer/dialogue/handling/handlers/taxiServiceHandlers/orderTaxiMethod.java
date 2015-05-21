@@ -16,45 +16,33 @@ import java.util.stream.Collectors;
 public class OrderTaxiMethod implements Handler.IntentHandler{
     @Override
     public Response handle(Intent intent, Dialogue dialogue, Object resource) {
+        return null;
+    }
+
+    @Override
+    public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
         System.err.println("orderTaxi intent handler fired");
         dialogue.pushFocus(TaxiServiceHandler.confirmCompletionResponse);
         dialogue.pushFocus(TaxiServiceHandler.confirmResponse);
-        handleCapacity(intent,dialogue);
-        handleTime(intent,dialogue);
-        handleDestination(intent,dialogue);
-        handlePickup(intent,dialogue);
+        TaxiServiceHandler.allSlots.stream().forEach(s->handleEntity(intent,dialogue,s));
         dialogue.addToWorkingIntents(intent);
-        return TaxiServiceHandler.processStack(dialogue);
+        return true;
     }
 
-    static void handleCapacity(Intent i, Dialogue d){
+    static void handleEntity(Intent i, Dialogue d, String slotname){
         //check for multiple and empty slots
-        List<String> values = FollowupProblemHandler.validate(i,TaxiServiceHandler.capacitySlot);
+        List<String> values = FollowupProblemHandler.validate(i,slotname);
         //System.err.println(values);
-        generateResponse(values,TaxiServiceHandler.capacitySlot, Lists.newArrayList(TaxiServiceHandler.chooseCapacityResponse),d);
+        generateResponse(values, slotname, d);
     }
 
-    static void handleTime(Intent i, Dialogue d){
-        List<String> values = FollowupProblemHandler.validate(i,TaxiServiceHandler.timeSlot);
-        generateResponse(values,TaxiServiceHandler.timeSlot,Lists.newArrayList(TaxiServiceHandler.chooseTimeResponse),d);
-    }
-
-    static void handleDestination(Intent i, Dialogue d){
-        List<String> values = FollowupProblemHandler.validate(i,TaxiServiceHandler.destinationSlot);
-        generateResponse(values,TaxiServiceHandler.destinationSlot,Lists.newArrayList(TaxiServiceHandler.chooseDestinationResponse,TaxiServiceHandler.respecifyResponse),d);
-    }
-    static void handlePickup(Intent i, Dialogue d){
-        List<String> values = FollowupProblemHandler.validate(i,TaxiServiceHandler.pickupSlot);
-        generateResponse(values,TaxiServiceHandler.pickupSlot,Lists.newArrayList(TaxiServiceHandler.choosePickupResponse,TaxiServiceHandler.respecifyResponse),d);
-    }
-
-    static void generateResponse(List<String> values,String slotname, List<String> responsenames, Dialogue d){
+    static void generateResponse(List<String> values,String slotname, Dialogue d){
         if(values.isEmpty()){
-            d.pushFocus(responsenames.get(1));
+            d.pushFocus(TaxiServiceHandler.respecifyResponse);
             d.putToWorkingMemory("slot_to_choose",slotname);
         }
         if(values.size()>1){
-            d.pushFocus(responsenames.get(0));
+            d.pushFocus(TaxiServiceHandler.chooseResponse);
             d.putToWorkingMemory("slot_to_choose",slotname);
         }
 
