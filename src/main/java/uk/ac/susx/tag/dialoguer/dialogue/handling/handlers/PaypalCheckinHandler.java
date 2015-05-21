@@ -61,7 +61,7 @@ public class PaypalCheckinHandler extends Handler{
 
     public PaypalCheckinHandler(){
 
-        super.registerIntentHandler(quit, (i, d, r) -> new Response("confirm_cancellation"));
+   //     super.registerIntentHandler(quit, (i, d, r) -> new Response("confirm_cancellation"));
         super.registerIntentHandler(nochoice, new UnknownMethod());
         super.registerIntentHandler(checkinIntent, new CheckinMethod());
         super.registerIntentHandler(otherIntent, new UnknownMethod());

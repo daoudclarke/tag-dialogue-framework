@@ -21,9 +21,9 @@
     "humanReadableSlotNames" : {
         "yes_no" : "yes or no",
         "from" : "pickup location",
-        "to" : "destination",
+        "to" : "destination location",
         "number" : "capacity",
-        "datetime" : "time"
+        "datetime" : "pickup time"
     },
     "necessarySlotsPerIntent" :{
         "order_taxi" : ["from", "to"]
@@ -67,27 +67,9 @@
             "requestingYesNo":"yes",
             "newStates":["followup"]
         },
-        "choose_capacity": {
+        "choose": {
             "templates":[
-                "Choose capacity: {number}"
-                ],
-            "requestingYesNo":"no"
-        },
-        "choose_time":{
-            "templates":[
-                "Choose time: {datetime}"
-                ],
-            "requestingYesNo":"no"
-        },
-        "choose_destination":{
-            "templates":[
-                "Choose destination location: {to}"
-                ],
-            "requestingYesNo":"no"
-        },
-        "choose_pickup":{
-            "templates":[
-                "Choose pickup location: {from}"
+                "Choose {choice_name}: {choice}"
                 ],
             "requestingYesNo":"no"
         },
@@ -99,7 +81,7 @@
         },
         "respecify":{
             "templates":[
-                "Respecify {choice} the taxi"
+                "Respecify {choice_name}"
                 ],
             "requestingYesNo":"no",
             "newStates":["followup"]

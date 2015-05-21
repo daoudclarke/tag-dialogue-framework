@@ -35,6 +35,11 @@ public class CheckinMethod implements Handler.IntentHandler {
 
     }
 
+    @Override
+    public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
+        return false;
+    }
+
     private Response processStack(Dialogue d){
         String focus="unknown_hello";
         if (!d.isEmptyFocusStack()) {

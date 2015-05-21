@@ -101,6 +101,7 @@ public abstract class Handler implements AutoCloseable {
      */
     public static interface IntentHandler {
         public Response handle(Intent intent, Dialogue dialogue, Object resource);
+        public boolean subhandle(Intent intent, Dialogue dialogue, Object resource);
     }
 
     /**
@@ -119,6 +120,11 @@ public abstract class Handler implements AutoCloseable {
         } else return null;
     }
 
+    protected boolean applyIntentSubHandler(Intent intent, Dialogue d, Object resource){
+        if (intentHandlers.containsKey(intent.getName())){
+            return intentHandlers.get(intent.getName()).subhandle(intent, d, resource);
+        } else return false;
+    }
 
     /**
      * see IntentHandler interface comments.
@@ -165,6 +171,7 @@ public abstract class Handler implements AutoCloseable {
          * Return the appropriate response for this state.
          */
         public Response handle(List<Intent> intents, Dialogue dialogue, Object resource);
+        public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource);
     }
 
     protected void registerProblemHandler(ProblemHandler h) {
@@ -178,6 +185,12 @@ public abstract class Handler implements AutoCloseable {
                 .findFirst().orElse(null);  // Return the first one we see, otherwise if there's none, return null
     }
 
+    protected boolean applyFirstProblemSubHandlerOrNull(List<Intent> intents, Dialogue dialogue, Object resource){
+        return problemHandlers.stream()
+                .filter(h -> h.isInHandleableState(intents, dialogue)) // Only allow through handler that can handle this state
+                .map(h -> h.subhandle(intents, dialogue, resource))  // Map the handler to the response it gives
+                .findFirst().orElse(false);  // Return the first one we see, otherwise if there's none, return null
+    }
 /********************************************************
  * Creation and factory related methods
  ********************************************************/

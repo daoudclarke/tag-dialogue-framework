@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
  */
 public class TaxiServiceHandler extends Handler{
 
-
     //analyser names
     public static final String mainAnalyser="wit.ai";
     public static final String yesNoAnalyser="simple_yes_no";
@@ -49,23 +48,20 @@ public class TaxiServiceHandler extends Handler{
     public static final String altTimeSlot="timeref";
     public static final String capacitySlot="number";
     public static final String choiceSlot="choice";
-
+    public static final String choiceNameSlot="choice_name";
     public static final List<String> allSlots=Lists.newArrayList(destinationSlot,pickupSlot,timeSlot,capacitySlot);
+
+    private Map<String, String> humanReadableSlotNames; //read from config file
 
     //response/focus/state names
     public static final String confirmResponse = "request_confirm";
-    public static final String chooseCapacityResponse ="choose_capacity";
-    public static final String chooseTimeResponse="choose_time";
-    public static final String chooseDestinationResponse="choose_destination";
-    public static final String choosePickupResponse="choose_pickup";
+    public static final String chooseResponse = "choose";
     public static final String respecifyResponse="respecify";
-    //public static final String respecifyPickupResponse="respecify_pickup";
-    //public static final String respecifyTimeResponse="respecify_time";
-    //public static final String respecifyCapacityResponse="respecify_capacity";
     public static final String confirmCompletionResponse="confirm_completion";
     public static final String repeatChoiceResponse="repeat_choice";
 
     public TaxiServiceHandler(){
+       // humanReadableSlotNames = new HashMap<>();
         //register problem handlers and intent handlers here
         super.registerIntentHandler(orderTaxiIntent, new OrderTaxiMethod());
         super.registerProblemHandler(new ChoiceProblemHandler());
@@ -105,29 +101,28 @@ public class TaxiServiceHandler extends Handler{
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
 
+        //System.err.println(humanReadableSlotNames.keySet());
+        boolean complete=applyFirstProblemSubHandlerOrNull(intents, dialogue, null); //is there a problem handler
 
-        Response r=applyFirstProblemHandlerOrNull(intents, dialogue, null); //is there a problem handler
-
-        if(r==null){
+        if(!complete){
             Intent i = Intent.getFirstIntentFromSource(merged,intents); //look for pre-processed/merged intents first
             if(i!=null){
-                r=applyIntentHandler(i,dialogue,null);
+                complete=applyIntentSubHandler(i,dialogue,null);
             }
         }
 
         for(String analyser:analysers) { //try each analyser in order of priority for a non-null response
-            if(r==null) {
+            if(!complete) {
                 Intent i = Intent.getFirstIntentFromSource(analyser, intents);
                 if (i != null) {
-                    r = applyIntentHandler(i, dialogue, null);//
+                    complete = applyIntentSubHandler(i, dialogue, null);//
                 }
             }
         }
-        if(r==null){ //no problem handler or intent handler
+        if(!complete){ //no problem handler or intent handler
             dialogue.pushFocus("unknown");
-            r=processStack(dialogue);
         }
-        return r;
+        return processStack(dialogue);
     }
 
     @Override
@@ -147,7 +142,7 @@ public class TaxiServiceHandler extends Handler{
 
     }
 
-    public static Response processStack(Dialogue d){
+    public Response processStack(Dialogue d){
         String focus="unknown";
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
@@ -161,36 +156,12 @@ public class TaxiServiceHandler extends Handler{
                     break;
                 case confirmCompletionResponse:
                     AcceptProblemHandler.complete(d);
-                case chooseCapacityResponse:
-                    d.setChoices(d.peekTopIntent().getSlotValuesByType(capacitySlot));
-                    responseVariables.put(capacitySlot, StringUtils.numberList(d.getChoices()));
-                    break;
-                case chooseTimeResponse:
-                    d.setChoices(d.peekTopIntent().getSlotValuesByType(timeSlot));
-                    responseVariables.put(timeSlot,StringUtils.numberList(d.getChoices()));
-                    break;
-                case chooseDestinationResponse:
-                    d.setChoices(d.peekTopIntent().getSlotValuesByType(destinationSlot));
-                    responseVariables.put(destinationSlot,StringUtils.numberList(d.getChoices()));
-                    break;
-                case choosePickupResponse:
-                    d.setChoices(d.peekTopIntent().getSlotValuesByType(pickupSlot));
-                    responseVariables.put(pickupSlot,StringUtils.numberList(d.getChoices()));
-                    break;
+                case chooseResponse:
+                    d.setChoices(d.peekTopIntent().getSlotValuesByType(d.getFromWorkingMemory("slot_to_choose")));
+                    responseVariables.put(choiceNameSlot,humanReadableSlotNames.get(d.getFromWorkingMemory("slot_to_choose")));
+                    responseVariables.put(choiceSlot,StringUtils.numberList(d.getChoices()));
                 case respecifyResponse:
-                    String choice="";
-                    switch(d.getFromWorkingMemory("slot_to_choose")){
-                        case destinationSlot:
-                            choice="destination location for";
-                        case pickupSlot:
-                            choice="pickup location for";
-                        case capacitySlot:
-                            choice="required capacity of";
-                        case timeSlot:
-                            choice="when you want";
-                    }
-
-                    responseVariables.put(choiceSlot,choice);
+                    responseVariables.put(choiceNameSlot,humanReadableSlotNames.get(d.getFromWorkingMemory("slot_to_choose")));
                     break;
                 case repeatChoiceResponse:
                     responseVariables.put(choiceSlot,StringUtils.numberList(d.getChoices()));

@@ -51,6 +51,11 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         return ProductSearchHandler.processStack(dialogue,ProductSearchHandler.castDB(resource));
     }
 
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return false;
+    }
+
     public static int determineAccepting(List<Intent> intents) {
         int accepting = 0; //1=accepting, -1=rejecting, 0=don't know
         Intent confirmation = Intent.getFirstIntentFromSource(ProductSearchHandler.yesNoAnalyser, intents);

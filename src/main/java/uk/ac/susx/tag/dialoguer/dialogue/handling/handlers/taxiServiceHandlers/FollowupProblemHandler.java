@@ -29,6 +29,11 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return null;
+    }
+
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
         System.err.println("Followup Problem Handler fired");
         int accepting = determineAccepting(intents);
         Intent followup = intents.stream().filter(i->TaxiServiceHandler.followupIntents.contains(i.getName())).findFirst().orElse(null); // will not be null as otherwise not inHandleableState
@@ -54,7 +59,8 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
                 break;
 
         }
-        return TaxiServiceHandler.processStack(dialogue);
+        //return TaxiServiceHandler.processStack(dialogue);
+        return true;
     }
 
     private static int determineAccepting(List<Intent> intents){
@@ -75,22 +81,22 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
     static void handleCapacity(Intent i, Dialogue d, int accepting){
 
         List<String> values=validate(i,TaxiServiceHandler.capacitySlot);
-        update(accepting, values, TaxiServiceHandler.capacitySlot, Lists.newArrayList(TaxiServiceHandler.chooseCapacityResponse),d);
+        update(accepting, values, TaxiServiceHandler.capacitySlot, Lists.newArrayList(TaxiServiceHandler.chooseResponse),d);
     }
 
     static void handleTime(Intent i, Dialogue d, int accepting){
         List<String> values=validate(i,TaxiServiceHandler.timeSlot);
-        update(accepting,values,TaxiServiceHandler.timeSlot,Lists.newArrayList(TaxiServiceHandler.chooseTimeResponse),d);
+        update(accepting,values,TaxiServiceHandler.timeSlot,Lists.newArrayList(TaxiServiceHandler.chooseResponse),d);
     }
 
     static void handleDestination(Intent i, Dialogue d, int accepting){
         List<String> values = validate(i, TaxiServiceHandler.destinationSlot);
-        update(accepting,values,TaxiServiceHandler.destinationSlot,Lists.newArrayList(TaxiServiceHandler.chooseDestinationResponse,TaxiServiceHandler.respecifyResponse),d);
+        update(accepting,values,TaxiServiceHandler.destinationSlot,Lists.newArrayList(TaxiServiceHandler.chooseResponse,TaxiServiceHandler.respecifyResponse),d);
     }
 
     static void handlePickup(Intent i, Dialogue d, int accepting){
         List<String> values = validate(i, TaxiServiceHandler.pickupSlot);
-        update(accepting,values,TaxiServiceHandler.pickupSlot,Lists.newArrayList(TaxiServiceHandler.choosePickupResponse,TaxiServiceHandler.respecifyResponse),d);
+        update(accepting,values,TaxiServiceHandler.pickupSlot,Lists.newArrayList(TaxiServiceHandler.chooseResponse,TaxiServiceHandler.respecifyResponse),d);
     }
 
     public static List<String> validate(Intent i, String slotname){

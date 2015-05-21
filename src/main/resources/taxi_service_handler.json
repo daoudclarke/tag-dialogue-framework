@@ -1,3 +1,9 @@
 {
-
+"humanReadableSlotNames" : {
+        "yes_no" : "yes or no",
+        "from" : "pickup location",
+        "to" : "destination location",
+        "number" : "capacity",
+        "datetime" : "pickup time"
+    }
 }

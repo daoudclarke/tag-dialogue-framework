@@ -43,6 +43,11 @@ public class ConfirmMessageHandler implements Handler.ProblemHandler {
         return ProductSearchHandler.processStack(dialogue,ProductSearchHandler.castDB(resource));
     }
 
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return false;
+    }
+
     public static boolean handleUpdate(List<Intent> intents, Dialogue d, ProductMongoDB db){
 
         Intent i = intents.stream().filter(intent->intent.getName().equals(ProductSearchHandler.confirmMessage)).findFirst().orElse(null);

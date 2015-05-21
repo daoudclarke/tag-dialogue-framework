@@ -24,6 +24,11 @@ public class ChoiceProblemHandler implements ProblemHandler {
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return null;
+    }
+
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
         Intent i = intents.stream().filter(intent->intent.getSource().equals(TaxiServiceHandler.simpleChoiceAnalyser)).findFirst().orElse(null);
         dialogue.addToWorkingIntents(intents.stream().filter(intent->intent.isName(TaxiServiceHandler.orderTaxiIntent)).collect(Collectors.toList())); //save any orderTaxiIntents to working intents
         if(dialogue.isEmptyWorkingIntents()){ // this should not happen because this intents require the "followup" state to be set
@@ -47,7 +52,8 @@ public class ChoiceProblemHandler implements ProblemHandler {
         } catch (Exception e){
             throw new Dialoguer.DialoguerException("Not in handleable state for ChoiceProblemHandler "+e.toString());
         }
-        return TaxiServiceHandler.processStack(dialogue);
+        return true;
+
     }
     private static void handleChoice(Intent i, Dialogue d){
         String choice=i.getSlotValuesByType(TaxiServiceHandler.choiceSlot).stream().findFirst().orElse(null);

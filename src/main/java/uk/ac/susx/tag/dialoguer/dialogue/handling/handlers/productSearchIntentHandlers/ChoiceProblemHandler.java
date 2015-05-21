@@ -44,6 +44,11 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
         return ProductSearchHandler.processStack(dialogue,ProductSearchHandler.castDB(resource));
     }
 
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return false;
+    }
+
     private void handleNullChoice(List<Intent> intents, Dialogue d, ProductMongoDB db){
         d.clearChoices();
 

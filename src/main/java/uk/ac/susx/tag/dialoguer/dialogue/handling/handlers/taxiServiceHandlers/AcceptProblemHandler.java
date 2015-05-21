@@ -23,6 +23,11 @@ public class AcceptProblemHandler implements Handler.ProblemHandler {
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return null;
+    }
+
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
         System.err.println("Accept Problem Handler fired");
         Intent intent = intents.stream().filter(i->i.isName(TaxiServiceHandler.orderTaxiIntent)).findFirst().orElse(null);
         dialogue.pushFocus(TaxiServiceHandler.confirmCompletionResponse);
@@ -31,7 +36,8 @@ public class AcceptProblemHandler implements Handler.ProblemHandler {
         OrderTaxiMethod.handleDestination(intent, dialogue);
         OrderTaxiMethod.handlePickup(intent, dialogue);
         dialogue.addToWorkingIntents(intent);
-        return TaxiServiceHandler.processStack(dialogue);
+        return true;
+        //return null;
     }
 
     private boolean validAcceptIntents(List<Intent> intents){

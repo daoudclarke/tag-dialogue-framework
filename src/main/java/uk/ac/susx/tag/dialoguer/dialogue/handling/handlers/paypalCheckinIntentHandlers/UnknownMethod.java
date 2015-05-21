@@ -22,4 +22,9 @@ public class UnknownMethod implements Handler.IntentHandler {
         return r;
     }
 
+    @Override
+    public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
+        return false;
+    }
+
 }

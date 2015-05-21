@@ -55,6 +55,11 @@ public class BuyMethod implements Handler.IntentHandler{
 
     }
 
+    @Override
+    public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
+        return false;
+    }
+
     public static Intent.Slot handleMessage(Intent i,Dialogue d, ProductMongoDB db){
         String messagestring=i.getSlotValuesByType(ProductSearchHandler.messageSlot).stream().collect(Collectors.joining(" "));
         if(messagestring.equals("none")){

@@ -39,5 +39,10 @@ public class RejectProblemHandler implements Handler.ProblemHandler{
         return ProductSearchHandler.processStack(d,ProductSearchHandler.castDB(resource));
     }
 
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return false;
+    }
+
 
 }

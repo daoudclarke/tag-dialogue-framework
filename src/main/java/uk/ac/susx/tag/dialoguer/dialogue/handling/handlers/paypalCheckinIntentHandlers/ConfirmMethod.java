@@ -37,6 +37,11 @@ public class ConfirmMethod implements Handler.ProblemHandler {
         }
     }
 
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return false;
+    }
+
     private Response handleConfirm(Intent i, Dialogue d, Object r) {
 
         return  i.isSlotTypeFilledWith(PaypalCheckinHandler.yes_no_slot, "yes") ?  accept(d) : reject(d,r);

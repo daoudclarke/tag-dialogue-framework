@@ -75,10 +75,9 @@ public class ProductSearchHandler extends Handler {
 
     public ProductSearchHandler(){
         //register problem and intent handlers here
-        super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
-        super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
-        super.registerIntentHandler(Intent.noChoice, (i,d,r)->{d.pushFocus("repeat_choice");
-            return processStack(d,castDB(r));});
+        //super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
+        //super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
+        super.registerIntentHandler(Intent.noChoice, new noChoiceMethod());
         super.registerIntentHandler(buy, new BuyMethod());
         super.registerProblemHandler(new ChoiceProblemHandler());
         super.registerProblemHandler(new ConfirmProductHandler());
