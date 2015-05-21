@@ -67,6 +67,8 @@ public class ChoiceProblemHandler implements ProblemHandler {
 
     }
     private static void handleNullChoice(Intent i, Dialogue d){
+        d.pushFocus(TaxiServiceHandler.respecifyResponse);
+        d.clearChoices();
 
     }
     private static void handleNoChoice(Intent i, Dialogue d){

@@ -58,8 +58,10 @@ public class TaxiServiceHandler extends Handler{
     public static final String chooseTimeResponse="choose_time";
     public static final String chooseDestinationResponse="choose_destination";
     public static final String choosePickupResponse="choose_pickup";
-    public static final String respecifyDestinationResponse="respecify_destination";
-    public static final String respecifyPickupResponse="respecify_pickup";
+    public static final String respecifyResponse="respecify";
+    //public static final String respecifyPickupResponse="respecify_pickup";
+    //public static final String respecifyTimeResponse="respecify_time";
+    //public static final String respecifyCapacityResponse="respecify_capacity";
     public static final String confirmCompletionResponse="confirm_completion";
     public static final String repeatChoiceResponse="repeat_choice";
 
@@ -175,9 +177,20 @@ public class TaxiServiceHandler extends Handler{
                     d.setChoices(d.peekTopIntent().getSlotValuesByType(pickupSlot));
                     responseVariables.put(pickupSlot,StringUtils.numberList(d.getChoices()));
                     break;
-                case respecifyDestinationResponse:
-                    break;
-                case respecifyPickupResponse:
+                case respecifyResponse:
+                    String choice="";
+                    switch(d.getFromWorkingMemory("slot_to_choose")){
+                        case destinationSlot:
+                            choice="destination location for";
+                        case pickupSlot:
+                            choice="pickup location for";
+                        case capacitySlot:
+                            choice="required capacity of";
+                        case timeSlot:
+                            choice="when you want";
+                    }
+
+                    responseVariables.put(choiceSlot,choice);
                     break;
                 case repeatChoiceResponse:
                     responseVariables.put(choiceSlot,StringUtils.numberList(d.getChoices()));

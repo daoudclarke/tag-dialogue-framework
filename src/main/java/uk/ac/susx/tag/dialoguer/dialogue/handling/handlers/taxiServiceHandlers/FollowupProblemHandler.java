@@ -85,12 +85,12 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
 
     static void handleDestination(Intent i, Dialogue d, int accepting){
         List<String> values = validate(i, TaxiServiceHandler.destinationSlot);
-        update(accepting,values,TaxiServiceHandler.destinationSlot,Lists.newArrayList(TaxiServiceHandler.chooseDestinationResponse,TaxiServiceHandler.respecifyDestinationResponse),d);
+        update(accepting,values,TaxiServiceHandler.destinationSlot,Lists.newArrayList(TaxiServiceHandler.chooseDestinationResponse,TaxiServiceHandler.respecifyResponse),d);
     }
 
     static void handlePickup(Intent i, Dialogue d, int accepting){
         List<String> values = validate(i, TaxiServiceHandler.pickupSlot);
-        update(accepting,values,TaxiServiceHandler.pickupSlot,Lists.newArrayList(TaxiServiceHandler.choosePickupResponse,TaxiServiceHandler.respecifyPickupResponse),d);
+        update(accepting,values,TaxiServiceHandler.pickupSlot,Lists.newArrayList(TaxiServiceHandler.choosePickupResponse,TaxiServiceHandler.respecifyResponse),d);
     }
 
     public static List<String> validate(Intent i, String slotname){
@@ -115,6 +115,7 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
 
         if(values.isEmpty()){
             d.pushFocus(responsenames.get(1));
+            d.putToWorkingMemory("slot_to_choose",slotname);
         } else {
             if (accepting > 0) {
                 //check matches working intent
