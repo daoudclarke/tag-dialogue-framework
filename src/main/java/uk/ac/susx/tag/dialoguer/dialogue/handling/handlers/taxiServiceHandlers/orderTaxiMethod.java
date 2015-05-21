@@ -41,16 +41,17 @@ public class OrderTaxiMethod implements Handler.IntentHandler{
 
     static void handleDestination(Intent i, Dialogue d){
         List<String> values = FollowupProblemHandler.validate(i,TaxiServiceHandler.destinationSlot);
-        generateResponse(values,TaxiServiceHandler.destinationSlot,Lists.newArrayList(TaxiServiceHandler.chooseDestinationResponse,TaxiServiceHandler.respecifyDestinationResponse),d);
+        generateResponse(values,TaxiServiceHandler.destinationSlot,Lists.newArrayList(TaxiServiceHandler.chooseDestinationResponse,TaxiServiceHandler.respecifyResponse),d);
     }
     static void handlePickup(Intent i, Dialogue d){
         List<String> values = FollowupProblemHandler.validate(i,TaxiServiceHandler.pickupSlot);
-        generateResponse(values,TaxiServiceHandler.pickupSlot,Lists.newArrayList(TaxiServiceHandler.choosePickupResponse,TaxiServiceHandler.respecifyPickupResponse),d);
+        generateResponse(values,TaxiServiceHandler.pickupSlot,Lists.newArrayList(TaxiServiceHandler.choosePickupResponse,TaxiServiceHandler.respecifyResponse),d);
     }
 
     static void generateResponse(List<String> values,String slotname, List<String> responsenames, Dialogue d){
         if(values.isEmpty()){
             d.pushFocus(responsenames.get(1));
+            d.putToWorkingMemory("slot_to_choose",slotname);
         }
         if(values.size()>1){
             d.pushFocus(responsenames.get(0));
