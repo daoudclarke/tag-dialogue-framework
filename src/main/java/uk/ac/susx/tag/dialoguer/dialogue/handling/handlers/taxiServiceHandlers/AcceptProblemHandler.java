@@ -31,10 +31,7 @@ public class AcceptProblemHandler implements Handler.ProblemHandler {
         System.err.println("Accept Problem Handler fired");
         Intent intent = intents.stream().filter(i->i.isName(TaxiServiceHandler.orderTaxiIntent)).findFirst().orElse(null);
         dialogue.pushFocus(TaxiServiceHandler.confirmCompletionResponse);
-        OrderTaxiMethod.handleCapacity(intent, dialogue);  //check individual components of order still valid - may not be if the person has said "Yes I want a ...."
-        OrderTaxiMethod.handleTime(intent, dialogue);
-        OrderTaxiMethod.handleDestination(intent, dialogue);
-        OrderTaxiMethod.handlePickup(intent, dialogue);
+        TaxiServiceHandler.allSlots.stream().forEach(s->OrderTaxiMethod.handleEntity(intent,dialogue,s));//check individual components of order still valid - may not be if the person has said "Yes I want a ...."
         dialogue.addToWorkingIntents(intent);
         return true;
         //return null;

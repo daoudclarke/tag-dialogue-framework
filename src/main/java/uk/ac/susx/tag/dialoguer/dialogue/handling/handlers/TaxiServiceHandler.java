@@ -49,7 +49,7 @@ public class TaxiServiceHandler extends Handler{
     public static final String capacitySlot="number";
     public static final String choiceSlot="choice";
     public static final String choiceNameSlot="choice_name";
-    public static final List<String> allSlots=Lists.newArrayList(destinationSlot,pickupSlot,timeSlot,capacitySlot);
+    public static final List<String> allSlots=Lists.newArrayList(capacitySlot,timeSlot,destinationSlot,pickupSlot);
 
     private Map<String, String> humanReadableSlotNames; //read from config file
 

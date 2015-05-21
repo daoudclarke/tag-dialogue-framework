@@ -43,17 +43,17 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
         }
         switch (followup.getName()){
             case TaxiServiceHandler.followupCapacityIntent:
-                handleCapacity(followup,dialogue,accepting);
+                handleEntity(followup,dialogue,accepting, TaxiServiceHandler.capacitySlot);
                 break;
             case TaxiServiceHandler.followupTimeIntent:
-                handleTime(followup,dialogue,accepting);
+                handleEntity(followup,dialogue,accepting, TaxiServiceHandler.timeSlot);
                 break;
             case TaxiServiceHandler.followupLocationIntent:
                 if(followup.areSlotsFilled(Sets.newHashSet(TaxiServiceHandler.destinationSlot))){
-                    handleDestination(followup,dialogue,accepting);
+                    handleEntity(followup,dialogue,accepting,TaxiServiceHandler.destinationSlot);
                 } else {
                     if(followup.areSlotsFilled(Sets.newHashSet(TaxiServiceHandler.pickupSlot))){
-                        handlePickup(followup,dialogue,accepting);
+                        handleEntity(followup,dialogue,accepting, TaxiServiceHandler.pickupSlot);
                     }
                 }
                 break;
@@ -78,26 +78,11 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
         return res;
     }
 
-    static void handleCapacity(Intent i, Dialogue d, int accepting){
-
-        List<String> values=validate(i,TaxiServiceHandler.capacitySlot);
-        update(accepting, values, TaxiServiceHandler.capacitySlot, Lists.newArrayList(TaxiServiceHandler.chooseResponse),d);
+    static void handleEntity(Intent i, Dialogue d, int accepting, String slotname){
+        List<String> values = validate(i,slotname);
+        update(accepting,values,slotname,d);
     }
 
-    static void handleTime(Intent i, Dialogue d, int accepting){
-        List<String> values=validate(i,TaxiServiceHandler.timeSlot);
-        update(accepting,values,TaxiServiceHandler.timeSlot,Lists.newArrayList(TaxiServiceHandler.chooseResponse),d);
-    }
-
-    static void handleDestination(Intent i, Dialogue d, int accepting){
-        List<String> values = validate(i, TaxiServiceHandler.destinationSlot);
-        update(accepting,values,TaxiServiceHandler.destinationSlot,Lists.newArrayList(TaxiServiceHandler.chooseResponse,TaxiServiceHandler.respecifyResponse),d);
-    }
-
-    static void handlePickup(Intent i, Dialogue d, int accepting){
-        List<String> values = validate(i, TaxiServiceHandler.pickupSlot);
-        update(accepting,values,TaxiServiceHandler.pickupSlot,Lists.newArrayList(TaxiServiceHandler.chooseResponse,TaxiServiceHandler.respecifyResponse),d);
-    }
 
     public static List<String> validate(Intent i, String slotname){
         List<String> values = i.getSlotValuesByType(slotname);
@@ -117,10 +102,10 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
     }
 
 
-    private static void update(int accepting, List<String> values, String slotname, List<String> responsenames, Dialogue d) {
+    private static void update(int accepting, List<String> values, String slotname, Dialogue d) {
 
         if(values.isEmpty()){
-            d.pushFocus(responsenames.get(1));
+            d.pushFocus(TaxiServiceHandler.respecifyResponse);
             d.putToWorkingMemory("slot_to_choose",slotname);
         } else {
             if (accepting > 0) {
@@ -130,7 +115,7 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
                     d.peekTopIntent().replaceSlot(new Intent.Slot(slotname, values.get(0), 0, 0)); //replace multiple options if present
                 } else {
                     values.stream().forEach(newvalue->d.peekTopIntent().fillSlot(new Intent.Slot(slotname, newvalue, 0, 0)));
-                    d.pushFocus(responsenames.get(0)); //multiple possibilities for capacity so choose
+                    d.pushFocus(TaxiServiceHandler.chooseResponse); //multiple possibilities for capacity so choose
                     d.putToWorkingMemory("slot_to_choose",slotname);
                 }
 
@@ -139,7 +124,7 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
                 d.peekTopIntent().clearSlots(slotname);
                 values.stream().forEach(newvalue -> d.peekTopIntent().fillSlot(new Intent.Slot(slotname, newvalue, 0, 0)));
                 if (values.size() > 1) {
-                    d.pushFocus(responsenames.get(0));
+                    d.pushFocus(TaxiServiceHandler.chooseResponse);
                     d.putToWorkingMemory("slot_to_choose", slotname);
                 }
                 if (d.peekTopFocus().equals(TaxiServiceHandler.confirmCompletionResponse)) {
@@ -161,6 +146,33 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
 
     }
     private static boolean isValidValue(String slotname, String value){
+        switch(slotname){
+            case TaxiServiceHandler.capacitySlot:
+                return isValidCapacity(value);
+            case TaxiServiceHandler.timeSlot:
+                return isValidTime(value);
+            default:
+                return isValidLocation(value);
+        }
+    }
+
+    private static boolean isValidLocation(String value){
         return true;
+    }
+    private static boolean isValidTime(String value){
+        return true;
+    }
+    private static boolean isValidCapacity(String value){
+        try {
+            int number = Integer.parseInt(value);
+            if(number>0&&number<8){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        catch(NumberFormatException e){
+                return false;
+            }
     }
 }
