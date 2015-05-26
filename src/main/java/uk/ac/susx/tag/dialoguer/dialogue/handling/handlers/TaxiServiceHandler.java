@@ -45,6 +45,7 @@ public class TaxiServiceHandler extends Handler{
     public static final String timeSlot="datetime";
     public static final String altTimeSlot="timeref";
     public static final String capacitySlot="number";
+    public static final String altCapacitySlot="persons";
     public static final String choiceSlot="choice";
     public static final String choiceNameSlot="choice_name";
     public static final List<String> allSlots=Lists.newArrayList(capacitySlot,timeSlot,destinationSlot,pickupSlot);
@@ -103,9 +104,18 @@ public class TaxiServiceHandler extends Handler{
 
         //merge timeSlots
         intents=intents.stream().map(i->{if(i.areSlotsFilled(Sets.newHashSet(altTimeSlot))){
-                                            i.fillSlot(timeSlot,i.getSlotValuesByType(altTimeSlot).get(0));}
+                                            i.fillSlot(timeSlot,i.getSlotValuesByType(altTimeSlot).get(0));
+                                            i.clearSlots(altTimeSlot);}
                                         return i;})
                     .collect(Collectors.toList());
+
+        //merge capacitySlots
+        intents=intents.stream().map(i->{if(i.areSlotsFilled(Sets.newHashSet(altCapacitySlot))){
+                                            i.fillSlot(capacitySlot,i.getSlotValuesByType(altCapacitySlot).get(0));
+                                            i.clearSlots(altCapacitySlot);}
+                                            return i;})
+                        .collect(Collectors.toList());
+
 
         intents.stream().forEach(intent->System.err.println(intent.toString()));
         return intents;
