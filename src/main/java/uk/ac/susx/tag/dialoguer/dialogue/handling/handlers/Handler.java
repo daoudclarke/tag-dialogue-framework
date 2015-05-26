@@ -191,6 +191,27 @@ public abstract class Handler implements AutoCloseable {
                 .map(h -> h.subhandle(intents, dialogue, resource))  // Map the handler to the response it gives
                 .findFirst().orElse(false);  // Return the first one we see, otherwise if there's none, return null
     }
+
+    protected boolean useFirstProblemHandler(List<Intent> intents, Dialogue dialogue, Object resource){
+        ProblemHandler handler = problemHandlers.stream()
+                                .filter(h -> h.isInHandleableState(intents, dialogue))
+                                .findFirst().orElse(null);
+        if (handler != null) {
+            handler.handle(intents, dialogue, resource);
+            return true;
+        } else return false;
+    }
+
+    protected boolean useApplicableProblemHandlers(List<Intent> intents, Dialogue dialogue, Object resource){
+        List<ProblemHandler> handlers = problemHandlers.stream()
+                .filter(h -> h.isInHandleableState(intents, dialogue))
+                .collect(Collectors.toList());
+
+        if (!handlers.isEmpty()){
+            handlers.forEach(h -> h.handle(intents, dialogue, resource));
+            return true;
+        } else return false;
+    }
 /********************************************************
  * Creation and factory related methods
  ********************************************************/

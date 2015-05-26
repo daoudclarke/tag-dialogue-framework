@@ -35,8 +35,9 @@ public class TaxiServiceHandler extends Handler{
     public static final String followupCapacityIntent="followup_people";
     public static final String followupTimeIntent="followup_time";
     public static final String followupLocationIntent="followup_location";
+    public static final String followupNegativeIntent="followup_negative";
     public static final List<String> outOfDomainIntents=Lists.newArrayList("out_of_domain","UNKNOWN");
-    public static final List<String> followupIntents=Lists.newArrayList(followupCapacityIntent,followupLocationIntent,followupTimeIntent);
+    public static final List<String> followupIntents=Lists.newArrayList(followupCapacityIntent,followupLocationIntent,followupTimeIntent,followupNegativeIntent);
     public static final List<String> choiceIntents=Lists.newArrayList(Intent.choice,Intent.noChoice,Intent.nullChoice);
 
     //slot names

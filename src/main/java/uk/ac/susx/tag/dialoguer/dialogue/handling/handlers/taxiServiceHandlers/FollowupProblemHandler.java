@@ -80,6 +80,8 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
                     }
                 }
                 break;
+            case TaxiServiceHandler.followupNegativeIntent:
+                rejectEntity(followup,dialogue,accepting);
 
         }
         //return TaxiServiceHandler.processStack(dialogue);
@@ -124,5 +126,26 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
         TaxiServiceHandler.update(accepting,values,slotname,d);
     }
 
+    static void rejectEntity(Intent i, Dialogue d, int accepting){
+        String slotname=TaxiServiceHandler.allSlots.stream().filter(name->i.areSlotsFilled(Sets.newHashSet(name))).findFirst().orElse(null);
+        String rejectedvalue=i.getSlotValuesByType(slotname).get(0);
+        //String currentvalue=d.peekTopIntent().getSlotValuesByType(slotname).stream().filter(value->value.equals(rejectedvalue)).findFirst().orElse(null);
+        List<String> othervalues=d.peekTopIntent().getSlotValuesByType(slotname).stream().filter(value->!value.equals(rejectedvalue)).collect(Collectors.toList());
+        if(othervalues.size()<d.peekTopIntent().getSlotValuesByType(slotname).size()){
+            d.peekTopIntent().clearSlots(slotname);
+            d.peekTopIntent().fillSlots(othervalues.stream().map(value->new Intent.Slot(slotname,value,0,0)).collect(Collectors.toList()));
+
+        }
+        if(othervalues.isEmpty()){
+            d.pushFocus(TaxiServiceHandler.respecifyResponse);
+        }
+        if(othervalues.size()>1){
+            d.pushFocus(TaxiServiceHandler.chooseResponse);
+        }
+        d.putToWorkingMemory("slot_to_choose",slotname);
+        if(d.peekTopFocus().equals(TaxiServiceHandler.confirmCompletionResponse)){
+            d.pushFocus(TaxiServiceHandler.confirmResponse);
+        }
+    }
 
 }
