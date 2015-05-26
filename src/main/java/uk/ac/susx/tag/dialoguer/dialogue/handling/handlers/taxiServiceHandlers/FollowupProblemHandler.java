@@ -87,8 +87,6 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
     public static List<String> validate(Intent i, String slotname){
         List<String> values = i.getSlotValuesByType(slotname);
         if (values.isEmpty()){
-            //insert default - this should not have happened in a followup though so print warning
-            //System.err.println(defaultvalue(slotname));
             if(defaultvalue(slotname)!=null) {
                 i.fillSlot(slotname, defaultvalue(slotname));
                 values.add(defaultvalue(slotname));
