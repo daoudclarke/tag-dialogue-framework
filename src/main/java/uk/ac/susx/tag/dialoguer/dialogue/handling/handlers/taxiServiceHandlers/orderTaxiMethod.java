@@ -1,6 +1,7 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers;
 
 import com.google.common.collect.Lists;
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
@@ -13,19 +14,34 @@ import java.util.stream.Collectors;
 /**
  * Created by juliewe on 19/05/2015.
  */
-public class OrderTaxiMethod implements Handler.IntentHandler{
+public class OrderTaxiMethod implements Handler.ProblemHandler{
+
+
+    @Override
+    public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue) {
+        return intents.stream().filter(i->i.getName().equals(TaxiServiceHandler.orderTaxiIntent)).count()>0;
+    }
 
     /***
      *
-     * @param intent
+     * @param intents
      * @param dialogue
      * @param resource
      * @return
      * Not used by this dialoguer instance
      */
     @Override
-    public Response handle(Intent intent, Dialogue dialogue, Object resource) {
-        return null;
+    public void handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+
+        System.err.println("orderTaxi intent handler fired");
+        Intent intent = intents.stream().filter(i->i.getName().equals(TaxiServiceHandler.orderTaxiIntent)).findFirst().orElse(null);
+        if(intent==null){
+            throw new Dialoguer.DialoguerException("Not in handleable state");
+        }
+        dialogue.pushFocus(TaxiServiceHandler.confirmCompletionResponse);
+        dialogue.pushFocus(TaxiServiceHandler.confirmResponse);
+        TaxiServiceHandler.allSlots.stream().forEach(s->handleEntity(intent,dialogue,s));
+        dialogue.addToWorkingIntents(intent);
     }
 
 
@@ -39,15 +55,16 @@ public class OrderTaxiMethod implements Handler.IntentHandler{
      * Update a dialogue based on a given intent (which is the OrderTaxi intent).
      * Push the required focuses on to the stack in the reverse order.  Check the entities/slots.  Add the current intent to the working intents.  Return true because it has fired
      */
-    @Override
-    public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
-        System.err.println("orderTaxi intent handler fired");
-        dialogue.pushFocus(TaxiServiceHandler.confirmCompletionResponse);
-        dialogue.pushFocus(TaxiServiceHandler.confirmResponse);
-        TaxiServiceHandler.allSlots.stream().forEach(s->handleEntity(intent,dialogue,s));
-        dialogue.addToWorkingIntents(intent);
-        return true;
-    }
+//    @Deprecated
+//    @Override
+//    public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
+//        System.err.println("orderTaxi intent handler fired");
+//        dialogue.pushFocus(TaxiServiceHandler.confirmCompletionResponse);
+//        dialogue.pushFocus(TaxiServiceHandler.confirmResponse);
+//        TaxiServiceHandler.allSlots.stream().forEach(s->handleEntity(intent,dialogue,s));
+//        dialogue.addToWorkingIntents(intent);
+//        return true;
+//    }
 
     /***
      *
@@ -85,5 +102,6 @@ public class OrderTaxiMethod implements Handler.IntentHandler{
         }
 
     }
+
 
 }
