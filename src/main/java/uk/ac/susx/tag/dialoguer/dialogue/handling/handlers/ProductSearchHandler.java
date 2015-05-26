@@ -20,10 +20,10 @@ import java.util.stream.Collectors;
 
 /**
  * Created by juliewe on 05/05/2015.
- * TODO:: Make sure respecify product wipes the current search query
- * TODO:: Improve search by title and author
- * TODO:: Buy general
+ * TODO:: No message /none - do not want cancellation!!
  * TODO:: OutOFDomain Analyser
+ * TODO:: distances?
+ * TODO:: Abba/Abbas matching
  */
 public class ProductSearchHandler extends Handler {
 
@@ -50,29 +50,34 @@ public class ProductSearchHandler extends Handler {
     public static final String confirmProduct="confirm_product";
     public static final String confirmRecipient="confirm_contact_details";
     public static final String confirmMessage="confirm_message_body";
+    public static final String witBuyMedia="buy_media";
+    public static final String witBuyGeneral="buy_general";
+    public static final String witConfirmMedia="confirm_product_buy_media";
+    public static final String witConfirmGeneral="confirm_product_buy_general";
    // public static final String yes="yes";
    // public static final String no="no";
     public static final List<String> confirmIntents=Lists.newArrayList(confirm, Intent.yes);
     public static final List<String> choiceIntents=Lists.newArrayList(Intent.choice,Intent.nullChoice);
 
     //slot names
-    public static final String productSlot="product_query";
+    public static final String productSlot="combined_product_query";
     public static final String productIdSlot="product_id";
     public static final String recipientSlot="contact";
     public static final String messageSlot="message_body";
     public static final String yes_no_slot="yes_no";
     public static final String witTitle="title";
     public static final String witAuthor="author";
+    public static final String witProduct="product_query";
+
 
     //recipient names
     public static final List<String> recipients = Lists.newArrayList("julie","simon","andrew");
 
     public ProductSearchHandler(){
         //register problem and intent handlers here
-        super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
-        super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
-        super.registerIntentHandler(Intent.noChoice, (i,d,r)->{d.pushFocus("repeat_choice");
-            return processStack(d,castDB(r));});
+        //super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
+        //super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
+        super.registerIntentHandler(Intent.noChoice, new noChoiceMethod());
         super.registerIntentHandler(buy, new BuyMethod());
         super.registerProblemHandler(new ChoiceProblemHandler());
         super.registerProblemHandler(new ConfirmProductHandler());
@@ -127,12 +132,13 @@ public class ProductSearchHandler extends Handler {
        boolean isGift=(Intent.isPresent(giftIntent,intents)||d.isInWorkingMemory("gift","yes"));
        if(isGift){d.putToWorkingMemory("gift","yes");}
         if(!d.getWorkingIntents().isEmpty()){
+           // System.err.println(d.peekTopIntent().toString());
             if(d.peekTopIntent().isName(buy)){
                 intents.add(d.peekTopIntent());
             }
         }
        intents = new IntentMerger(intents)
-                        .merge(Sets.newHashSet("buy_media"), (intentsToBeMerged) -> {
+                        .merge(Sets.newHashSet(witBuyMedia,witBuyGeneral), (intentsToBeMerged) -> {
                             Intent output = new Intent(buy);
                             output.copySlots(intentsToBeMerged);
                             if(!isGift&&!output.areSlotsFilled(Sets.newHashSet(recipientSlot))){//default value for recipient if not identified as gift
@@ -144,8 +150,12 @@ public class ProductSearchHandler extends Handler {
                             output.setSource(merged);
                             return output;
                         })
-                        .merge(Sets.newHashSet("confirm_product_buy_media"),confirmProduct)
-                        .merge(Sets.newHashSet(buy),buy)
+                        .merge(Sets.newHashSet(witConfirmMedia,witConfirmGeneral),confirmProduct)
+                        .merge(Sets.newHashSet(buy),(intentsToBeMerged)-> {
+                            Intent output = new Intent(buy);
+                            output.copySlots(intentsToBeMerged);
+                            return output;
+                        })
                         .getIntents();
 
 
@@ -154,9 +164,9 @@ public class ProductSearchHandler extends Handler {
         //intents = IntentMerger.merge(intents, Sets.newHashSet("1", "2"), "12");
 
 
-        //for(Intent i:intents){
+       // for(Intent i:intents){
         //    System.err.println(i.toString());
-        //}
+       // }
 
         return intents;
     }
@@ -220,6 +230,7 @@ public class ProductSearchHandler extends Handler {
             focus = d.popTopFocus();
         }
         Map<String, String> responseVariables = new HashMap<>();
+        System.err.println(focus);
         try {
             switch (focus) {
                 case "confirm_buy":
@@ -239,7 +250,7 @@ public class ProductSearchHandler extends Handler {
                 case "confirm_completion":
                     break;
                 case "respecify_product":
-                    responseVariables.put(ProductSearchHandler.productSlot,StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productSlot)));
+                    responseVariables.put(ProductSearchHandler.productSlot,d.getFromWorkingMemory("unmatched"));
                     break;
                 case "choose_product":
                     d.setChoices((db.getProductList(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.productIdSlot))).stream().map(p->p.toShortString()).collect(Collectors.toList()));
@@ -257,6 +268,8 @@ public class ProductSearchHandler extends Handler {
                     break;
                 case "confirm_message":
                     responseVariables.put(ProductSearchHandler.messageSlot, StringUtils.detokenise(d.peekTopIntent().getSlotValuesByType(ProductSearchHandler.messageSlot)));
+                    break;
+                case "no_match_respecify":
                     break;
             }
         } catch(ArrayIndexOutOfBoundsException e){

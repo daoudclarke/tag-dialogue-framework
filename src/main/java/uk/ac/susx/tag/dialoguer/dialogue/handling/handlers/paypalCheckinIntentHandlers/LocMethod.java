@@ -57,6 +57,11 @@ public class LocMethod implements Handler.ProblemHandler {
 
     }
 
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return false;
+    }
+
     public static void handleConfirm(Intent i, Dialogue d, Object resource){
         //possible confirm slot
         boolean accept=false;
@@ -225,7 +230,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     public static List<Merchant> findNearbyMerchants(ProductMongoDB db, User user){
 
-        return db.merchantQueryByLocation(user.getLatitude(), user.getLongitude(), searchradius, limit);
+        return db.merchantQueryByLocation(user.getLatitude(), user.getLongitude(), searchradius+user.getUncertaintyRadius(), limit);
 
 
     }

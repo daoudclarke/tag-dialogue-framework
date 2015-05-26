@@ -25,13 +25,13 @@
     ],
     "humanReadableSlotNames" : {
         "yes_no" : "yes or no",
-        "product_query" : "product",
+        "combined_product_query" : "product",
         "message_body" : "gift message",
         "contact" : "gift recipient"
     },
     "necessarySlotsPerIntent" : {
         "confirm" : ["yes_no"],
-        "really_buy" : ["contact", "product_query"]
+        "really_buy" : ["contact", "combined_product_query"]
     },
     "responseTemplates" : {
         "confirm_cancellation" : {
@@ -52,21 +52,21 @@
         },
         "confirm_buy_no_message" : {
             "templates":[
-                "Please confirm that you wish to buy {product_query} for {contact}"
+                "Please confirm that you wish to buy {combined_product_query} for {contact}"
             ],
             "newStates":[confirm_yes_no,confirm_contact_details,confirm_product_query],
             "requestingYesNo":"yes"
         },
         "confirm_buy" : {
             "templates":[
-                "Please confirm that you wish to buy {product_query} for {contact} with message: {message_body}"
+                "Please confirm that you wish to buy {combined_product_query} for {contact} with message: {message_body}"
             ],
             "newStates":[confirm_yes_no,confirm_contact_details,confirm_product_query,confirm_message_body],
             "requestingYesNo":"yes"
         },
         "confirm_product" : {
             "templates":[
-                "Do you you wish to buy {product_query}?"
+                "Do you you wish to buy {combined_product_query}?"
                 ],
             "newStates":["confirm_yes_no","confirm_product_query"],
             "requestingYesNo":"yes"
@@ -109,7 +109,14 @@
         },
         "respecify_product" : {
             "templates":[
-                "Cannot find match for {product_query}.  Please respecify product."
+                "Cannot find match for {combined_product_query}.  Please respecify product."
+                ],
+            "newStates":["confirm_product_query"],
+            "requestingYesNo":"no"
+        },
+        "no_match_respecify" : {
+            "templates":[
+                "Inconsistent information.  Please respecify product."
                 ],
             "newStates":["confirm_product_query"],
             "requestingYesNo":"no"

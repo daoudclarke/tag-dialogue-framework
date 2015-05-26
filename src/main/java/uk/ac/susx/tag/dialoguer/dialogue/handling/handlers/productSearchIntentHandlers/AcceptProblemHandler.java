@@ -32,6 +32,11 @@ public class AcceptProblemHandler implements Handler.ProblemHandler{
 
     }
 
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return false;
+    }
+
     private boolean isComplete(Intent i){
         if (i.getName().equals(ProductSearchHandler.buy)){
             if(i.getSlotValuesByType(ProductSearchHandler.productIdSlot).stream().count()==1) {

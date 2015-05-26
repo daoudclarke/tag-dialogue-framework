@@ -12,6 +12,7 @@ import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by juliewe on 12/05/2015.
@@ -45,9 +46,14 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         int accepting = determineAccepting(intents);
         if(accepting>0){handleAccept(dialogue, ProductSearchHandler.productIdSlot);}
         if(accepting<0){handleReject(dialogue,ProductSearchHandler.productIdSlot);}
-        boolean updated=handleUpdate(intents, dialogue, ProductSearchHandler.castDB(resource));
+        boolean updated=handleUpdate(intents, dialogue, ProductSearchHandler.castDB(resource),accepting);
         if(!updated && accepting <0){handleNoInfo(dialogue,ProductSearchHandler.castDB(resource));}
         return ProductSearchHandler.processStack(dialogue,ProductSearchHandler.castDB(resource));
+    }
+
+    @Override
+    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        return false;
     }
 
     public static int determineAccepting(List<Intent> intents) {
@@ -94,7 +100,7 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         d.addToWorkingIntents(workingIntent);
         d.clearChoices();
     }
-    public static boolean handleUpdate(List<Intent> intents, Dialogue d, ProductMongoDB db){
+    public static boolean handleUpdate(List<Intent> intents, Dialogue d, ProductMongoDB db, int accepting){
         //find the intent which offers more positive information
         Intent i = intents.stream().filter(intent->updateIntents.contains(intent.getName())).findFirst().orElse(null);
         if(i==null){
@@ -102,10 +108,33 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         } else {
             System.err.println("Updating working intent with new info");
             Intent workingIntent=d.popTopIntent();
+            if(i.isName(ProductSearchHandler.buy)) {
+                workingIntent.clearSlots(ProductSearchHandler.productSlot);
+            }
             workingIntent.fillSlots(i.getSlotByType(ProductSearchHandler.productSlot)); //add info
             List<Intent.Slot> queries=BuyMethod.handleProduct(workingIntent,d,db);
-            workingIntent.clearSlots(ProductSearchHandler.productSlot);
-            workingIntent.fillSlots(queries);
+            if(accepting>0) {
+                //check whether new slots contain productIdSlot
+                String currentId=workingIntent.getSlotValuesByType(ProductSearchHandler.productIdSlot).get(0); //should only be 1 if accepting
+                boolean matches = queries.stream()
+                        .filter(slot->slot.name.equals(ProductSearchHandler.productIdSlot))
+                        .map(slot->slot.value)
+                        .collect(Collectors.toList())
+                        .contains(currentId);
+                if(!matches)
+                    {d.pushFocus("no_match_respecify");}
+                else {
+                    d.addToWorkingIntents(workingIntent);
+                    return false;}
+            } else {
+                //add in the new products found and update focus
+                workingIntent.clearSlots(ProductSearchHandler.productSlot);
+                workingIntent.fillSlots(queries);
+                if(d.getFromWorkingMemory("focus")!=null){
+                    d.pushFocus(d.getFromWorkingMemory("focus"));
+                    d.putToWorkingMemory("focus",null);
+                }
+            }
             if(d.isEmptyFocusStack()){
                 d.pushFocus("confirm_buy");}
             d.addToWorkingIntents(workingIntent);
@@ -116,6 +145,10 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
     private void handleNoInfo(Dialogue d, ProductMongoDB db){
         //search for alternative products?
         d.peekTopIntent().fillSlots(BuyMethod.handleProduct(d.peekTopIntent(),d,db));
+        if(d.getFromWorkingMemory("focus")!=null){
+            d.pushFocus(d.getFromWorkingMemory("focus"));
+            d.putToWorkingMemory("focus",null);
+        }
 
     }
 }

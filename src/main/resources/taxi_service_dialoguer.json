@@ -1,0 +1,91 @@
+{
+    "handler" : {
+        "name" : "taxi_service",
+        "path" : "taxi_service_handler.json"
+    },
+    "analysers" : [
+        {"name" : "simple_cancel",
+         "sourceId" : "simple_cancel"
+        },
+        {"name" : "simple_yes_no",
+         "sourceId" : "simple_yes_no"
+        },
+       {"name" : "simple_choice",
+         "sourceId" : "simple_choice"},
+        {
+            "name" : "wit.ai",
+            "path" : "taxi_service_wit_config.json",
+            "sourceId" : "wit.ai"
+        }
+    ],
+    "humanReadableSlotNames" : {
+        "yes_no" : "yes or no",
+        "from" : "pickup location",
+        "to" : "destination location",
+        "number" : "capacity",
+        "datetime" : "pickup time"
+    },
+    "necessarySlotsPerIntent" :{
+        "order_taxi" : ["from", "to"]
+    },
+    "responseTemplates" : {
+        "confirm_cancellation" : {
+            "templates":[
+                "Cancelled. Thanks.",
+                "Cancelled. Bye!"
+            ],
+            "newStates":[],
+            "requestingYesNo":"no"
+            },
+        "confirm_completion" : {
+            "templates":[
+                "Completed. Thanks.",
+                "Completed. Bye!"
+            ],
+            "newStates":[],
+            "requestingYesNo":"no"
+            },
+        "unknown" : {
+            "templates" : [
+                "I don't know how to handle that request.",
+                "I don't understand.  Please try again."
+                ],
+            "newStates":["initial"],
+            "requestingYesNo":"no"
+            },
+        "auto_query" : {
+            "templates":[
+                "Please specify {query}"
+                ],
+            "requestingYesNo":"no",
+            "newStates":["followup"]
+            },
+        "request_confirm" : {
+            "templates":[
+                "Please confirm that you want a taxi from {from} to {to} (capacity: {number}, time: {datetime})"
+                ],
+            "requestingYesNo":"yes",
+            "newStates":["followup"]
+        },
+        "choose": {
+            "templates":[
+                "Choose {choice_name}: {choice}"
+                ],
+            "requestingYesNo":"no"
+        },
+         "repeat_choice":{
+            "templates":[
+                "Quit to exit or choose: {choice}"
+                ],
+            "requestingYesNo":"no"
+        },
+        "respecify":{
+            "templates":[
+                "Respecify {choice_name}"
+                ],
+            "requestingYesNo":"no",
+            "newStates":["followup"]
+        }
+
+    }
+}

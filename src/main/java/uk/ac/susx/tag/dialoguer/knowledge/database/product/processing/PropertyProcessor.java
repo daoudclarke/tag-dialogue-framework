@@ -116,12 +116,20 @@ public class PropertyProcessor {
      * pass the products through a call to the "updateProducts" method.
      */
     public static List<Product> getFilteredProducts(String propertyKey, String propertyValue, List<Product> products){
+        List<Product> filtered = new ArrayList<>();
         switch(propertyKey) {
             case("mainContributor"):
                 return getContributorFilteredProducts("contributor",propertyValue, products);
+            case ("name"):
+                for(Product p : products){
+                    if(p.getName().equalsIgnoreCase(propertyValue)){
+                        filtered.add(p);
+                    }
+                }
+                return filtered;
 
             default:
-                List<Product> filtered = new ArrayList<>();
+
                 for (Product p : products) {
                     if (p.hasMatchedProperty(propertyKey, propertyValue)) {
                         filtered.add(p);

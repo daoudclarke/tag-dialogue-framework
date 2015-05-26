@@ -93,7 +93,11 @@ public class ChoiceMakingAnalyserStringMatching  extends Analyser {
         try {
             String noStopwords = d.getStrippedNoStopwordsText();
             String firstWord = SimplePatterns.whitespaceRegex.split(noStopwords, 2)[0];
-            return Numbers.parseNumber(firstWord) - 1;
+            if(Numbers.parseNumber(firstWord)-1<choices.size()) {
+                return Numbers.parseNumber(firstWord) - 1;
+            } else {
+                throw new NumberFormatException();
+            }
 
         } catch (NumberFormatException e){
 
