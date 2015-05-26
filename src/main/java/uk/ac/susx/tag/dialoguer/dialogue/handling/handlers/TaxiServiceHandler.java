@@ -120,6 +120,7 @@ public class TaxiServiceHandler extends Handler{
 
 
         intents.stream().forEach(intent->System.err.println(intent.toString()));
+        if(intents.stream().anyMatch(i->outOfDomainIntents.contains(i.getName()))){intents.add(new Intent(Intent.cancelAutoQuery));}
         return intents;
     }
 

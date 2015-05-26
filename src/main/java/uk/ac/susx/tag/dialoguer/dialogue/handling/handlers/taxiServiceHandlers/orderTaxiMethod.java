@@ -55,16 +55,6 @@ public class OrderTaxiMethod implements Handler.ProblemHandler{
      * Update a dialogue based on a given intent (which is the OrderTaxi intent).
      * Push the required focuses on to the stack in the reverse order.  Check the entities/slots.  Add the current intent to the working intents.  Return true because it has fired
      */
-//    @Deprecated
-//    @Override
-//    public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
-//        System.err.println("orderTaxi intent handler fired");
-//        dialogue.pushFocus(TaxiServiceHandler.confirmCompletionResponse);
-//        dialogue.pushFocus(TaxiServiceHandler.confirmResponse);
-//        TaxiServiceHandler.allSlots.stream().forEach(s->handleEntity(intent,dialogue,s));
-//        dialogue.addToWorkingIntents(intent);
-//        return true;
-//    }
 
     /***
      *
