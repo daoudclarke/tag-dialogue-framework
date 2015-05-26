@@ -14,11 +14,31 @@ import java.util.stream.Collectors;
  * Created by juliewe on 19/05/2015.
  */
 public class OrderTaxiMethod implements Handler.IntentHandler{
+
+    /***
+     *
+     * @param intent
+     * @param dialogue
+     * @param resource
+     * @return
+     * Not used by this dialoguer instance
+     */
     @Override
     public Response handle(Intent intent, Dialogue dialogue, Object resource) {
         return null;
     }
 
+
+    /***
+     *
+     * @param intent
+     * @param dialogue
+     * @param resource
+     * @return true
+     *
+     * Update a dialogue based on a given intent (which is the OrderTaxi intent).
+     * Push the required focuses on to the stack in the reverse order.  Check the entities/slots.  Add the current intent to the working intents.  Return true because it has fired
+     */
     @Override
     public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
         System.err.println("orderTaxi intent handler fired");
@@ -29,13 +49,31 @@ public class OrderTaxiMethod implements Handler.IntentHandler{
         return true;
     }
 
+    /***
+     *
+     * @param i
+     * @param d
+     * @param slotname
+     * Validate slots and generateResponse
+     */
+
     static void handleEntity(Intent i, Dialogue d, String slotname){
         //check for multiple and empty slots
-        List<String> values = FollowupProblemHandler.validate(i,slotname);
+        List<String> values = TaxiServiceHandler.validate(i,slotname);
         //System.err.println(values);
         generateResponse(values, slotname, d);
     }
 
+
+    /**
+     *
+     * @param values
+     * @param slotname
+     * @param d
+     * If a particular slot is empty, this needs to be respecified
+     * If it contains more than 1 value, the user needs to choose.
+     * 1 value: good! The confirmResponse addled by subhandle will be the top focus
+     */
     static void generateResponse(List<String> values,String slotname, Dialogue d){
         if(values.isEmpty()){
             d.pushFocus(TaxiServiceHandler.respecifyResponse);

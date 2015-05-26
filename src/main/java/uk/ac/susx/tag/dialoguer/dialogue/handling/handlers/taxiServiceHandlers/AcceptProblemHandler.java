@@ -12,6 +12,17 @@ import java.util.List;
  * Created by juliewe on 19/05/2015.
  */
 public class AcceptProblemHandler implements Handler.ProblemHandler {
+
+
+    /**
+     *
+     * @param intents
+     * @param dialogue
+     * @return
+     * Is it possible that the order is completed.  Check whether there are intents matching orderTaxiIntent and yes
+     * Check whether the topFocus is confirmCompletionReponse or empty stack
+     * Check whether the intents are valid for completion (optional)
+     */
     @Override
     public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue) {
         //need to have a orderTaxi working intent, a yes_intent and an empty focus stack?
@@ -26,11 +37,19 @@ public class AcceptProblemHandler implements Handler.ProblemHandler {
         return null;
     }
 
+    /**
+     *
+     * @param intents
+     * @param dialogue
+     * @param resource
+     * @return
+     * Get the orderTaxiIntent and revalidate all of the slots (in case the user has added extra information at the completion point)
+     * Add it to the working intents and return true
+     */
     @Override
     public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
         System.err.println("Accept Problem Handler fired");
         Intent intent = intents.stream().filter(i->i.isName(TaxiServiceHandler.orderTaxiIntent)).findFirst().orElse(null);
-        dialogue.pushFocus(TaxiServiceHandler.confirmCompletionResponse);
         TaxiServiceHandler.allSlots.stream().forEach(s->OrderTaxiMethod.handleEntity(intent,dialogue,s));//check individual components of order still valid - may not be if the person has said "Yes I want a ...."
         dialogue.addToWorkingIntents(intent);
         return true;
@@ -42,6 +61,11 @@ public class AcceptProblemHandler implements Handler.ProblemHandler {
         return true;
     }
 
+    /**
+     *
+     * @param d
+     * Side effect of completion.  Will be called when the stack is processed and confirmCompletionResponse is found
+     */
     public static void complete(Dialogue d) {
         System.out.println("Ordering taxi for " + d.getId());
         display(d.peekTopIntent());

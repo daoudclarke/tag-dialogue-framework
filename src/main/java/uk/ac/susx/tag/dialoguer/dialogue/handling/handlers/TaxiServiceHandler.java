@@ -69,6 +69,19 @@ public class TaxiServiceHandler extends Handler{
         super.registerProblemHandler(new AcceptProblemHandler());
     }
 
+    /****
+     *
+     * @param intents
+     * @param intentmatches
+     * @param d
+     * @return
+     *
+     * This specifies how the list of intents should be modified before the dialoguer does any autoquerying etc.
+     * In this case, we add the working intents from the dialogue.  Then merge intents of the same name (to cater for multiple orderTaxiIntents in working intents and newly recieved).
+     * Then merge the two different types of time slot (to cater for time references like ASAP)
+
+     */
+    @Override
     public List<Intent> preProcessIntents(List<Intent> intents, List<IntentMatch> intentmatches, Dialogue d){
         //modify list of intents before the dialoguer gets to auto-query/cancel
 
@@ -98,6 +111,18 @@ public class TaxiServiceHandler extends Handler{
         return intents;
     }
 
+    /*******
+     *
+     * @param intents
+     * @param dialogue
+     * @return
+     *
+     * This specifies how a set of intents should be handled in the context of the dialogue.
+     * In this case, we use the subhandle methods which return a boolean (if they fire) rather than a response
+     * Specifically, we look for a ProblemHandler that matches, then we look for any merged intents, then we turn to each individual analyser in turn.  No match leads to unknown response
+     * We then call processStack to actually generate the response
+     */
+
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
 
@@ -120,10 +145,19 @@ public class TaxiServiceHandler extends Handler{
             }
         }
         if(!complete){ //no problem handler or intent handler
-            dialogue.pushFocus("unknown");
+            dialogue.pushFocus(unknownResponse);
         }
         return processStack(dialogue);
     }
+
+    /****
+     *
+     * @param dialogueId
+     * @return
+     * This specifies how a dialogue should be intialised.
+     * This is the generic case of setting the state as "initial"
+     *
+     */
 
     @Override
     public Dialogue getNewDialogue(String dialogueId) {
@@ -132,16 +166,36 @@ public class TaxiServiceHandler extends Handler{
         return d;
     }
 
+
+    /*****
+     *
+     * @return
+     * Get the handler factory associated with this handler
+     */
     @Override
     public HandlerFactory getFactory() {
         return new TaxiServiceHandlerFactory();
     }
 
+
+    /****
+     *
+     * @throws Exception
+     * Close any resources that have been opened.
+     * None in this case
+     */
     @Override
     public void close() throws Exception {
 
     }
 
+    /****
+     *
+     * @param d
+     * @return
+     * Generate a response based on the current state of the dialogue (most specifically the FocusStack)
+     * Pop the focus stack, add responseVariables which are required by this focus, generate the Response associated with this focus and responseVariables
+     */
     public Response processStack(Dialogue d){
         String focus=unknownResponse;
         if (!d.isEmptyFocusStack()) {
@@ -173,5 +227,129 @@ public class TaxiServiceHandler extends Handler{
         }
         return new Response(focus,responseVariables);
 
+    }
+
+    /***
+     *
+     * @param i : intent to check
+     * @param slotname : slot we are concerned with
+     * @return List<String> values: these are valid values associated with slotname (which may be used in update or add)
+     * Check whether the slot values associated with the specified slotname are valid
+     * Specifically, add default values if none are present.  Filter out any which do not pass IsValidValue()
+     */
+    public static List<String> validate(Intent i, String slotname){
+        List<String> values = i.getSlotValuesByType(slotname);
+        if (values.isEmpty()){
+            if(defaultvalue(slotname)!=null) {
+                i.fillSlot(slotname, defaultvalue(slotname));
+                values.add(defaultvalue(slotname));
+            }
+        } else {
+            //check values are valid - currently assume all ok
+            values.stream().forEach(value -> System.err.println(slotname+" : " + value));
+            values=values.stream().filter(value->isValidValue(slotname, value)).collect(Collectors.toList());
+        }
+        return values;
+    }
+
+    /****
+     *
+     * @param accepting : >0 => yes, <0 => no, 0 => don't know
+     * @param values : new values
+     * @param slotname
+     * @param d
+     * update the top working intent with the list of values given for the specified slot.
+     * accepting is used to check whether the list of values should match those already there (in which case they will be added and the user asked to choose) or automatically replace them
+     *
+     */
+    public static void update(int accepting, List<String> values, String slotname, Dialogue d) {
+
+        if(values.isEmpty()){
+            d.pushFocus(TaxiServiceHandler.respecifyResponse);
+            d.putToWorkingMemory("slot_to_choose",slotname);
+        } else {
+            if (accepting > 0) {
+                //check matches working intent
+                if (values.size()==1&&d.peekTopIntent().getSlotValuesByType(slotname).stream().filter(value -> value.equals(values.get(0))).count() > 0) {
+                    //ok
+                    d.peekTopIntent().replaceSlot(new Intent.Slot(slotname, values.get(0), 0, 0)); //replace multiple options if present
+                } else {
+                    values.stream().forEach(newvalue->d.peekTopIntent().fillSlot(new Intent.Slot(slotname, newvalue, 0, 0)));
+                    d.pushFocus(TaxiServiceHandler.chooseResponse); //multiple possibilities for capacity so choose
+                    d.putToWorkingMemory("slot_to_choose",slotname);
+                }
+
+            } else {
+                //replace info in working intent - if accepting not known, assuming rejection
+                d.peekTopIntent().clearSlots(slotname);
+                values.stream().forEach(newvalue -> d.peekTopIntent().fillSlot(new Intent.Slot(slotname, newvalue, 0, 0)));
+                if (values.size() > 1) {
+                    d.pushFocus(TaxiServiceHandler.chooseResponse);
+                    d.putToWorkingMemory("slot_to_choose", slotname);
+                }
+                if (d.peekTopFocus().equals(TaxiServiceHandler.confirmCompletionResponse)) {
+                    d.pushFocus(TaxiServiceHandler.confirmResponse);
+                }
+            }
+
+        }
+    }
+
+    /**
+     *
+     * @param slotname
+     * @return
+     * Simple method to provide default values for some slots
+     */
+    private static String defaultvalue(String slotname){
+        switch(slotname){
+            case TaxiServiceHandler.capacitySlot:
+                return "4";
+            case TaxiServiceHandler.timeSlot:
+                return "ASAP";
+            default:
+                return null;
+        }
+
+    }
+
+    /**
+     *
+     * @param slotname
+     * @param value
+     * @return
+     * Simple method to validate values for some slots
+     */
+    private static boolean isValidValue(String slotname, String value){
+        switch(slotname){
+            case TaxiServiceHandler.capacitySlot:
+                return isValidCapacity(value);
+            case TaxiServiceHandler.timeSlot:
+                return isValidTime(value);
+            default:
+                return isValidLocation(value);
+        }
+    }
+
+    private static boolean isValidLocation(String value){
+        return true;
+    }
+
+    private static boolean isValidTime(String value){
+        return true;
+    }
+
+    private static boolean isValidCapacity(String value){
+        try {
+            int number = Integer.parseInt(value);
+            if(number>0&&number<8){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        catch(NumberFormatException e){
+            return false;
+        }
     }
 }
