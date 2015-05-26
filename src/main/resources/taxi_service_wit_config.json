@@ -1,3 +1,9 @@
 {
-      "serverAccessToken" : "IP5LA7U4GG6O3HOAEFWUQYVKCAUQOAI3"
+      "serverAccessToken" : "IP5LA7U4GG6O3HOAEFWUQYVKCAUQOAI3",
+      "outOfDomainAnalyser":{
+            "ngramOrder" : 3,
+            "excludedIntents" : ["capacity_query", "pricing_query"]
+            }
+
+      }
 }

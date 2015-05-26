@@ -10,10 +10,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.IntentMerger;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.TaxiServiceHandlerFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.AcceptProblemHandler;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.ChoiceProblemHandler;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.FollowupProblemHandler;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.OrderTaxiMethod;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.*;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 import java.util.HashMap;
@@ -38,6 +35,7 @@ public class TaxiServiceHandler extends Handler{
     public static final String followupCapacityIntent="followup_people";
     public static final String followupTimeIntent="followup_time";
     public static final String followupLocationIntent="followup_location";
+    public static final List<String> outOfDomainIntents=Lists.newArrayList("out_of_domain","UNKNOWN");
     public static final List<String> followupIntents=Lists.newArrayList(followupCapacityIntent,followupLocationIntent,followupTimeIntent);
     public static final List<String> choiceIntents=Lists.newArrayList(Intent.choice,Intent.noChoice,Intent.nullChoice);
 
@@ -59,11 +57,13 @@ public class TaxiServiceHandler extends Handler{
     public static final String respecifyResponse="respecify";
     public static final String confirmCompletionResponse="confirm_completion";
     public static final String repeatChoiceResponse="repeat_choice";
+    public static final String unknownResponse="unknown";
 
     public TaxiServiceHandler(){
        // humanReadableSlotNames = new HashMap<>();
         //register problem handlers and intent handlers here
         super.registerIntentHandler(orderTaxiIntent, new OrderTaxiMethod());
+        super.registerProblemHandler(new OutOfDomainHandler());
         super.registerProblemHandler(new ChoiceProblemHandler());
         super.registerProblemHandler(new FollowupProblemHandler());
         super.registerProblemHandler(new AcceptProblemHandler());
@@ -107,7 +107,7 @@ public class TaxiServiceHandler extends Handler{
         if(!complete){
             Intent i = Intent.getFirstIntentFromSource(merged,intents); //look for pre-processed/merged intents first
             if(i!=null){
-                complete=applyIntentSubHandler(i,dialogue,null);
+                complete=applyIntentSubHandler(i, dialogue, null);
             }
         }
 
@@ -143,7 +143,7 @@ public class TaxiServiceHandler extends Handler{
     }
 
     public Response processStack(Dialogue d){
-        String focus="unknown";
+        String focus=unknownResponse;
         if (!d.isEmptyFocusStack()) {
             focus = d.popTopFocus();
         }
