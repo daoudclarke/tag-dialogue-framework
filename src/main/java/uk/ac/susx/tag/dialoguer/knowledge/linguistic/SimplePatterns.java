@@ -30,6 +30,14 @@ public class SimplePatterns {
             "s(or)?ry"
     ));
 
+    public static Pattern simplePolitenessRegex = StringUtils.buildDisjunctionWithWordBoundaries(Lists.newArrayList(
+            "tha?n?(ks|x)",
+            "tha?nk (u|you)",
+            "pl(ease|s|z|izzle)",
+            "no worries",
+            "s(or)?ry"
+    ));
+
     public static Pattern hesitationRegex = StringUtils.buildDisjunctionWithWordBoundaries(Lists.newArrayList(
             "a+h+",
             "e+r+m*",
@@ -57,6 +65,10 @@ public class SimplePatterns {
         String strippedOfBotReferences = botReferenceRegex.matcher(strippedOfHesitation).replaceAll("");
         String whitespaceSquashedAndTrimmed = whitespaceRegex.matcher(strippedOfBotReferences).replaceAll(" ").trim();
         return whitespaceSquashedAndTrimmed;
+    }
+
+    public static String strip(String message, Pattern pattern){
+        return pattern.matcher(message).replaceAll("");
     }
 
     public static String[] splitByWhitespace(String text){
