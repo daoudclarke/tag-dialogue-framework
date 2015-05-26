@@ -4,12 +4,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.ProductSearchHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,7 +38,7 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
     }
 
     @Override
-    public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+    public void handle(List<Intent> intents, Dialogue dialogue, Object resource) {
         //need to check for yes or no and handle accordingly.  Accept/reject.  Then update
         System.err.println("ConfirmProductHandler has fired");
         int accepting = determineAccepting(intents);
@@ -48,13 +46,8 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
         if(accepting<0){handleReject(dialogue,ProductSearchHandler.productIdSlot);}
         boolean updated=handleUpdate(intents, dialogue, ProductSearchHandler.castDB(resource),accepting);
         if(!updated && accepting <0){handleNoInfo(dialogue,ProductSearchHandler.castDB(resource));}
-        return ProductSearchHandler.processStack(dialogue,ProductSearchHandler.castDB(resource));
     }
 
-    @Override
-    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
-        return false;
-    }
 
     public static int determineAccepting(List<Intent> intents) {
         int accepting = 0; //1=accepting, -1=rejecting, 0=don't know
@@ -112,7 +105,7 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
                 workingIntent.clearSlots(ProductSearchHandler.productSlot);
             }
             workingIntent.fillSlots(i.getSlotByType(ProductSearchHandler.productSlot)); //add info
-            List<Intent.Slot> queries=BuyMethod.handleProduct(workingIntent,d,db);
+            List<Intent.Slot> queries= BuyProblemHandler.handleProduct(workingIntent, d, db);
             if(accepting>0) {
                 //check whether new slots contain productIdSlot
                 String currentId=workingIntent.getSlotValuesByType(ProductSearchHandler.productIdSlot).get(0); //should only be 1 if accepting
@@ -144,7 +137,7 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
     }
     private void handleNoInfo(Dialogue d, ProductMongoDB db){
         //search for alternative products?
-        d.peekTopIntent().fillSlots(BuyMethod.handleProduct(d.peekTopIntent(),d,db));
+        d.peekTopIntent().fillSlots(BuyProblemHandler.handleProduct(d.peekTopIntent(), d, db));
         if(d.getFromWorkingMemory("focus")!=null){
             d.pushFocus(d.getFromWorkingMemory("focus"));
             d.putToWorkingMemory("focus",null);

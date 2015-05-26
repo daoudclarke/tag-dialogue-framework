@@ -32,7 +32,7 @@ public class LocMethod implements Handler.ProblemHandler {
         return intents.stream().anyMatch(i -> PaypalCheckinHandler.locIntents.contains(i.getName()));
     }
 
-    public Response handle(List<Intent> intents, Dialogue d, Object resource){
+    public void handle(List<Intent> intents, Dialogue d, Object resource){
         //we think that the user message has some information about location
         //System.err.println("Using problem handler: locMethod()");
 
@@ -52,23 +52,15 @@ public class LocMethod implements Handler.ProblemHandler {
             }
         }
 
-        
-        return processStack(d);
-
     }
 
-    @Override
-    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
-        return false;
-    }
-
-    public static void handleConfirm(Intent i, Dialogue d, Object resource){
+    public void handleConfirm(Intent i, Dialogue d, Object resource){
         //possible confirm slot
         boolean accept=false;
-        if(i.getName().equals(PaypalCheckinHandler.yes)){
+        if(i.getName().equals(Intent.yes)){
             accept=true;
         } else {
-            if(i.getName().equals(PaypalCheckinHandler.no)){
+            if(i.getName().equals(Intent.no)){
                 accept=false;
             } else {
                 accept = i.isSlotTypeFilledWith(PaypalCheckinHandler.yes_no_slot,"yes");
@@ -78,7 +70,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
         if(!accept){//need to add the current selection to rejected_list
             d.putToWorkingMemory("accepting","no");
-            ConfirmMethod.handleReject(d);
+            RejectMethod.handleReject(d);
         } else {
             d.putToWorkingMemory("accepting","yes");
             //need to handle location as well before going through accept method
@@ -106,7 +98,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
             //this is just a standard reject of the current suggestion
             //System.err.println("Rejecting current suggestion");
-            ConfirmMethod.handleReject(d);
+            RejectMethod.handleReject(d);
             //reinstate previous location_list
             d.putToWorkingMemory("location_list",cacheLocationList);
             d.putToWorkingMemory("tag_list",cacheTagList);
@@ -129,7 +121,7 @@ public class LocMethod implements Handler.ProblemHandler {
 
     }
 
-    public static void handleLocation(Intent i, Dialogue d, Object resource){
+    public void handleLocation(Intent i, Dialogue d, Object resource){
         //DialogueTracker.logger.log(Level.INFO, "Im in handleLocation");
 
         ProductMongoDB db;
@@ -351,40 +343,6 @@ public class LocMethod implements Handler.ProblemHandler {
 
     }
 
-    private Response processStack(Dialogue d){
-        String focus="unknown_hello";
-        if (!d.isEmptyFocusStack()) {
-            focus = d.popTopFocus();
-        }
-        Map<String, String> responseVariables = new HashMap<>();
-        switch(focus){
-            case "confirm_loc":
-                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
-                break;
-            case "confirm_loc_product":
-                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
-                responseVariables.put(PaypalCheckinHandler.productSlot,d.getFromWorkingMemory("product"));
-                break;
-            case "repeat_request_loc":
-                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
-                break;
-            case "repeat_request_loc_rejects":
-                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
-                break;
-            //case "request_location":
-              //  break;
-            case "reconfirm_loc":
-                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
-                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
-            //case "confirm_completion":
-
-        }
-
-        Response r=  new Response(focus,responseVariables);
-
-        return r;
-
-    }
 
 
 

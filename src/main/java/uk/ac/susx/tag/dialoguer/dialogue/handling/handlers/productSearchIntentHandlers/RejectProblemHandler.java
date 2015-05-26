@@ -20,7 +20,7 @@ public class RejectProblemHandler implements Handler.ProblemHandler{
     }
 
     @Override
-    public Response handle(List<Intent> intents, Dialogue d, Object resource) {
+    public void handle(List<Intent> intents, Dialogue d, Object resource) {
         //first of all need to find out which slot is being rejected
         //push need to confirm individual items of intent which have not yet been confirmed
         System.err.println("RejectProblemHandler has fired");
@@ -36,12 +36,6 @@ public class RejectProblemHandler implements Handler.ProblemHandler{
             d.pushFocus("confirm_product");
         }
 
-        return ProductSearchHandler.processStack(d,ProductSearchHandler.castDB(resource));
-    }
-
-    @Override
-    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
-        return false;
     }
 
 

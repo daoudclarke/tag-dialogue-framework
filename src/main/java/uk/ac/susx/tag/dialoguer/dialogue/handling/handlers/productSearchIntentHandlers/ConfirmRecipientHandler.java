@@ -3,7 +3,6 @@ package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentH
 import com.google.common.collect.Lists;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.ProductSearchHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
@@ -35,7 +34,7 @@ public class ConfirmRecipientHandler implements Handler.ProblemHandler {
     }
 
     @Override
-    public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+    public void handle(List<Intent> intents, Dialogue dialogue, Object resource) {
         //need to check for yes or no and handle accordingly.  Accept/reject.  Then update
         System.err.println("ConfirmRecipientHandler has fired");
         int accepting = ConfirmProductHandler.determineAccepting(intents);
@@ -43,12 +42,7 @@ public class ConfirmRecipientHandler implements Handler.ProblemHandler {
         if(accepting<0){ConfirmProductHandler.handleReject(dialogue, ProductSearchHandler.recipientSlot);}
         boolean updated=handleUpdate(intents, dialogue, ProductSearchHandler.castDB(resource));
         if(!updated && accepting <0){handleNoInfo(dialogue,ProductSearchHandler.castDB(resource));}
-        return ProductSearchHandler.processStack(dialogue,ProductSearchHandler.castDB(resource));
-    }
 
-    @Override
-    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
-        return false;
     }
 
     public static boolean handleUpdate(List<Intent> intents, Dialogue d, ProductMongoDB db){
@@ -58,7 +52,7 @@ public class ConfirmRecipientHandler implements Handler.ProblemHandler {
             return false;
         } else {
             List<Intent.Slot> recipients = new ArrayList<>();
-            recipients.add(BuyMethod.handleRecipient(i,d,db));
+            recipients.add(BuyProblemHandler.handleRecipient(i, d, db));
             d.peekTopIntent().clearSlots(ProductSearchHandler.recipientSlot);
             d.peekTopIntent().fillSlots(recipients);
             if(d.isEmptyFocusStack()){

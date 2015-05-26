@@ -3,7 +3,6 @@ package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.productSearchIntentH
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.ProductSearchHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.Product;
@@ -22,7 +21,7 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
     }
 
     @Override
-    public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+    public void handle(List<Intent> intents, Dialogue dialogue, Object resource) {
         Intent i = intents.stream().filter(intent->intent.getSource().equals(ProductSearchHandler.simpleChoiceAnalyser)).findFirst().orElse(null);
         try {
             switch (i.getName()) {
@@ -41,21 +40,15 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
         } catch (Exception e){
             throw new Dialoguer.DialoguerException("Not in handleable state for ChoiceProblemHandler "+e.toString());
         }
-        return ProductSearchHandler.processStack(dialogue,ProductSearchHandler.castDB(resource));
-    }
 
-    @Override
-    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
-        return false;
     }
 
     private void handleNullChoice(List<Intent> intents, Dialogue d, ProductMongoDB db){
         d.clearChoices();
-
         ConfirmProductHandler.handleReject(d,ProductSearchHandler.productIdSlot); //add current productIds to rejected list
         boolean updated = ConfirmProductHandler.handleUpdate(intents,d,db,-1);
         if(!updated){
-            d.peekTopIntent().fillSlots(BuyMethod.handleProduct(d.peekTopIntent(),d,db));
+            d.peekTopIntent().fillSlots(BuyProblemHandler.handleProduct(d.peekTopIntent(), d, db));
             if(d.getFromWorkingMemory("focus")!=null){
                 d.pushFocus(d.getFromWorkingMemory("focus"));
                 d.putToWorkingMemory("focus",null);
@@ -85,4 +78,5 @@ public class ChoiceProblemHandler implements Handler.ProblemHandler {
 
 
     }
+
 }

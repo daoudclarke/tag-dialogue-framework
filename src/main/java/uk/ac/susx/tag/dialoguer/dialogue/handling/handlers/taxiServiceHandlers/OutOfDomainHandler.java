@@ -23,11 +23,4 @@ public class OutOfDomainHandler implements Handler.ProblemHandler {
         dialogue.pushFocus(TaxiServiceHandler.unknownResponse);
     }
 
-    @Deprecated
-    @Override
-    public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
-        System.err.println("Out of Domain handler fired.");
-        dialogue.pushFocus(TaxiServiceHandler.unknownResponse);
-        return true;
-    }
 }

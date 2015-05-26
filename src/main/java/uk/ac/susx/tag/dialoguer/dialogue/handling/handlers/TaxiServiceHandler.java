@@ -27,7 +27,7 @@ public class TaxiServiceHandler extends Handler{
     public static final String mainAnalyser="wit.ai";
     public static final String yesNoAnalyser="simple_yes_no";
     public static final String simpleChoiceAnalyser="simple_choice";
-    public static final String merged="merged";
+   // public static final String merged="merged";
     public static final List<String> analysers = Lists.newArrayList(mainAnalyser, yesNoAnalyser,simpleChoiceAnalyser);
 
     //intent names
@@ -62,7 +62,7 @@ public class TaxiServiceHandler extends Handler{
     public static final String unknownResponse="unknown";
 
     public TaxiServiceHandler(){
-       // humanReadableSlotNames = new HashMap<>();
+
         //register problem handlers and intent handlers here
 
         super.registerProblemHandler(new OutOfDomainHandler());
@@ -140,22 +140,6 @@ public class TaxiServiceHandler extends Handler{
 
         //System.err.println(humanReadableSlotNames.keySet());
         boolean complete=useFirstProblemHandler(intents, dialogue, null); //is there a problem handler?
-
-//        if(!complete){
-//            Intent i = Intent.getFirstIntentFromSource(merged,intents); //look for pre-processed/merged intents first
-//            if(i!=null){
-//                complete=applyIntentSubHandler(i, dialogue, null);
-//            }
-//        }
-//
-//        for(String analyser:analysers) { //try each analyser in order of priority for a non-null response
-//            if(!complete) {
-//                Intent i = Intent.getFirstIntentFromSource(analyser, intents);
-//                if (i != null) {
-//                    complete = applyIntentSubHandler(i, dialogue, null);//
-//                }
-//            }
-//        }
         if(!complete){ //no problem handler or intent handler
             dialogue.pushFocus(unknownResponse);
         }

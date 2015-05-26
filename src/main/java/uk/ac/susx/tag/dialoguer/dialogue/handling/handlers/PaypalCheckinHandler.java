@@ -9,16 +9,11 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.PaypalCheckinHandlerFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.CheckinMethod;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.ConfirmMethod;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.LocMethod;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.UnknownMethod;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.paypalCheckinIntentHandlers.*;
 import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by juliewe on 20/04/2015.
@@ -38,15 +33,14 @@ public class PaypalCheckinHandler extends Handler{
     public static final String otherIntent = "other";
     public static final String confirm = "confirm";
     public static final String quit = "quit";
-    public static final String yes = "yes";
-    public static final String no = "no";
+
     public static final String checkinLoc = "check_in_loc";
     public static final String loc = "loc";
     public static final String nochoice="no_choice";
     public static final String neg_loc="neg_loc";
 
     public static final List<String> locIntents = Lists.newArrayList(PaypalCheckinHandler.checkinLoc, PaypalCheckinHandler.loc, neg_loc);
-    public static final List<String> confirmIntents = Lists.newArrayList(confirm,yes,no);
+    public static final List<String> confirmIntents = Lists.newArrayList(confirm,Intent.yes);
 
 
     //analyser names
@@ -60,13 +54,11 @@ public class PaypalCheckinHandler extends Handler{
     public static final String productSlot="product";
 
     public PaypalCheckinHandler(){
-
-   //     super.registerIntentHandler(quit, (i, d, r) -> new Response("confirm_cancellation"));
-        super.registerIntentHandler(nochoice, new UnknownMethod());
-        super.registerIntentHandler(checkinIntent, new CheckinMethod());
-        super.registerIntentHandler(otherIntent, new UnknownMethod());
         super.registerProblemHandler(new LocMethod()); //this deals with loc, check_in_loc and confirm_loc from the wit.analyser
         super.registerProblemHandler(new ConfirmMethod()); //deals with confirm from wit and yes/no from yes_no analyser
+        super.registerProblemHandler(new RejectMethod());
+        super.registerProblemHandler(new CheckinMethod());
+        super.registerProblemHandler(new UnknownMethod());
     }
 
     public void setupDatabase()throws Dialoguer.DialoguerException {
@@ -130,24 +122,24 @@ public class PaypalCheckinHandler extends Handler{
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
 
-        Response r=applyFirstProblemHandlerOrNull(intents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
+        Boolean complete=useFirstProblemHandler(intents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
 
-        if(r==null) {
-            Intent i = Intent.getFirstIntentFromSource(mainAnalyser,intents);
-            if(!(i ==null)) {
-                r = applyIntentHandler(Intent.getFirstIntentFromSource(mainAnalyser, intents), dialogue, this.db);//get wit's response
-            }
-        }
-        if(r==null){//no intent handler
+//        if(r==null) {
+//            Intent i = Intent.getFirstIntentFromSource(mainAnalyser,intents);
+//            if(!(i ==null)) {
+//                r = applyIntentHandler(Intent.getFirstIntentFromSource(mainAnalyser, intents), dialogue, this.db);//get wit's response
+//            }
+//        }
+        if(!complete){//no intent handler - don't really need this as have the UnknownProblemHandler now
             if(dialogue.getStates().contains("initial")) {
-                r = new Response("unknown_hello");
+                dialogue.pushFocus("unknown_hello");
             } else {
-                r= new Response("unknown_request_location");
+                dialogue.pushFocus("unknown_request_location");
             }
 
         }
 
-        return r;
+        return processStack(dialogue);
     }
 
     @Override
@@ -165,6 +157,45 @@ public class PaypalCheckinHandler extends Handler{
     public Set<String> getRequiredAnalyserSourceIds(){
         return Sets.newHashSet(mainAnalyser, yesNoAnalyser);
     }
+
+    private Response processStack(Dialogue d){
+        String focus="unknown_hello";
+        if (!d.isEmptyFocusStack()) {
+            focus = d.popTopFocus();
+        }
+        Map<String, String> responseVariables = new HashMap<>();
+        switch(focus){
+            case "confirm_loc":
+                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
+                break;
+            case "confirm_loc_product":
+                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
+                responseVariables.put(PaypalCheckinHandler.productSlot,d.getFromWorkingMemory("product"));
+                break;
+            case "repeat_request_loc":
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
+                break;
+            case "repeat_request_loc_rejects":
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
+                break;
+            //case "request_location":
+            //  break;
+            case "reconfirm_loc":
+                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
+                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
+                //case "confirm_completion":
+            case "request_location":
+                d.setRequestingYesNo(false);
+                break;
+
+        }
+
+        Response r=  new Response(focus,responseVariables);
+
+        return r;
+
+    }
+
 
 
 }

@@ -26,17 +26,24 @@ import java.util.stream.Collectors;
  * Created by juliewe on 11/05/2015.
  *
  */
-public class BuyMethod implements Handler.IntentHandler{
+public class BuyProblemHandler implements Handler.ProblemHandler{
 
     public static final int searchradius=50;
     public static final int limit=3;
     public static final int searchlimit=100;
 
-    public Response handle(Intent i, Dialogue d, Object resource){
+    @Override
+    public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue) {
+        return intents.stream().anyMatch(i->i.isName(ProductSearchHandler.buy));
+    }
+
+    public void handle(List<Intent> intents, Dialogue d, Object resource){
         //grab db
         ProductMongoDB db = ProductSearchHandler.castDB(resource);
 
         //intent to buy.  Should have been auto-filled with product and recipient.
+        Intent i = intents.stream().filter(intent->intent.isName(ProductSearchHandler.buy)).findFirst().orElse(null);
+
         //Need to check each slot and add to working memory
         //need to check what we have in workingintents already and clear
         //System.err.println(i.toString());
@@ -51,14 +58,9 @@ public class BuyMethod implements Handler.IntentHandler{
             d.putToWorkingMemory("focus",null);
         }
         d.addToWorkingIntents(workingIntent);
-        return ProductSearchHandler.processStack(d, db);
 
     }
 
-    @Override
-    public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
-        return false;
-    }
 
     public static Intent.Slot handleMessage(Intent i,Dialogue d, ProductMongoDB db){
         String messagestring=i.getSlotValuesByType(ProductSearchHandler.messageSlot).stream().collect(Collectors.joining(" "));
@@ -132,7 +134,7 @@ public class BuyMethod implements Handler.IntentHandler{
         if(products.size()>limit){
             products= products.subList(0,limit);
         }
-        List<Intent.Slot> slotlist = new ArrayList<>();
+        List<Intent.Slot> slotlist =  new ArrayList<>();
         //Intent.Slot s = new Intent.Slot(ProductSearchHandler.productSlot,searchstring,0,0);
 
         slotlist.addAll(processProductList(products,d,db));
@@ -180,7 +182,7 @@ public class BuyMethod implements Handler.IntentHandler{
     }
 
     public static Map<String,List<String>> retrieveQueryMap(Intent i){
-        Map<String,List<String>> queryMap=new HashMap<>();
+        Map<String,List<String>> queryMap= new HashMap<>();
         Map<String, List<String>> aMap;
         Gson gson = new Gson();
         Type termMapType = new TypeToken<Map<String, List<String>>>(){}.getType();

@@ -4,27 +4,34 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
+import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.PaypalCheckinHandler;
 
 import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 /**
  * Created by juliewe on 30/04/2015.
  */
-public class UnknownMethod implements Handler.IntentHandler {
+public class UnknownMethod implements Handler.ProblemHandler {
 
-    public Response handle(Intent i, Dialogue d, Object res){
-        Response r;
-        if(d.getStates().contains("initial")) {
-            r = new Response("unknown_hello");
-        } else {
-            r= new Response("unknown_request_location");
-        }
-        return r;
+
+    @Override
+    public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue) {
+        return intents.stream().anyMatch(i->i.isName(PaypalCheckinHandler.otherIntent)||i.isName(PaypalCheckinHandler.nochoice));
     }
 
     @Override
-    public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
-        return false;
+    public void handle(List<Intent> intents, Dialogue d, Object res){
+
+        if(d.getStates().contains("initial")) {
+            d.pushFocus("unknown_hello");
+        } else {
+            d.pushFocus("unknown_request_location");
+        }
+
     }
+
+
 
 }

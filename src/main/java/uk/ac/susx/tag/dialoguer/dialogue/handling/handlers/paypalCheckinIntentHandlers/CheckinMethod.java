@@ -14,9 +14,9 @@ import java.util.*;
 /**
  * Created by juliewe on 21/04/2015.
  */
-public class CheckinMethod implements Handler.IntentHandler {
+public class CheckinMethod implements Handler.ProblemHandler {
 
-    public Response handle(Intent i,Dialogue d, Object resource){
+    public void handle(List<Intent> intents,Dialogue d, Object resource){
         //generate response to request Location
         ProductMongoDB db;
         try {
@@ -27,50 +27,11 @@ public class CheckinMethod implements Handler.IntentHandler {
 
         d.putToWorkingMemory("rejectionlist",null); // in case restarting
         List<Merchant> possibleMerchants = LocMethod.findNearbyMerchants(db, d.getUserData());
-
-        LocMethod.processMerchantList(possibleMerchants, d,db);
-        return processStack(d);
-
-
-
+        LocMethod.processMerchantList(possibleMerchants,d,db);
     }
 
     @Override
-    public boolean subhandle(Intent intent, Dialogue dialogue, Object resource) {
-        return false;
+    public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue) {
+        return intents.stream().anyMatch(i->i.isName(PaypalCheckinHandler.checkinIntent));
     }
-
-    private Response processStack(Dialogue d){
-        String focus="unknown_hello";
-        if (!d.isEmptyFocusStack()) {
-            focus = d.popTopFocus();
-        }
-        Map<String, String> responseVariables = new HashMap<>();
-        switch(focus){
-            case "confirm_loc":
-                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
-                break;
-            case "confirm_loc_product":
-                responseVariables.put(PaypalCheckinHandler.merchantSlot, d.getFromWorkingMemory("merchantName"));
-                responseVariables.put(PaypalCheckinHandler.productSlot,d.getFromWorkingMemory("product"));
-                break;
-            case "repeat_request_loc":
-                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
-                break;
-            case "repeat_request_loc_rejects":
-                responseVariables.put(PaypalCheckinHandler.locationSlot, d.getFromWorkingMemory("location_list"));
-                d.setRequestingYesNo(false);
-                break;
-            //case "request_location":
-               // break;
-
-
-        }
-        return new Response(focus,responseVariables);
-
-    }
-
-
-
-
 }

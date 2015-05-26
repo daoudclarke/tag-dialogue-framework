@@ -57,7 +57,7 @@ public class ProductSearchHandler extends Handler {
    // public static final String yes="yes";
    // public static final String no="no";
     public static final List<String> confirmIntents=Lists.newArrayList(confirm, Intent.yes);
-    public static final List<String> choiceIntents=Lists.newArrayList(Intent.choice,Intent.nullChoice);
+    public static final List<String> choiceIntents=Lists.newArrayList(Intent.choice,Intent.nullChoice,Intent.noChoice);
 
     //slot names
     public static final String productSlot="combined_product_query";
@@ -77,14 +77,14 @@ public class ProductSearchHandler extends Handler {
         //register problem and intent handlers here
         //super.registerIntentHandler(quit, (i, d, r) -> Response.buildCancellationResponse());
         //super.registerIntentHandler(Intent.cancel, (i,d,r)-> Response.buildCancellationResponse()); // shouldn't be needed since this intent and response should have been picked up by dialoguer
-        super.registerIntentHandler(Intent.noChoice, new noChoiceMethod());
-        super.registerIntentHandler(buy, new BuyMethod());
+        //super.registerIntentHandler(Intent.noChoice, new noChoiceMethod());
         super.registerProblemHandler(new ChoiceProblemHandler());
         super.registerProblemHandler(new ConfirmProductHandler());
         super.registerProblemHandler(new ConfirmRecipientHandler());
         super.registerProblemHandler(new ConfirmMessageHandler());
         super.registerProblemHandler(new AcceptProblemHandler());
         super.registerProblemHandler(new RejectProblemHandler());
+        super.registerProblemHandler(new BuyProblemHandler());
     }
 
     @Override
@@ -160,7 +160,7 @@ public class ProductSearchHandler extends Handler {
 
 
 
-        intents=intents.stream().map(intent->BuyMethod.makeQueryMap(intent)).collect(Collectors.toList()); //turn any witTitle and witAuthor into a product_query
+        intents=intents.stream().map(intent-> BuyProblemHandler.makeQueryMap(intent)).collect(Collectors.toList()); //turn any witTitle and witAuthor into a product_query
         //intents = IntentMerger.merge(intents, Sets.newHashSet("1", "2"), "12");
 
 
@@ -180,35 +180,35 @@ public class ProductSearchHandler extends Handler {
         //    allIntents.addAll(dialogue.popAutoQueriedIntents());
         //}
         allIntents.addAll(intents);
-        Response r=applyFirstProblemHandlerOrNull(allIntents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
+        Boolean complete=useFirstProblemHandler(allIntents, dialogue, this.db);//first check whether there is a specific problemHandler associated with these intents
 
-        if(r==null){
-            Intent i = Intent.getFirstIntentFromSource(merged,allIntents); //look for pre-processed/merged intents first
-            if(i!=null){
-                r=applyIntentHandler(i,dialogue,this.db);
-            }
-        }
+//        if(r==null){
+//            Intent i = Intent.getFirstIntentFromSource(merged,allIntents); //look for pre-processed/merged intents first
+//            if(i!=null){
+//                r=applyIntentHandler(i,dialogue,this.db);
+//            }
+//        }
+//
+//
+//        for(String analyser:analysers) { //try each analyser in order of priority for a non-null response
+//            if(r==null) {
+//                Intent i = Intent.getFirstIntentFromSource(analyser, allIntents);
+//                if (i != null) {
+//                    r = applyIntentHandler(i, dialogue, this.db);//
+//                }
+//            }
+//        }
 
-
-        for(String analyser:analysers) { //try each analyser in order of priority for a non-null response
-            if(r==null) {
-                Intent i = Intent.getFirstIntentFromSource(analyser, allIntents);
-                if (i != null) {
-                    r = applyIntentHandler(i, dialogue, this.db);//
-                }
-            }
-        }
-
-        if(r==null){//no intent handler
+        if(!complete){//no intent handler
             if(dialogue.getStates().contains("initial")) { //state specific unknown
-                r = new Response("unknown");
+                dialogue.pushFocus("unknown");
             } else {
-                r= new Response("unknown");
+                dialogue.pushFocus("unknown");
             }
 
         }
         //System.err.println("Handler generated response "+ r.toString());
-        return r;
+        return processStack(dialogue,db);
     }
 
     public static ProductMongoDB castDB(Object resource) {
