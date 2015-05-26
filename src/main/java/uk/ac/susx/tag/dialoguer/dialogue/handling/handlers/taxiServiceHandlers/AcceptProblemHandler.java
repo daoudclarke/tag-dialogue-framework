@@ -33,8 +33,12 @@ public class AcceptProblemHandler implements Handler.ProblemHandler {
     }
 
     @Override
-    public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
-        return null;
+    public void handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        System.err.println("Accept Problem Handler fired");
+        Intent intent = intents.stream().filter(i->i.isName(TaxiServiceHandler.orderTaxiIntent)).findFirst().orElse(null);
+        TaxiServiceHandler.allSlots.stream().forEach(s->OrderTaxiMethod.handleEntity(intent,dialogue,s));//check individual components of order still valid - may not be if the person has said "Yes I want a ...."
+        dialogue.addToWorkingIntents(intent);
+
     }
 
     /**
@@ -46,6 +50,7 @@ public class AcceptProblemHandler implements Handler.ProblemHandler {
      * Get the orderTaxiIntent and revalidate all of the slots (in case the user has added extra information at the completion point)
      * Add it to the working intents and return true
      */
+    @Deprecated
     @Override
     public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
         System.err.println("Accept Problem Handler fired");

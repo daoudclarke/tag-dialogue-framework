@@ -39,8 +39,34 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
     }
 
     @Override
-    public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
-        return null;
+    public void handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+        System.err.println("Followup Problem Handler fired");
+        int accepting = determineAccepting(intents);
+        Intent followup = intents.stream().filter(i->TaxiServiceHandler.followupIntents.contains(i.getName())).findFirst().orElse(null); // will not be null as otherwise not inHandleableState
+        dialogue.addToWorkingIntents(intents.stream().filter(i->i.isName(TaxiServiceHandler.orderTaxiIntent)).collect(Collectors.toList())); //save any orderTaxiIntents to working intents
+        if(dialogue.isEmptyWorkingIntents()){ // this should not happen because this intents require the "followup" state to be set
+            throw new Dialoguer.DialoguerException("Follow up intent generated when no orderTaxiIntents present");
+        }
+        switch (followup.getName()){
+            case TaxiServiceHandler.followupCapacityIntent:
+                handleEntity(followup,dialogue,accepting, TaxiServiceHandler.capacitySlot);
+                break;
+            case TaxiServiceHandler.followupTimeIntent:
+                handleEntity(followup,dialogue,accepting, TaxiServiceHandler.timeSlot);
+                break;
+            case TaxiServiceHandler.followupLocationIntent:
+                if(followup.areSlotsFilled(Sets.newHashSet(TaxiServiceHandler.destinationSlot))){
+                    handleEntity(followup,dialogue,accepting,TaxiServiceHandler.destinationSlot);
+                } else {
+                    if(followup.areSlotsFilled(Sets.newHashSet(TaxiServiceHandler.pickupSlot))){
+                        handleEntity(followup,dialogue,accepting, TaxiServiceHandler.pickupSlot);
+                    }
+                }
+                break;
+            case TaxiServiceHandler.followupNegativeIntent:
+                rejectEntity(followup,dialogue,accepting);
+
+        }
     }
 
     /**

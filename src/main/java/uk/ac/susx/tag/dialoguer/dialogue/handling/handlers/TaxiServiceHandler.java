@@ -64,11 +64,12 @@ public class TaxiServiceHandler extends Handler{
     public TaxiServiceHandler(){
        // humanReadableSlotNames = new HashMap<>();
         //register problem handlers and intent handlers here
-        super.registerIntentHandler(orderTaxiIntent, new OrderTaxiMethod());
+
         super.registerProblemHandler(new OutOfDomainHandler());
         super.registerProblemHandler(new ChoiceProblemHandler());
         super.registerProblemHandler(new FollowupProblemHandler());
         super.registerProblemHandler(new AcceptProblemHandler());
+        super.registerProblemHandler(new OrderTaxiMethod());
     }
 
     /****
@@ -138,23 +139,23 @@ public class TaxiServiceHandler extends Handler{
     public Response handle(List<Intent> intents, Dialogue dialogue) {
 
         //System.err.println(humanReadableSlotNames.keySet());
-        boolean complete=applyFirstProblemSubHandlerOrNull(intents, dialogue, null); //is there a problem handler
+        boolean complete=useFirstProblemHandler(intents, dialogue, null); //is there a problem handler?
 
-        if(!complete){
-            Intent i = Intent.getFirstIntentFromSource(merged,intents); //look for pre-processed/merged intents first
-            if(i!=null){
-                complete=applyIntentSubHandler(i, dialogue, null);
-            }
-        }
-
-        for(String analyser:analysers) { //try each analyser in order of priority for a non-null response
-            if(!complete) {
-                Intent i = Intent.getFirstIntentFromSource(analyser, intents);
-                if (i != null) {
-                    complete = applyIntentSubHandler(i, dialogue, null);//
-                }
-            }
-        }
+//        if(!complete){
+//            Intent i = Intent.getFirstIntentFromSource(merged,intents); //look for pre-processed/merged intents first
+//            if(i!=null){
+//                complete=applyIntentSubHandler(i, dialogue, null);
+//            }
+//        }
+//
+//        for(String analyser:analysers) { //try each analyser in order of priority for a non-null response
+//            if(!complete) {
+//                Intent i = Intent.getFirstIntentFromSource(analyser, intents);
+//                if (i != null) {
+//                    complete = applyIntentSubHandler(i, dialogue, null);//
+//                }
+//            }
+//        }
         if(!complete){ //no problem handler or intent handler
             dialogue.pushFocus(unknownResponse);
         }

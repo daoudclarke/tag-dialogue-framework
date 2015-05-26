@@ -32,8 +32,31 @@ public class ChoiceProblemHandler implements ProblemHandler {
     }
 
     @Override
-    public Response handle(List<Intent> intents, Dialogue dialogue, Object resource) {
-        return null;
+    public void handle(List<Intent> intents, Dialogue dialogue, Object resource) {
+
+        Intent i = intents.stream().filter(intent->intent.getSource().equals(TaxiServiceHandler.simpleChoiceAnalyser)).findFirst().orElse(null);
+        dialogue.addToWorkingIntents(intents.stream().filter(intent->intent.isName(TaxiServiceHandler.orderTaxiIntent)).collect(Collectors.toList())); //save any orderTaxiIntents to working intents
+        if(dialogue.isEmptyWorkingIntents()){ // this should not happen because this intents require the "followup" state to be set
+            throw new Dialoguer.DialoguerException("Choice intent generated when no orderTaxiIntents present");
+        }
+
+        try {
+            switch (i.getName()) {
+                case Intent.choice:
+                    handleChoice(i, dialogue);
+                    break;
+                case Intent.nullChoice:
+                    handleNullChoice(i, dialogue);
+                    break;
+                case Intent.noChoice:
+                    handleNoChoice(i,dialogue);
+
+
+
+            }
+        } catch (Exception e){
+            throw new Dialoguer.DialoguerException("Not in handleable state for ChoiceProblemHandler "+e.toString());
+        }
     }
 
 
@@ -46,6 +69,7 @@ public class ChoiceProblemHandler implements ProblemHandler {
      * Get the relevant orderTaxi intent from the list and add it to working intents
      * Handle the choice intent according to its name
      */
+    @Deprecated
     @Override
     public boolean subhandle(List<Intent> intents, Dialogue dialogue, Object resource) {
         Intent i = intents.stream().filter(intent->intent.getSource().equals(TaxiServiceHandler.simpleChoiceAnalyser)).findFirst().orElse(null);
