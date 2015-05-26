@@ -6,6 +6,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.WitAiAnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
+import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -17,6 +18,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns.*;
 
 /**
  * Determine user intent using a WitAi instance.
@@ -52,6 +55,10 @@ public class WitAiAnalyser extends Analyser {
 
     @Override
     public List<Intent> analyse(String message, Dialogue dialogue) {
+        message = strip(message, emoticonRegex);
+        message = strip(message, hesitationRegex);
+        message = strip(message, simplePolitenessRegex);
+
         WitAiResponse r = queryAPI(message, dialogue.getStates(), serverAccessToken, client);
 
         WitAiResponse.Outcome o = r.getMostLikelyOutcome();
