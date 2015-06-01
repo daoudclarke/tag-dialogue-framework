@@ -225,7 +225,7 @@ public class DialogueTracker implements AutoCloseable {
 
         //set up test user ... maybe configure this from command line later
         String userId="julie";
-        List<Double> location = populateLocations().get("eat");
+        List<Double> location = populateLocations().get("clocktower");
         User userData = new User(location.get(0),location.get(1),location.get(2));
 
         //set up scanner to get user input
@@ -234,7 +234,7 @@ public class DialogueTracker implements AutoCloseable {
         String userMessage;
         boolean doContinue=true;
 
-        try (DialogueTracker myTracker = new DialogueTracker(filename)) {
+        try (DialogueTrackerDemo myTracker = new DialogueTrackerDemo(filename)) {
             //System.err.println("Using json file: "+filename);
             while (doContinue){
                 userMessage=userinput.nextLine();
