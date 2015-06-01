@@ -13,6 +13,9 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.TaxiServiceHandlerFa
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.*;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,6 +120,13 @@ public class TaxiServiceHandler extends Handler{
                                             i.clearSlots(altCapacitySlot);}
                                             return i;})
                         .collect(Collectors.toList());
+
+        //convert datetimes to humanreadable
+        intents=intents.stream().map(i->{if(i.areSlotsFilled(Sets.newHashSet(timeSlot))){
+                                            i.replaceSlot(new Intent.Slot(timeSlot,humanReadable(i.getSlotValuesByType(timeSlot).get(0)),0,0));}
+                                            return i;})
+                        .collect(Collectors.toList());
+
 
 
         intents.stream().forEach(intent->System.err.println(intent.toString()));
@@ -243,6 +253,7 @@ public class TaxiServiceHandler extends Handler{
             }
         } else {
             //check values are valid - currently assume all ok
+
             values.stream().forEach(value -> System.err.println(slotname+" : " + value));
             values=values.stream().filter(value->isValidValue(slotname, value)).collect(Collectors.toList());
         }
@@ -347,6 +358,16 @@ public class TaxiServiceHandler extends Handler{
         }
         catch(NumberFormatException e){
             return false;
+        }
+    }
+    private static String humanReadable(String timestring){
+        try {
+            LocalDateTime d = LocalDateTime.parse(timestring, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            return d.format(formatter);
+        } catch(DateTimeParseException e){
+            //already in human readable
+            return timestring;
         }
     }
 }
