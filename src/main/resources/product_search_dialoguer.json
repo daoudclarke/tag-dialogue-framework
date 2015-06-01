@@ -1,7 +1,7 @@
 {
     "handler" : {
         "name" : "product_search",
-        "path" : "dialoguer/product_search_handler.json"
+        "path" : "product_search_handler.json"
     },
     "analysers" : [
         {"name" : "simple_cancel",
@@ -14,7 +14,7 @@
         },
         {
             "name" : "wit.ai",
-            "path" : "dialoguer/product_search_wit_config.json",
+            "path" : "product_search_wit_config.json",
             "sourceId" : "wit.ai"
         },
         {
