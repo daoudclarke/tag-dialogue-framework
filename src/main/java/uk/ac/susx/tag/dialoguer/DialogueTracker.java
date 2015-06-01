@@ -234,7 +234,7 @@ public class DialogueTracker implements AutoCloseable {
         String userMessage;
         boolean doContinue=true;
 
-        try (DialogueTrackerDemo myTracker = new DialogueTrackerDemo(filename)) {
+        try (DialogueTracker myTracker = new DialogueTrackerDemo(filename)) {
             //System.err.println("Using json file: "+filename);
             while (doContinue){
                 userMessage=userinput.nextLine();
