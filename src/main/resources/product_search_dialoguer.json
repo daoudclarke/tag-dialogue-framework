@@ -1,7 +1,7 @@
 {
     "handler" : {
         "name" : "product_search",
-        "path" : "product_search_handler.json"
+        "path" : "data/dialoguer/product_search_handler.json"
     },
     "analysers" : [
         {"name" : "simple_cancel",
@@ -14,12 +14,12 @@
         },
         {
             "name" : "wit.ai",
-            "path" : "product_search_wit_config.json",
+            "path" : "data/dialoguer/product_search_wit_config.json",
             "sourceId" : "wit.ai"
         },
         {
             "name" : "pattern_finder",
-            "path" : "gift_pattern_analyser_config.json",
+            "path" : "data/dialoguer/gift_pattern_analyser_config.json",
             "sourceId" : "gift"
         }
     ],
