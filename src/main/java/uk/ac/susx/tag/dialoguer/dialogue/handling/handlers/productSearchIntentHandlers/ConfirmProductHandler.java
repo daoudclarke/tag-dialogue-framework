@@ -115,9 +115,13 @@ public class ConfirmProductHandler implements Handler.ProblemHandler {
                         .collect(Collectors.toList())
                         .contains(currentId);
                 if(!matches)
-                    {d.pushFocus("no_match_respecify");}
+                    {
+                        d.pushFocus("no_match_respecify");}
                 else {
                     d.addToWorkingIntents(workingIntent);
+                    if(d.isEmptyFocusStack()){
+                        AcceptProblemHandler.handleAccept(d);
+                    }
                     return false;}
             } else {
                 //add in the new products found and update focus

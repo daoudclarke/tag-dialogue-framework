@@ -37,7 +37,6 @@ public class CancellationAnalyserStringMatching extends Analyser {
             "cancel that",
             "bye bye",
             "goodbye",
-            "none",
             "restart",
             "forget that",
             "forget it",
