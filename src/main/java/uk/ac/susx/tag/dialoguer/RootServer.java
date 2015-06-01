@@ -29,7 +29,7 @@ public class RootServer {
         WebAppContext bb = new WebAppContext();
         bb.setServer(server);
         bb.addServlet(new ServletHolder(new ServletContainer(new ResourceConfig()
-                .packages("uk.ac.susx.tag.parcel.api")
+                .packages("uk.ac.susx.tag.dialoguer")
                 .property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true))), "/*");
         bb.setContextPath("/");
         bb.setWar("src/main/webapp");
