@@ -129,6 +129,9 @@ public class BuyProblemHandler implements Handler.ProblemHandler{
         }
 
         //maybe check for in relevant merchant ??
+        if(!products.isEmpty()){
+            products=inMerchantFilter(d,products);
+        }
 
         //reduct list to the right size
         if(products.size()>limit){
@@ -245,5 +248,20 @@ public class BuyProblemHandler implements Handler.ProblemHandler{
         } else {
             return filtered.getProducts();
         }
+
+
+    }
+    public static List<Product> inMerchantFilter(Dialogue dialog, List<Product> products){
+        //updates products if inside relevant merchant
+        ProductSet filtered = new ProductSet(dialog.getUserData().getLocationData(),products);
+        List<Product> result = filtered.filterByInsideMerchant();
+        if(result.size()==0) {
+            System.err.println("Not inside relevant merchant");
+            return products;
+        } else {
+            System.err.println("Filtering by inside merchant from: "+products.size()+" to \t"+result.size());
+            return result;
+        }
+
     }
 }

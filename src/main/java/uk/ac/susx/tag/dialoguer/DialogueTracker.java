@@ -225,7 +225,7 @@ public class DialogueTracker implements AutoCloseable {
 
         //set up test user ... maybe configure this from command line later
         String userId="julie";
-        List<Double> location = populateLocations().get("clocktower");
+        List<Double> location = populateLocations().get("eat");
         User userData = new User(location.get(0),location.get(1),location.get(2));
 
         //set up scanner to get user input
