@@ -142,7 +142,7 @@ public class ProductSearchHandler extends Handler {
                             Intent output = new Intent(buy);
                             output.copySlots(intentsToBeMerged);
                             if(!isGift&&!output.areSlotsFilled(Sets.newHashSet(recipientSlot))){//default value for recipient if not identified as gift
-                                output.fillSlot(recipientSlot,d.getId());
+                                output.fillSlot(recipientSlot,d.getUserData().getAttribute("name"));
                             }
                             if(!isGift&&!output.areSlotsFilled(Sets.newHashSet(messageSlot))){
                                 output.fillSlot(messageSlot,"none");

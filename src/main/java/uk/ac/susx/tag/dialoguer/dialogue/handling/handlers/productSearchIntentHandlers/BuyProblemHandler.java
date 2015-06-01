@@ -78,9 +78,13 @@ public class BuyProblemHandler implements Handler.ProblemHandler{
         if(ProductSearchHandler.recipients.contains(recipientstring.toLowerCase())) {  //better test for recipient required - db matching
             s = new Intent.Slot(ProductSearchHandler.recipientSlot, recipientstring, 0, 0);
         } else {
-            d.pushFocus("unknown_recipient");
-            //d.putToWorkingMemory("recipient",recipientstring);
-            s = new Intent.Slot(ProductSearchHandler.recipientSlot, recipientstring, 0, 0);
+            if(meMatch(recipientstring)){
+                s=new Intent.Slot(ProductSearchHandler.recipientSlot,d.getUserData().getAttribute("name"),0,0);
+            } else {
+                d.pushFocus("unknown_recipient");
+                //d.putToWorkingMemory("recipient",recipientstring);
+                s = new Intent.Slot(ProductSearchHandler.recipientSlot, recipientstring, 0, 0);
+            }
         }
         return s;
     }
@@ -264,4 +268,13 @@ public class BuyProblemHandler implements Handler.ProblemHandler{
         }
 
     }
+    public static boolean meMatch(String astring){
+
+        if(astring.equals("me")||astring.equals("myself")){
+            return true;
+        } else{
+            return false;
+        }
+    }
+
 }
