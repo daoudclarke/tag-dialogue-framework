@@ -87,6 +87,6 @@ public class DialogueTrackerDemo extends DialogueTracker {
 
     private boolean isMoveStatement(String userMessage){
         userMessage = userMessage.toLowerCase();
-        return userMessage.startsWith("go to") || userMessage.startsWith("walk to") || userMessage.startsWith("move to");
+        return userMessage.startsWith("go to") || userMessage.startsWith("walk to") || userMessage.startsWith("move to") || userMessage.startsWith("goto");
     }
 }
