@@ -225,7 +225,14 @@ public class DialogueTracker implements AutoCloseable {
 
         //set up test user ... maybe configure this from command line later
         String userId="julie";
-        List<Double> location = populateLocations().get("clocktower");
+        if(args.length>1){
+            userId=args[1];
+        }
+        String locationstring="clocktower";
+        if(args.length>2){
+            locationstring=args[2];
+        }
+        List<Double> location = populateLocations().get(locationstring);
         Map<String,String> attributes=new HashMap<>();
         attributes.put("name",userId);
         User userData = new User(location.get(0),location.get(1),location.get(2),attributes);
@@ -252,7 +259,7 @@ public class DialogueTracker implements AutoCloseable {
                     } else {
                         //System.err.println("Finished tracking");
                         if (doContinue) {
-                            System.out.printf("Hello %s. I am the %s app.  What would you like to do?\n>", userId, task);
+                            System.out.printf("Hello %s. I am the %s app.  What would you like to do?\n>", userData.getAttribute("name"), task);
                         }
                     }
                 } else {

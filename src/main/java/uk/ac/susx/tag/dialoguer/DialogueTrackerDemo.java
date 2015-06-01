@@ -34,43 +34,43 @@ public class DialogueTrackerDemo extends DialogueTracker {
 
     public String getResponse(String dialogueId, String userMessage, User userData){
         if (isMoveStatement(userMessage)){
-            return moveDialogueLocationAndConfirm(dialogueId, userMessage);
+            return moveDialogueLocationAndConfirm(dialogueId, userMessage, userData.getAttribute("name"));
         } else {
-            return super.getResponse(dialogueId, userMessage, getUserData(dialogueId));
+            return super.getResponse(dialogueId, userMessage, getUserData(dialogueId, userData.getAttribute("name")));
         }
     }
 
-    private String moveDialogueLocationAndConfirm(String dialogueId, String userMessage){
+    private String moveDialogueLocationAndConfirm(String dialogueId, String userMessage, String userName){
         userMessage = userMessage.toLowerCase();
         if (userMessage.contains("clock") || userMessage.contains("tower")){
-            updateDialogueLocation(dialogueId, clocktower);
+            updateDialogueLocation(dialogueId, clocktower.newCopy().setAttribute("name", userName));
             return "You are now at the Clock Tower.";
         } else if (userMessage.contains("waterstones")){
-            updateDialogueLocation(dialogueId, waterstones);
+            updateDialogueLocation(dialogueId, waterstones.newCopy().setAttribute("name", userName));
             return "You are now at Waterstones.";
         } else if (userMessage.contains("bench")){
-            updateDialogueLocation(dialogueId, bench);
+            updateDialogueLocation(dialogueId, bench.newCopy().setAttribute("name", userName));
             return "You are now at Bench.";
         } else if (userMessage.contains("indulge")){
-            updateDialogueLocation(dialogueId, indulge);
+            updateDialogueLocation(dialogueId, indulge.newCopy().setAttribute("name", userName));
             return "You are now at Indulge.";
         } else if (userMessage.contains("boots")){
-            updateDialogueLocation(dialogueId, boots);
+            updateDialogueLocation(dialogueId, boots.newCopy().setAttribute("name", userName));
             return "You are now at Boots.";
         } else if (userMessage.contains("eat")){
-            updateDialogueLocation(dialogueId, eat);
+            updateDialogueLocation(dialogueId, eat.newCopy().setAttribute("name", userName));
             return "You are now at Eat.";
         } else if (userMessage.contains("pret")){
-            updateDialogueLocation(dialogueId, pret);
+            updateDialogueLocation(dialogueId, pret.newCopy().setAttribute("name", userName));
             return "You are now at Pret a Manger.";
         } else if (userMessage.contains("superdry")){
-            updateDialogueLocation(dialogueId, superdry);
+            updateDialogueLocation(dialogueId, superdry.newCopy().setAttribute("name", userName));
             return "You are now at Superdry.";
         } else if (userMessage.contains("quadrant")){
-            updateDialogueLocation(dialogueId, quadrant);
+            updateDialogueLocation(dialogueId, quadrant.newCopy().setAttribute("name", userName));
             return "You are now at The Quadrant.";
         } else {
-            updateDialogueLocation(dialogueId, clocktower);
+            updateDialogueLocation(dialogueId, clocktower.newCopy().setAttribute("name", userName));
             return "You get lost, but manage to find your way back to the Clock Tower.";
         }
     }
@@ -79,9 +79,9 @@ public class DialogueTrackerDemo extends DialogueTracker {
         dialogueLocations.put(dialogueId, location);
     }
 
-    private User getUserData(String dialogueId){
+    private User getUserData(String dialogueId, String userName){
         if (!dialogueLocations.containsKey(dialogueId)){
-            dialogueLocations.put(dialogueId, clocktower);
+            dialogueLocations.put(dialogueId, clocktower.newCopy().setAttribute("name", userName));
         } return dialogueLocations.get(dialogueId);
     }
 

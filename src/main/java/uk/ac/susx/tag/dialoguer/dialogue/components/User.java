@@ -43,6 +43,10 @@ public class User {
         this.attributes = attributes;
     }
 
+    public User newCopy(){
+        return new User(latitude, longitude, uncertaintyRadius, attributes);
+    }
+
     public boolean isLocationDataPresent() {
         return locationData;
     }
@@ -93,5 +97,9 @@ public class User {
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
+    }
+
+    public User setAttribute(String key, String value){
+        attributes.put(key, value); return this;
     }
 }
