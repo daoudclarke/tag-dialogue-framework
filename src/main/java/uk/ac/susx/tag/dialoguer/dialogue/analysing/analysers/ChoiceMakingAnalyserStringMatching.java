@@ -7,6 +7,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.ChoiceMakingAnalyserStringMatchingFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
+import uk.ac.susx.tag.dialoguer.knowledge.linguistic.EnglishStemmer;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Numbers;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 
@@ -65,13 +66,19 @@ public class ChoiceMakingAnalyserStringMatching  extends Analyser {
 //                            .map(Numbers::convertIfNumber)
 //                            .collect(Collectors.toList())
 //            );
+            EnglishStemmer stemmer = new EnglishStemmer();
 
-            Set<String> uniqueWordsRemaining = Sets.newHashSet(SimplePatterns.whitespaceRegex.split(userMessage));
+
+            Set<String> uniqueWordsRemaining = Sets.newHashSet(SimplePatterns.whitespaceRegex.split(userMessage)).stream()
+                                                .map(stemmer::stem)
+                                                .collect(Collectors.toSet());
 
             // Given each possible choice, find the maximum fraction of words in the user message that appear in a choice
             double maxFractionDescribed = choices.stream()
                     .mapToDouble((c) -> {
-                        Set<String> uniqueWordsInChoice = Sets.newHashSet(SimplePatterns.splitByWhitespace(SimplePatterns.stripPunctuation(c.toLowerCase())));
+                        Set<String> uniqueWordsInChoice = Sets.newHashSet(SimplePatterns.splitByWhitespace(SimplePatterns.stripPunctuation(c.toLowerCase()))).stream()
+                                .map(stemmer::stem)
+                                .collect(Collectors.toSet());
                         return 1 - (Sets.difference(uniqueWordsRemaining, uniqueWordsInChoice).size() / (double) uniqueWordsRemaining.size());
                     })
                     .max().getAsDouble();

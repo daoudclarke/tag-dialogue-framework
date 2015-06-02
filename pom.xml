@@ -130,6 +130,12 @@
             <version>${jetty.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>gov.sandia.foundry</groupId>
+            <artifactId>porter-stemmer</artifactId>
+            <version>1.4</version>
+        </dependency>
+
         <!-- Jersey -->
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
