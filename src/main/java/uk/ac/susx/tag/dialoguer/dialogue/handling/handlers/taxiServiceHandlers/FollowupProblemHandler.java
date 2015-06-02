@@ -67,13 +67,13 @@ public class FollowupProblemHandler implements Handler.ProblemHandler {
                 handleEntity(followup,dialogue,accepting, TaxiServiceHandler.timeSlot);
                 break;
             case TaxiServiceHandler.followupLocationIntent:
-                if(followup.areSlotsFilled(Sets.newHashSet(TaxiServiceHandler.destinationSlot))){
-                    handleEntity(followup,dialogue,accepting,TaxiServiceHandler.destinationSlot);
-                } else {
-                    if(followup.areSlotsFilled(Sets.newHashSet(TaxiServiceHandler.pickupSlot))){
+                if(followup.areSlotsFilled(Sets.newHashSet(TaxiServiceHandler.destinationSlot))) {
+                    handleEntity(followup, dialogue, accepting, TaxiServiceHandler.destinationSlot);
+                }
+                if(followup.areSlotsFilled(Sets.newHashSet(TaxiServiceHandler.pickupSlot))){
                         handleEntity(followup,dialogue,accepting, TaxiServiceHandler.pickupSlot);
                     }
-                }
+
                 break;
             case TaxiServiceHandler.followupNegativeIntent:
                 rejectEntity(followup,dialogue,accepting);

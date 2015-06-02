@@ -12,7 +12,10 @@ import java.io.IOException;
 public class TaxiServiceHandlerFactory implements HandlerFactory{
     @Override
     public Handler readJson(String resourcePath) throws IOException {
-            return Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, TaxiServiceHandler.class);
+            TaxiServiceHandler h = Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, TaxiServiceHandler.class);
+            h.setupDatabase();
+            return h;
+
     }
 
     @Override
