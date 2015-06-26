@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import uk.ac.susx.tag.classificationframework.classifiers.NaiveBayesClassifier;
 import uk.ac.susx.tag.classificationframework.datastructures.Document;
 import uk.ac.susx.tag.classificationframework.datastructures.Instance;
+import uk.ac.susx.tag.classificationframework.datastructures.ModelState;
 import uk.ac.susx.tag.classificationframework.datastructures.ProcessedInstance;
 import uk.ac.susx.tag.classificationframework.featureextraction.filtering.TokenFilterRelevanceStopwords;
 import uk.ac.susx.tag.classificationframework.featureextraction.pipelines.FeatureExtractionPipeline;
@@ -34,6 +35,7 @@ public class QuestionPropertyModel {
 
     private NaiveBayesClassifier nbc;
     private FeatureExtractionPipeline fep;
+    private List<Instance> instances;
     private AbstractSequenceClassifier<CoreLabel> classifier;
 
     /**
@@ -44,9 +46,9 @@ public class QuestionPropertyModel {
         PipelineBuilder.OptionList ol = new PipelineBuilder.OptionList();
         ol.add("tokeniser", ImmutableMap.of("type", "basic", "normalise_urls", "true", "lower_case", "true"));
         ol.add("unigrams", true);
-        ol.add("remove_stopwords", true);
         fep = new PipelineBuilder().build(ol);
         nbc = new NaiveBayesClassifier();
+        this.instances = new ArrayList<>();
         nbc.empiricalLabelPriors(false);
         this.classifier = classifier;
     }
@@ -77,6 +79,7 @@ public class QuestionPropertyModel {
                         classifTokens += l.value() + " ";
                     }
                 }
+                this.instances.add(new Instance(t[0], classifTokens, "n/a"));
                 instances.add(fep.extractFeatures(new Instance(t[0], classifTokens, "n/a")));
             }
         } catch (FileNotFoundException e) {
@@ -95,6 +98,31 @@ public class QuestionPropertyModel {
         nbc.train(instances, 1);
 
     }
+
+    public void save(String directory) {
+        ModelState ms = new ModelState(nbc, instances, fep);
+        File dir = new File(directory);
+        try {
+            ms.save(dir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void load(String directory) {
+        File dir = new File(directory);
+        try {
+            ModelState ms = ModelState.load(dir);
+            nbc = ms.classifier;
+            fep = ms.pipeline;
+            instances = ms.trainingDocuments;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Returns the set of properly labels and their associated probabilities
