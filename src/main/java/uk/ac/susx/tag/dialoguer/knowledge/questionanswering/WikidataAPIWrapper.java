@@ -16,7 +16,7 @@ import java.util.*;
 /**
  * Wikidata Interface provides means of interaction with Wikidata through different APIs
  */
-public class WikidataInterface {
+public class WikidataAPIWrapper {
 
     private static final String wdApi = "https://www.wikidata.org/w/api.php";
     private static final String wdqApi = "https://wdq.wmflabs.org/api";
@@ -24,7 +24,7 @@ public class WikidataInterface {
 
     private transient Client client;
 
-    public WikidataInterface() {
+    public WikidataAPIWrapper() {
         client = ClientBuilder.newClient();
     }
 
@@ -94,44 +94,9 @@ public class WikidataInterface {
      * @return
      */
     public String getPropertyValue(String entityStr, String propertyStr){
-
-        WebTarget target = client.target(wdApi);
-
-        //Search for the Entity trem
-        String entityId = "";
-        {
-            target = target
-                    .queryParam("format", "json")
-                    .queryParam("language", "en")
-                    .queryParam("action", "wbsearchentities")
-                    .queryParam("search", entityStr);
-            //Get results
-            String s = target.request()
-                    .header("Accept", "application/json")
-                    .buildGet().invoke(String.class);
-            WDSearch wds = new Gson().fromJson(s, WDSearch.class);
-            entityId = wds.search.get(0).id.substring(1); //Strip first character
-        }
-
-        //Search for Property term
-        String propertyId = null;
-        {
-            target = target
-                    .queryParam("format", "json")
-                    .queryParam("language", "en")
-                    .queryParam("type", "property")
-                    .queryParam("action", "wbsearchentities")
-                    .queryParam("search", propertyStr);
-            //Get results
-            String s = target.request()
-                    .header("Accept", "application/json")
-                    .buildGet().invoke(String.class);
-            WDSearch wds = new Gson().fromJson(s, WDSearch.class);
-            propertyId = wds.search.get(0).id.substring(1); //Strip first character
-        }
-
-        return getPropertyValue(Integer.parseInt(entityId), Integer.parseInt(propertyId));
+        return getPropertyValue(getEntityId(entityStr),getPropertyId(propertyStr));
     }
+
     /**
      * Returns value of some property of some entity
      * @param entityId ID of entity for which the property should be explored
@@ -276,7 +241,7 @@ public class WikidataInterface {
     /**
      * Finds entity by name and returns its ID
      * @param entityStr Entity name for which the ID is to be found
-     * @return ID of then entity
+     * @return ID of the entity
      */
     public int getEntityId(String entityStr) {
         WebTarget target = client.target(wdApi);
@@ -301,6 +266,33 @@ public class WikidataInterface {
         }
 
         return Integer.parseInt(entityId);
+    }
+
+    /**
+     * Finds property by name and returns its ID
+     * @param propertyStr Property name for which the ID is to be found
+     * @return ID of the entity
+     */
+    public int getPropertyId(String propertyStr) {
+        WebTarget target = client.target(wdApi);
+
+        String propertyId = null;
+        {
+            target = target
+                    .queryParam("format", "json")
+                    .queryParam("language", "en")
+                    .queryParam("type", "property")
+                    .queryParam("action", "wbsearchentities")
+                    .queryParam("search", propertyStr);
+            //Get results
+            String s = target.request()
+                    .header("Accept", "application/json")
+                    .buildGet().invoke(String.class);
+            WDSearch wds = new Gson().fromJson(s, WDSearch.class);
+            propertyId = wds.search.get(0).id.substring(1); //Strip first character
+        }
+
+        return Integer.parseInt(propertyId);
     }
 
     public void close() {

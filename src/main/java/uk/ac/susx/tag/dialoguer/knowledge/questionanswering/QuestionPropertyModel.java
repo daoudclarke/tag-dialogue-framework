@@ -101,10 +101,12 @@ public class QuestionPropertyModel {
     public void save(String directory) {
         ModelState ms = new ModelState(nbc, instances, fep);
         File dir = new File(directory);
-        try {
-            ms.save(dir);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (dir.exists()) {
+            try {
+                ms.save(dir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

@@ -8,7 +8,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.knowledge.questionanswering.QuestionPropertyModel;
-import uk.ac.susx.tag.dialoguer.knowledge.questionanswering.WikidataInterface;
+import uk.ac.susx.tag.dialoguer.knowledge.questionanswering.WikidataAPIWrapper;
 
 import java.io.IOException;
 import java.util.*;
@@ -26,7 +26,7 @@ public class NerQuestionAnalyser extends Analyser {
     private String naiveBayesFolder;
     private AbstractSequenceClassifier<CoreLabel> classifier;
     private QuestionPropertyModel qpm;
-    private WikidataInterface wi;
+    private WikidataAPIWrapper wi;
 
     private static final String interrogatives[] =
             { "who", "which", "what", "whose", "whom", "where", "whence", "whither", "when", "how", "why"};
@@ -46,10 +46,10 @@ public class NerQuestionAnalyser extends Analyser {
 
         qpm = new QuestionPropertyModel(classifier);
         //qpm.train("wikibase/annotated_fb_data_train_wikidata.txt");
-        //qpm.save("wikibase");
-        qpm.load(naiveBayesFolder);
+        qpm.save(naiveBayesFolder);
+        //qpm.load(naiveBayesFolder);
 
-        wi = new WikidataInterface();
+        wi = new WikidataAPIWrapper();
     }
 
     @Override
