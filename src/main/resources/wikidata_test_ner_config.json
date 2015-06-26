@@ -1,3 +1,4 @@
 {
-  "serializedClassifier" : "edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz"
+  "serializedClassifier" : "edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz",
+  "naiveBayesFolder" : "wikibase"
 }
