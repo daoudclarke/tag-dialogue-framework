@@ -41,7 +41,7 @@ public class DialogueTrackerDemo extends DialogueTracker {
     }
 
     private String moveDialogueLocationAndConfirm(String dialogueId, String userMessage, String userName){
-        userMessage = userMessage.toLowerCase();
+        userMessage = userMessage.toLowerCase().trim();
         if (userMessage.contains("clock") || userMessage.contains("tower")){
             updateDialogueLocation(dialogueId, clocktower.newCopy().setAttribute("name", userName));
             return "You are now at the Clock Tower.";
@@ -86,7 +86,7 @@ public class DialogueTrackerDemo extends DialogueTracker {
     }
 
     private boolean isMoveStatement(String userMessage){
-        userMessage = userMessage.toLowerCase();
+        userMessage = userMessage.toLowerCase().trim();
         return userMessage.startsWith("go to") || userMessage.startsWith("walk to") || userMessage.startsWith("move to") || userMessage.startsWith("goto");
     }
 }
