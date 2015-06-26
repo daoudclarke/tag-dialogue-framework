@@ -7,7 +7,7 @@
     <!--suppress MavenRedundantGroupId -->
     <groupId>uk.ac.susx.tag</groupId>
     <artifactId>dialoguer</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <inceptionYear>2015</inceptionYear>
 
     <parent>
@@ -175,6 +175,17 @@
             <version>${jersey.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>edu.stanford.nlp</groupId>
+            <artifactId>stanford-corenlp</artifactId>
+            <version>3.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.stanford.nlp</groupId>
+            <artifactId>stanford-corenlp</artifactId>
+            <version>3.5.2</version>
+            <classifier>models</classifier>
+        </dependency>
 
     </dependencies>
 

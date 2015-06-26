@@ -5,5 +5,8 @@
         "to" : "destination location",
         "number" : "capacity",
         "datetime" : "pickup time"
-    }
+    },
+"dbHost" : "localhost",
+  "dbPort" : "27017",
+  "dbName" : "parcel"
 }

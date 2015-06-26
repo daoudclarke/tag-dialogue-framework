@@ -1,0 +1,32 @@
+{
+    "handler" : {
+        "name" : "wikidata",
+        "path" : "wikidata_test_handler.json"
+    },
+    "analysers" : [
+        {
+            "name" : "ner_question",
+            "path" : "wikidata_test_ner_config.json"
+        }
+    ],
+    "humanReadableSlotNames" : {
+        "product_query" : "product query",
+        "phone_number"  : "phone number"
+    },
+    "necessarySlotsPerIntent" : {
+        "buy_general" : ["product_query"]
+    },
+    "responseTemplates" : {
+        "factual_qa" : {
+            "templates" : [
+                "Your answer is {wd_answer}",
+            ]
+        },
+        "unknown" : {
+            "templates" : [
+                "I don't know how to handle that request.",
+                "I don't understand.  Please try again."
+            ]
+        }
+    }
+}

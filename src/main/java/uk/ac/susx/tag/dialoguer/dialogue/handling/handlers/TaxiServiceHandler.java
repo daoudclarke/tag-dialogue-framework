@@ -11,11 +11,14 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.IntentMerger;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.TaxiServiceHandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.taxiServiceHandlers.*;
+import uk.ac.susx.tag.dialoguer.knowledge.database.product.ProductMongoDB;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +57,8 @@ public class TaxiServiceHandler extends Handler{
     public static final String choiceNameSlot="choice_name";
     public static final List<String> allSlots=Lists.newArrayList(capacitySlot,timeSlot,destinationSlot,pickupSlot);
 
+    public static final String here="here";
+
     private Map<String, String> humanReadableSlotNames; //read from config file
 
     //response/focus/state names
@@ -63,6 +68,13 @@ public class TaxiServiceHandler extends Handler{
     public static final String confirmCompletionResponse="confirm_completion";
     public static final String repeatChoiceResponse="repeat_choice";
     public static final String unknownResponse="unknown";
+
+    //db config
+    private String dbHost;
+    private String dbPort;
+    private String dbName;
+    protected transient ProductMongoDB db;
+    private static int searchradius=10;
 
     public TaxiServiceHandler(){
 
@@ -75,6 +87,18 @@ public class TaxiServiceHandler extends Handler{
         super.registerProblemHandler(new OrderTaxiMethod());
     }
 
+    public void setupDatabase()throws Dialoguer.DialoguerException {
+        try {
+            if(!dbHost.equals("")) {
+                db = new ProductMongoDB(dbHost, Integer.parseInt(dbPort), dbName);
+            } else {
+                db= new ProductMongoDB();
+
+            }
+        } catch (UnknownHostException e) {
+            throw new Dialoguer.DialoguerException("Cannot connect to database host", e);
+        }
+    }
     /****
      *
      * @param intents
@@ -127,6 +151,16 @@ public class TaxiServiceHandler extends Handler{
                                             return i;})
                         .collect(Collectors.toList());
 
+        //potentially add default pickup location
+
+        intents=intents.stream()
+                        .map(i->{if(i.isName(orderTaxiIntent)&&!i.getUnfilledSlotNames(Sets.newHashSet(pickupSlot)).isEmpty()){i.fillSlot(pickupSlot,defaultvalue(pickupSlot));}return i;})
+                        .collect(Collectors.toList());
+
+        //convert "here" to current location
+        intents=intents.stream().map(i->{if(i.isSlotTypeFilledWith(pickupSlot,here)||i.isSlotTypeFilledWith(destinationSlot,here)){updateHere(i, d, db);}
+                                            return i;})
+                .collect(Collectors.toList());
 
 
         intents.stream().forEach(intent->System.err.println(intent.toString()));
@@ -174,6 +208,7 @@ public class TaxiServiceHandler extends Handler{
     }
 
 
+
     /*****
      *
      * @return
@@ -193,8 +228,10 @@ public class TaxiServiceHandler extends Handler{
      */
     @Override
     public void close() throws Exception {
-
+        db.close();
     }
+
+
 
     /****
      *
@@ -315,6 +352,8 @@ public class TaxiServiceHandler extends Handler{
                 return "4";
             case TaxiServiceHandler.timeSlot:
                 return "ASAP";
+            case pickupSlot:
+                return "here";
             default:
                 return null;
         }
@@ -369,5 +408,27 @@ public class TaxiServiceHandler extends Handler{
             //already in human readable
             return timestring;
         }
+    }
+    private static Intent updateHere(Intent i,Dialogue d,ProductMongoDB db){
+        String nearestMerchant;
+        try{nearestMerchant=db.merchantQueryByLocation(d.getUserData().getLatitude(), d.getUserData().getLongitude(), searchradius+d.getUserData().getUncertaintyRadius(), 1).get(0).toShortString();}
+        catch(IndexOutOfBoundsException e){
+            nearestMerchant=null;
+        }
+        List<Intent.Slot> newslots=new ArrayList<>();
+        List<String> deleteslots=new ArrayList<>();
+        for(Intent.Slot s:i.getSlotCollection()){
+            if(s.value.equals(here)){
+                if(nearestMerchant==null){
+                    deleteslots.add(s.name);
+                } else {
+                    newslots.add(new Intent.Slot(s.name, nearestMerchant, 0, 0));
+                }
+            }
+        }
+        newslots.stream().forEach(s->i.replaceSlot(s));
+        deleteslots.stream().forEach(n->i.clearSlots(n));
+        return i;
+
     }
 }
