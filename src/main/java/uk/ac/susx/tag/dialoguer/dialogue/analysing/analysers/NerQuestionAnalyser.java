@@ -23,6 +23,7 @@ import java.util.*;
  */
 public class NerQuestionAnalyser extends Analyser {
     private String serializedClassifier;
+    private String naiveBayesFolder;
     private AbstractSequenceClassifier<CoreLabel> classifier;
     private QuestionPropertyModel qpm;
     private WikidataInterface wi;
@@ -34,6 +35,7 @@ public class NerQuestionAnalyser extends Analyser {
     public NerQuestionAnalyser(NerQuestionAnalyser nerQuestionAnalyser) {
         super();
         serializedClassifier = nerQuestionAnalyser.serializedClassifier;
+        naiveBayesFolder = nerQuestionAnalyser.naiveBayesFolder;
         try {
             classifier = CRFClassifier.getClassifier(serializedClassifier);
         } catch (IOException e) {
@@ -43,7 +45,9 @@ public class NerQuestionAnalyser extends Analyser {
         }
 
         qpm = new QuestionPropertyModel(classifier);
-        qpm.train("wikibase/annotated_fb_data_train_wikidata.txt");
+        //qpm.train("wikibase/annotated_fb_data_train_wikidata.txt");
+        //qpm.save("wikibase");
+        qpm.load(naiveBayesFolder);
 
         wi = new WikidataInterface();
     }
