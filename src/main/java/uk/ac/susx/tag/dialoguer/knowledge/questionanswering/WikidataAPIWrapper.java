@@ -16,7 +16,7 @@ import java.util.*;
 /**
  * Wikidata Interface provides means of interaction with Wikidata through different APIs
  */
-public class WikidataAPIWrapper {
+public class WikidataAPIWrapper implements AutoCloseable{
 
     private static final String wdApi = "https://www.wikidata.org/w/api.php";
     private static final String wdqApi = "https://wdq.wmflabs.org/api";
