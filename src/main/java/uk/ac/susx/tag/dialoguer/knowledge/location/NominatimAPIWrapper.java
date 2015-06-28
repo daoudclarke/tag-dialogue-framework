@@ -64,13 +64,13 @@ public class NominatimAPIWrapper implements AutoCloseable {
         return results;
     }
 
-    public NomResult queryReverseAPI(String lat, String lng) {
+    public NomResult queryReverseAPI(double lat, double lng) {
         return queryReverseAPI(lat, lng, 18);
     }
-    public NomResult queryReverseAPI(String lat, String lng, int zoom) {
+    public NomResult queryReverseAPI(double lat, double lng, int zoom) {
         return queryReverseAPI(lat, lng, zoom, 0);
     }
-    public NomResult queryReverseAPI(String lat, String lng, int zoom, int addressDetails) {
+    public NomResult queryReverseAPI(double lat, double lng, int zoom, int addressDetails) {
         WebTarget target = client.target(nominatimRApi);
 
         target = target
