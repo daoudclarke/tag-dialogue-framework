@@ -9,11 +9,14 @@ import javax.ws.rs.client.WebTarget;
 import java.util.List;
 import java.util.Map;
 
+//TODO: Javadoc
+
 /**
  * Created by Daniel Saska on 6/26/2015.
  */
 public class NominatimAPIWrapper implements AutoCloseable {
     private static final String nominatimApi = "http://nominatim.openstreetmap.org/search";
+    private static final String nominatimRApi = "http://nominatim.openstreetmap.org/reverse";
 
     private String clientEmail;
 
@@ -59,6 +62,34 @@ public class NominatimAPIWrapper implements AutoCloseable {
 
         NomResult results[] = new Gson().fromJson(s, NomResult[].class);
         return results;
+    }
+
+    public NomResult queryReverseAPI(String lat, String lng) {
+        return queryReverseAPI(lat, lng, 18);
+    }
+    public NomResult queryReverseAPI(String lat, String lng, int zoom) {
+        return queryReverseAPI(lat, lng, zoom, 0);
+    }
+    public NomResult queryReverseAPI(String lat, String lng, int zoom, int addressDetails) {
+        WebTarget target = client.target(nominatimRApi);
+
+        target = target
+                .queryParam("lat", lat)
+                .queryParam("long", lng)
+                .queryParam("email", clientEmail)
+                .queryParam("format", "json")
+                .queryParam("zoom", zoom);
+
+        if (addressDetails == 0 || addressDetails == 1) {
+            target = target.queryParam("addressdetails", addressDetails);
+        }
+
+        String s = target.request()
+                .header("Accept", "application/json")
+                .buildGet().invoke(String.class);
+
+        NomResult result = new Gson().fromJson(s, NomResult.class);
+        return result;
     }
 
     public class NomResult {
