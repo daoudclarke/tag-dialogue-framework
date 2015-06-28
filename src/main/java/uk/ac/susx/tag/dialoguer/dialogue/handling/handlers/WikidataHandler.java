@@ -1,21 +1,12 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
-import com.google.gson.Gson;
-
-import com.google.gson.internal.LinkedTreeMap;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.WikidataHandlerFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-import uk.ac.susx.tag.dialoguer.knowledge.questionanswering.WikidataInterface;
+import uk.ac.susx.tag.dialoguer.knowledge.questionanswering.WikidataAPIWrapper;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +21,7 @@ import java.util.Map;
 
 public class WikidataHandler extends Handler {
 
-    WikidataInterface wi = new WikidataInterface();
+    WikidataAPIWrapper wi = new WikidataAPIWrapper();
 
 
     @Override

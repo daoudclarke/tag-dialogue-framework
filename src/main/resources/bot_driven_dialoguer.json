@@ -1,0 +1,94 @@
+{
+  "handler" : {
+    "name" : "question_handler",
+    "path" : "bot_driven_question_handler.json"
+  },
+  "analysers" : [
+    {
+      "name" : "wit.ai",
+      "path" : "bot_driven_wit_config_help.json"
+    },
+    {
+      "name" : "wit.ai",
+      "path" : "bot_driven_wit_config_landmark.json"
+    },
+    {
+      "name" : "wit.ai",
+      "path" : "bot_driven_wit_config_location.json"
+    },
+    {
+      "name" : "simple_yes_no"
+    }
+  ],
+  "humanReadableSlotNames" : {
+    "product_query" : "product query",
+    "phone_number"  : "phone number"
+  },
+  "responseTemplates" : {
+    "q_location" : {
+      "templates" : [
+        "Where are you?"
+      ]
+    },
+    "q_enable_gps" : {
+      "templates" : [
+        "Do you know how to enable GPS on your device so we can find your location?"
+      ],
+      "requestingYesNo":"yes"
+    },
+    "q_need_help_gps" : {
+      "templates" : [
+        "Do you want help turning on your GPS?"
+      ],
+      "requestingYesNo":"yes"
+    },
+    "q_medical_help" : {
+      "templates" : [
+        "Do you need medical help at your location?"
+      ],
+      "requestingYesNo":"yes"
+    },
+    "q_landmarks" : {
+      "templates" : [
+        "Can you see any landmarks at your position (such as McDonnalds or Starbucks)? Closer is better."
+      ]
+    },
+    "q_add_landmarks" : {
+      "templates" : [
+        "Can you see any more landmarks?"
+      ]
+    },
+    "no_landmark_found" : {
+      "templates" : [
+        "Could not find any landmarks with such names. Try different one."
+      ]
+    },
+    "q_location_confirm" : {
+      "templates" : [
+        "Is \"{address}\" the correct address to which an ambulance shoud be dispatched?"
+      ],
+      "requestingYesNo":"yes"
+    },
+    "medical_help" : {
+      "templates" : [
+        "Medical help has beed dispatched to your location, if you need medical advice meanwhile, tweet @HUMAN_DOCTOR"
+      ]
+    },
+    "wait_gps" : {
+      "templates" : [
+        "Please turn on your GPS and once you are finished, notice me with geo-tagged tweet."
+      ]
+    },
+    "help_gps" : {
+      "templates" : [
+        "I am not able to help you with this task right now, please search on the internet as to how to enable the GPS."
+      ]
+    },
+    "unknown" : {
+      "templates" : [
+        "I don't know how to handle that request.",
+        "I don't understand.  Please try again."
+      ]
+    }
+  }
+}

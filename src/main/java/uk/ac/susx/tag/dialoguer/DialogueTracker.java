@@ -2,6 +2,7 @@ package uk.ac.susx.tag.dialoguer;
 
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
+import uk.ac.susx.tag.dialoguer.knowledge.location.NominatimAPIWrapper;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -217,10 +218,10 @@ public class DialogueTracker implements AutoCloseable {
 
         //TEMP
         ///new WikidataHandler().analyse("", null);
-
+        ///new NominatimAPIWrapper().queryAPI("HSBC,Manchester,United Kingdom", 200, 1, 1);
 
         // get task name from command line arguments
-        String task="wikidata_test";
+        String task="bot_driven";
         if(args.length>0){
             task=args[0];
         }
