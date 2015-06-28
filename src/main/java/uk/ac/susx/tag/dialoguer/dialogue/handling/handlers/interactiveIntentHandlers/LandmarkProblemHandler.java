@@ -51,7 +51,7 @@ public class LandmarkProblemHandler implements Handler.ProblemHandler {
             }
             List<List<NominatimAPIWrapper.NomResult>> areas = new ArrayList<>();
             buildAreas(0, instances, areas);
-            System.err.println(areas.size());
+            dialogue.putToWorkingMemory("n_loc", Integer.toString(areas.size()));
             if(areas.size() == 1) { //Found precise position
                 dialogue.putToWorkingMemory("location_processed", areas.get(0).get(0).display_name);
                 dialogue.pushFocus(InteractiveHandler.aMedicalHelp);
@@ -62,7 +62,7 @@ public class LandmarkProblemHandler implements Handler.ProblemHandler {
         dialogue.pushFocus(InteractiveHandler.qAddLandmarks);
     }
 
-    public void buildAreas(int lmark, List<NominatimAPIWrapper.NomResult> instances[], List<List<NominatimAPIWrapper.NomResult>> areas) {
+    private void buildAreas(int lmark, List<NominatimAPIWrapper.NomResult> instances[], List<List<NominatimAPIWrapper.NomResult>> areas) {
         if (lmark == 0) {
             for (int i = 0; i < instances[lmark].size(); ++i) {
                 List<NominatimAPIWrapper.NomResult> area = new ArrayList<>();

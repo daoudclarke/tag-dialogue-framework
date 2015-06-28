@@ -55,7 +55,7 @@
     },
     "q_add_landmarks" : {
       "templates" : [
-        "Can you see any more landmarks?"
+        "Can you see any more landmarks? There are currently {n_loc} different locations you could be at given your info."
       ]
     },
     "no_landmark_found" : {

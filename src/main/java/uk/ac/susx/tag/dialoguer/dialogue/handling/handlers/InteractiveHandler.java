@@ -56,6 +56,7 @@ public class InteractiveHandler extends Handler {
     public static final String landmarkSlot="landmark";
     public static final String yesNoSlot="yes_no";
     public static final String addressSlot="address";
+    public static final String nLocationsSlot = "n_loc";
 
     public InteractiveHandler() {
 
@@ -68,12 +69,6 @@ public class InteractiveHandler extends Handler {
 
     @Override
     public Response handle(List<Intent> intents, Dialogue dialogue) {
-
-        //TODO: Handle intents
-        //TODO: Add knowledge
-        //TODO: Respond
-        //TODO: Change state
-
         boolean complete=useFirstProblemHandler(intents, dialogue, null); //is there a problem handler?
         if(!complete){ //no problem handler or intent handler
             dialogue.pushFocus(unknownResponse);
@@ -115,6 +110,10 @@ public class InteractiveHandler extends Handler {
         switch(focus) {
             case qLocationConfirm:
                 responseVariables.put(addressSlot, d.getFromWorkingMemory("location_processed"));
+                break;
+            case qAddLandmarks:
+                responseVariables.put(nLocationsSlot, d.getFromWorkingMemory("n_loc"));
+
         }
         return new Response(focus,responseVariables);
 
