@@ -49,7 +49,7 @@ public class WikidataAPIWrapper implements AutoCloseable{
         List<String> results = new ArrayList<>();
         int nRes = wdqr.items.size();
         if (nRes == 0) {
-            //TODO: ERROR
+            return "";
         }
         boolean overflow = false;
         if (nRes > maxResponses) {
