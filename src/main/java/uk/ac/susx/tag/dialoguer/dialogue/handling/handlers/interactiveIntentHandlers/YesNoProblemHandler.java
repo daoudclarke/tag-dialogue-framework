@@ -5,7 +5,6 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.InteractiveHandler;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -25,7 +24,8 @@ public class YesNoProblemHandler implements Handler.ProblemHandler {
         boolean statematch2 = dialogue.peekTopFocus().equals(InteractiveHandler.aGpsHelp);
         boolean statematch3 = dialogue.peekTopFocus().equals(InteractiveHandler.aMedicalHelp);
         boolean statematch4 = dialogue.peekTopFocus().equals(InteractiveHandler.aLocationConfirm);
-        return  intentmatch && (statematch1 || statematch2 || statematch3 || statematch4);
+        boolean statematch5 = dialogue.peekTopFocus().equals(InteractiveHandler.aGpsLocConfirm);
+        return  intentmatch && (statematch1 || statematch2 || statematch3 || statematch4 || statematch5);
     }
 
     @Override
@@ -43,8 +43,8 @@ public class YesNoProblemHandler implements Handler.ProblemHandler {
 
         if (dialogue.peekTopFocus().equals(InteractiveHandler.aEnableGps)) {
             if(intent.getName().equals("yes")) {
-                dialogue.pushFocus(InteractiveHandler.waitGps);
-                //TODO:Continue this branch
+                dialogue.pushFocus(InteractiveHandler.aWaitGps);
+                dialogue.pushFocus(InteractiveHandler.qWaitGps);
             }
             else if(intent.getName().equals("no")) {
                 dialogue.pushFocus(InteractiveHandler.aGpsHelp);
@@ -75,6 +75,14 @@ public class YesNoProblemHandler implements Handler.ProblemHandler {
                 dialogue.clearWorkingIntents();
                 dialogue.pushFocus(InteractiveHandler.aLocation);
                 dialogue.pushFocus(InteractiveHandler.qLocation);
+            }
+        } else if (dialogue.peekTopFocus().equals(InteractiveHandler.aGpsLocConfirm)) {
+            if(intent.getName().equals("yes")) {
+                dialogue.pushFocus(InteractiveHandler.aMedicalHelp);
+                dialogue.pushFocus(InteractiveHandler.qMedicalHelp);
+            } else if(intent.getName().equals("no")) {
+                dialogue.clearWorkingIntents();
+                //TODO: Ask what is wrong about it and try to use as much of it as possible as basis for Landmark-based search
             }
         }
     }
