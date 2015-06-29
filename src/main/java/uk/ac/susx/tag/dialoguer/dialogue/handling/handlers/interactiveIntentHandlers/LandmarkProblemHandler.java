@@ -23,14 +23,21 @@ public class LandmarkProblemHandler implements Handler.ProblemHandler {
     public boolean isInHandleableState(List<Intent> intents, Dialogue dialogue) {
         if (dialogue.isEmptyFocusStack()) { return false; }
         boolean intentmatch = intents.stream().filter(i->i.getName().equals(InteractiveHandler.landmarkIntent)).count()>0;
+        boolean intentmatch2 = intents.stream().filter(i->i.getName().equals(InteractiveHandler.choiceIntent)).count()>0;
         boolean statematch = dialogue.peekTopFocus().equals(InteractiveHandler.aLandmarks);
-        return intentmatch && statematch;
+        return (intentmatch || intentmatch2) && statematch;
     }
 
     @Override
     public void handle(List<Intent> intents, Dialogue dialogue, Object resource) {
         System.err.println("landmark intent handler fired");
-        Intent intent = intents.stream().filter(i->i.isName(InteractiveHandler.landmarkIntent)).findFirst().orElse(null);
+        Intent intent = intents.stream().filter(i->i.isName(InteractiveHandler.choiceIntent)).findFirst().orElse(null);
+        if (intent != null) {
+            landmarks.remove(Integer.parseInt(intent.getSlotByType("choice").iterator().next().value));
+            dialogue.pushFocus(InteractiveHandler.qAddLandmarks);
+            return;
+        }
+        intent = intents.stream().filter(i->i.isName(InteractiveHandler.landmarkIntent)).findFirst().orElse(null);
         if(intent.getSlotByType("place") != null && !intent.getSlotByType("place").iterator().next().value.equals("")) {
 
             NominatimAPIWrapper.NomResult quick_results[] = nom.queryAPI(intent.getSlotByType("place").iterator().next().value.replace("¥","")+ ", " + dialogue.getFromWorkingMemory("location_given"), 1, 0, 0);
@@ -57,6 +64,15 @@ public class LandmarkProblemHandler implements Handler.ProblemHandler {
             }
             if (areas.size() == 0) {
                 //TODO: Give multiple-choce and select the most likely one
+                dialogue.setChoices(landmarks);
+                String landmarkList = "";
+                for (String l : landmarks) {
+                    landmarkList += l + ", ";
+                }
+                landmarkList = landmarkList.substring(0,landmarkList.length() - 2);
+                dialogue.putToWorkingMemory("landmarks", landmarkList);
+                dialogue.pushFocus(InteractiveHandler.qLandmarksRemove);
+                return;
             }
         }
         dialogue.pushFocus(InteractiveHandler.qAddLandmarks);

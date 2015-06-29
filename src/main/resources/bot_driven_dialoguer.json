@@ -18,6 +18,10 @@
     },
     {
       "name" : "simple_yes_no"
+    },
+    {
+      "name" : "simple_choice",
+      "sourceId" : "simple_choice"
     }
   ],
   "humanReadableSlotNames" : {
@@ -60,7 +64,12 @@
     },
     "no_landmark_found" : {
       "templates" : [
-        "Could not find any landmarks with such names. Try different one."
+        "Could not find any landmarks with such name. Try different one."
+      ]
+    },
+    "q_remove_landmark" : {
+      "templates" : [
+        "Please select landmarks to remove from search from following list: {landmarks}."
       ]
     },
     "q_location_confirm" : {

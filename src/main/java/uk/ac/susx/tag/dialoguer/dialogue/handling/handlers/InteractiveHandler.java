@@ -28,6 +28,7 @@ public class InteractiveHandler extends Handler {
     public static final String yesNoIntent="yes_no";
     public static final String landmarkIntent = "landmark";
     public static final String helpIntent = "help";
+    public static final String choiceIntent = "choice";
 
     //Response/focus/state names
     public static final String initial = "initial";
@@ -48,6 +49,7 @@ public class InteractiveHandler extends Handler {
     public static final String aMedicalHelp="q_medical_help";
     public static final String qLandmarks="q_landmarks";//Asks user whether he can see any landmarks such as KFC or other points of interest
     public static final String aLandmarks="q_landmarks";
+    public static final String qLandmarksRemove="q_remove_landmark";
     public static final String landmarkNotFound="no_landmark_found";//NO instances of such landmark were found
     public static final String qAddLandmarks="q_add_landmarks";//Asks user for more landmarks
     public static final String qLocationConfirm="q_location_confirm";//Asks user to confirm location for very last time
@@ -57,6 +59,7 @@ public class InteractiveHandler extends Handler {
     //Slot names
     public static final String locationSlot="location";
     public static final String landmarkSlot="landmark";
+    public static final String landmarksSlot="landmarks";
     public static final String yesNoSlot="yes_no";
     public static final String addressSlot="address";
     public static final String nLocationsSlot = "n_loc";
@@ -118,6 +121,10 @@ public class InteractiveHandler extends Handler {
                 break;
             case qAddLandmarks:
                 responseVariables.put(nLocationsSlot, d.getFromWorkingMemory("n_loc"));
+                break;
+            case qLandmarksRemove:
+                responseVariables.put(landmarksSlot, d.getFromWorkingMemory("landmarks"));
+                break;
 
         }
         return new Response(focus,responseVariables);
