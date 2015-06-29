@@ -69,12 +69,18 @@
       ],
       "requestingYesNo":"yes"
     },
+    "q_confirm_gps_location" : {
+      "templates" : [
+        "Adress estimated from GPS data is \"{address}\" - is that correct?"
+      ],
+      "requestingYesNo":"yes"
+    },
     "medical_help" : {
       "templates" : [
         "Medical help has beed dispatched to your location, if you need medical advice meanwhile, tweet @HUMAN_DOCTOR"
       ]
     },
-    "wait_gps" : {
+    "q_wait_gps" : {
       "templates" : [
         "Please turn on your GPS and once you are finished, notice me with geo-tagged tweet."
       ]
