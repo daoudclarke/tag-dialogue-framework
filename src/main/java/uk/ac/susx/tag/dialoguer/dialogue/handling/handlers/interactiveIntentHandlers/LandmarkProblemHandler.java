@@ -52,6 +52,7 @@ public class LandmarkProblemHandler implements Handler.ProblemHandler {
             List<List<NominatimAPIWrapper.NomResult>> areas = new ArrayList<>();
             buildAreas(0, instances, areas);
             dialogue.putToWorkingMemory("n_loc", Integer.toString(areas.size()));
+            //TODO: Handle 0 locations found containing all landmarks
             if(areas.size() == 1) { //Found precise position
                 dialogue.putToWorkingMemory("location_processed", areas.get(0).get(0).display_name);
                 dialogue.pushFocus(InteractiveHandler.aMedicalHelp);
