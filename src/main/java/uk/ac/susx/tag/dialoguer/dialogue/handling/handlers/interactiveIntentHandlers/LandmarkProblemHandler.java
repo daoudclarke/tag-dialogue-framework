@@ -8,16 +8,15 @@ import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.InteractiveHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.location.NominatimAPIWrapper;
 import uk.ac.susx.tag.dialoguer.knowledge.location.RadiusAssigner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Daniel Saska on 6/27/2015.
  */
 public class LandmarkProblemHandler implements Handler.ProblemHandler {
     NominatimAPIWrapper nom = new NominatimAPIWrapper();
+    List<String> landmarks = new ArrayList<>();
+
     private static final int maxDiamter = 500;
 
     @Override
@@ -39,25 +38,25 @@ public class LandmarkProblemHandler implements Handler.ProblemHandler {
                 dialogue.pushFocus(InteractiveHandler.landmarkNotFound);
                 return;
             }
-            dialogue.appendToWorkingMemory("landmark", intent.getSlotByType("place").iterator().next().value.replace("¥",""), "¥");
+            landmarks.add(intent.getSlotByType("place").iterator().next().value);
 
 
-            String encoded_landmarks = dialogue.getFromWorkingMemory("landmark");
-            String landmarks[] = encoded_landmarks.split("¥");
-            List<NominatimAPIWrapper.NomResult> instances[] = new List[landmarks.length];
-            for (int i = 0; i < landmarks.length; ++i) {
-                NominatimAPIWrapper.NomResult results[] = nom.queryAPI(landmarks[i] + ", " + dialogue.getFromWorkingMemory("location_given"), 200, 0, 1);
+            List<NominatimAPIWrapper.NomResult> instances[] = new List[landmarks.size()];
+            for (int i = 0; i < landmarks.size(); ++i) {
+                NominatimAPIWrapper.NomResult results[] = nom.queryAPI(landmarks.get(i) + ", " + dialogue.getFromWorkingMemory("location_given"), 200, 0, 1);
                 instances[i] = Arrays.asList(results);
             }
             List<List<NominatimAPIWrapper.NomResult>> areas = new ArrayList<>();
             buildAreas(0, instances, areas);
             dialogue.putToWorkingMemory("n_loc", Integer.toString(areas.size()));
-            //TODO: Handle 0 locations found containing all landmarks
-            if(areas.size() == 1) { //Found precise position
+            if (areas.size() == 1) { //Found precise position
                 dialogue.putToWorkingMemory("location_processed", areas.get(0).get(0).display_name);
                 dialogue.pushFocus(InteractiveHandler.aMedicalHelp);
                 dialogue.pushFocus(InteractiveHandler.qMedicalHelp);
                 return;
+            }
+            if (areas.size() == 0) {
+                //TODO: Give multiple-choce and select the most likely one
             }
         }
         dialogue.pushFocus(InteractiveHandler.qAddLandmarks);
