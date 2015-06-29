@@ -2,6 +2,7 @@ package uk.ac.susx.tag.dialoguer.knowledge.location;
 
 import com.google.gson.Gson;
 import com.jcabi.immutable.Array;
+import edu.berkeley.nlp.util.ArrayUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -61,8 +62,56 @@ public class NominatimAPIWrapper implements AutoCloseable {
                 .buildGet().invoke(String.class);
 
         NomResult results[] = new Gson().fromJson(s, NomResult[].class);
+        if (limit > 50 && results.length == 50) {
+            //Possibility of more results
+            String exclude = "";
+            for (NomResult nr : results) {
+                exclude += nr.place_id + ",";
+            }
+            exclude = exclude.substring(0, exclude.length()-1);
+            return getMore(query, polygonGeojson, addressDetails, exclude, results, limit - 50);
+        }
         return results;
     }
+
+    private NomResult[] getMore(String query,  int polygonGeojson, int addressDetails, String foundId, NomResult results[], int remainingLimit) {
+        WebTarget target = client.target(nominatimApi);
+
+
+        target = target
+                .queryParam("q", query)
+                .queryParam("email", clientEmail)
+                .queryParam("format", "json")
+                .queryParam("exclude_place_ids", foundId)
+                .queryParam("limit", remainingLimit);
+        if (polygonGeojson == 0 || polygonGeojson == 1) {
+            target = target.queryParam("polygon_geojson", polygonGeojson);
+        }
+        if (addressDetails == 0 || addressDetails == 1) {
+            target = target.queryParam("addressdetails", addressDetails);
+        }
+        String s = target.request()
+                .header("Accept", "application/json")
+                .buildGet().invoke(String.class);
+
+        NomResult results2[] = new Gson().fromJson(s, NomResult[].class);
+        if (results2.length > 0) {
+            int aLen = results.length;
+            int bLen = results2.length;
+            NomResult[] c= new NomResult[aLen+bLen];
+            System.arraycopy(results, 0, c, 0, aLen);
+            System.arraycopy(results2, 0, c, aLen, bLen);
+            if (remainingLimit > 50 && results2.length == 50) {
+                for (NomResult nr : results2) {
+                    foundId += "," + nr.place_id;
+                }
+                return getMore(query, polygonGeojson, addressDetails, foundId, c, remainingLimit - 50);
+            }
+            return c;
+        }
+        return results;
+    }
+
 
     public NomResult queryReverseAPI(double lat, double lon) {
         return queryReverseAPI(lat, lon, 18);
