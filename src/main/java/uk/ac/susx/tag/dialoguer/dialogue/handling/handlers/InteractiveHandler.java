@@ -37,10 +37,13 @@ public class InteractiveHandler extends Handler {
     public static final String confirmResponse="confirm"; //Asks user to confirm his choice
     public static final String qEnableGps="q_enable_gps"; //Asks user whether he can enable gps
     public static final String aEnableGps="a_enable_gps";
-    public static final String waitGps="wait_gps";
+    public static final String aWaitGps ="a_wait_gps";
+    public static final String qWaitGps ="q_wait_gps";
     public static final String helpGps="help_gps";
     public static final String qGpsHelp="q_need_help_gps"; //Asks user whether he wants help with tunring on the gps
     public static final String aGpsHelp="a_need_help_gps";
+    public static final String qGpsLocConfirm="q_confirm_gps_location"; //Asks user whether he wants help with tunring on the gps
+    public static final String aGpsLocConfirm="a_confirm_gps_location";
     public static final String qMedicalHelp="q_medical_help"; //Asks user whether he needs abulance called
     public static final String aMedicalHelp="q_medical_help";
     public static final String qLandmarks="q_landmarks";//Asks user whether he can see any landmarks such as KFC or other points of interest
@@ -65,6 +68,7 @@ public class InteractiveHandler extends Handler {
         super.registerProblemHandler(new LocationProblemHandler());
         super.registerProblemHandler(new HelpProblemHelper());
         super.registerProblemHandler(new LandmarkProblemHandler());
+        super.registerProblemHandler(new GpsProblemHandler());
     }
 
     @Override
@@ -108,6 +112,7 @@ public class InteractiveHandler extends Handler {
         }
         Map<String, String> responseVariables = new HashMap<>();
         switch(focus) {
+            case qGpsLocConfirm:
             case qLocationConfirm:
                 responseVariables.put(addressSlot, d.getFromWorkingMemory("location_processed"));
                 break;
