@@ -21,7 +21,8 @@
     },
     {
       "name" : "simple_choice",
-      "sourceId" : "simple_choice"
+      "sourceId" : "simple_choice",
+      "path" : "bot_driven_simple_choice.json"
     }
   ],
   "humanReadableSlotNames" : {
