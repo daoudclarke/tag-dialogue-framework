@@ -1,5 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.factories;
 
+import uk.ac.susx.tag.dialoguer.Dialoguer;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.Analyser;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers.ChoiceMakingAnalyserStringMatching;
 
@@ -15,8 +16,10 @@ public class ChoiceMakingAnalyserStringMatchingFactory implements AnalyserFactor
         return "simple_choice";
     }
 
-    @Override
     public Analyser readJson(String resourcePath) throws IOException {
-        return new ChoiceMakingAnalyserStringMatching(0.5);
+        if (resourcePath == null) {
+            return new ChoiceMakingAnalyserStringMatching(0.5, false);
+        }
+        return new ChoiceMakingAnalyserStringMatching(Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, ChoiceMakingAnalyserStringMatching.class));
     }
 }

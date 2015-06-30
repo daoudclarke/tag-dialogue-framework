@@ -31,9 +31,32 @@ public class LandmarkProblemHandler implements Handler.ProblemHandler {
     @Override
     public void handle(List<Intent> intents, Dialogue dialogue, Object resource) {
         System.err.println("landmark intent handler fired");
+        //TODO: Handle no choice
+        //TOOD: Handle all choice
+        //TODO: Handle null choice
         Intent intent = intents.stream().filter(i->i.isName(InteractiveHandler.choiceIntent)).findFirst().orElse(null);
         if (intent != null) {
-            landmarks.remove(Integer.parseInt(intent.getSlotByType("choice").iterator().next().value));
+            Iterator<Intent.Slot> it = intent.getSlotByType("choice").iterator();
+            while (it.hasNext()) {
+                int idx = Integer.parseInt(it.next().value);
+                landmarks.set(idx, null);
+            }
+            {
+                int i = landmarks.size();
+                while (i --> 0) {
+                    if (landmarks.get(i) == null) {
+                        landmarks.remove(i);
+                    }
+                }
+            }
+            List<NominatimAPIWrapper.NomResult> instances[] = new List[landmarks.size()];
+            for (int i = 0; i < landmarks.size(); ++i) {
+                NominatimAPIWrapper.NomResult results[] = nom.queryAPI(landmarks.get(i) + ", " + dialogue.getFromWorkingMemory("location_given"), 200, 0, 1);
+                instances[i] = Arrays.asList(results);
+            }
+            List<List<NominatimAPIWrapper.NomResult>> areas = new ArrayList<>();
+            buildAreas(0, instances, areas);
+            dialogue.putToWorkingMemory("n_loc", Integer.toString(areas.size()));
             dialogue.pushFocus(InteractiveHandler.qAddLandmarks);
             return;
         }

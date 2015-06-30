@@ -32,6 +32,7 @@ public class Intent {
     // Default intents names that may have default behaviour
     public static final String nullChoice = "null_choice"; // User is explicitly rejecting a list of choices
     public static final String noChoice = "no_choice";     // User is ignoring the presented choices
+    public static final String allChoice = "all_choice";   // User is selects everything in multi-choice
     public static final String choice = "choice";          //User is making a choice. The choice will be in the "choice" slot.
     public static final String no = "no";                  //User wishes to say no or decline or is ignoring a request for confirmation
     public static final String yes = "yes";                //User wishes to say yes or confirm
@@ -128,12 +129,12 @@ public class Intent {
 
     public Intent replaceSlot(Slot s){
         slots.removeAll(s.name);
-        slots.put(s.name,s);
+        slots.put(s.name, s);
         return this;
     }
 
     public Intent fillSlots(Collection<Slot> slotlist){
-        slotlist.stream().filter(s->!slots.values().contains(s)).forEach(s->slots.put(s.name,s));
+        slotlist.stream().filter(s->!slots.values().contains(s)).forEach(s -> slots.put(s.name, s));
         return this;
     }
 
@@ -184,6 +185,13 @@ public class Intent {
     public static Intent buildChoiceIntent(String userMessage, int choiceNumber){
         return new Intent(choice, userMessage)
                 .fillSlot("choice", Integer.toString(choiceNumber), 0, 0);
+    }
+    public static Intent buildMultichoiceIntent(String userMessage, List<Integer> choices){
+        Intent intent = new Intent(choice, userMessage);
+        for (int choiceNumber : choices) {
+            intent = intent.fillSlot("choice", Integer.toString(choiceNumber), 0, 0);
+        }
+        return intent;
     }
 
 /**********************************************
