@@ -18,7 +18,7 @@ public class ChoiceMakingAnalyserStringMatchingFactory implements AnalyserFactor
 
     public Analyser readJson(String resourcePath) throws IOException {
         if (resourcePath == null) {
-            return new ChoiceMakingAnalyserStringMatching(0.5, false);
+            return new ChoiceMakingAnalyserStringMatching(0.5);
         }
         return new ChoiceMakingAnalyserStringMatching(Dialoguer.readObjectFromJsonResourceOrFile(resourcePath, ChoiceMakingAnalyserStringMatching.class));
     }
