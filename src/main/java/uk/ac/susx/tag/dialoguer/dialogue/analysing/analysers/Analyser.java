@@ -1,6 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
-import org.reflections.Reflections;
+//import org.reflections.Reflections;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
@@ -47,21 +47,21 @@ public abstract class Analyser implements AutoCloseable {
 
     public boolean isSourceIdPresent() { return sourceId != null; }
 
-    /**
-     * Find and build analyser with a given name, and json setup file.
-     */
-    public static Analyser getAnalyser(String analyserName, String analyserSetupJson, String sourceId) throws IllegalAccessException, InstantiationException, IOException {
-        Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.analysing.factories");
-
-        Set<Class<? extends AnalyserFactory>> foundAnalyserFactories = reflections.getSubTypesOf(AnalyserFactory.class);
-
-        for (Class<? extends AnalyserFactory> klass : foundAnalyserFactories){
-            AnalyserFactory analyserFactory = klass.newInstance();
-            if (analyserFactory.getName().equals(analyserName)) {
-                Analyser a = analyserFactory.readJson(analyserSetupJson);
-                a.sourceId = sourceId;
-                return a;
-            }
-        } throw new IOException("Unable to load analyser; analyser name not found.");
-    }
+//    /**
+//     * Find and build analyser with a given name, and json setup file.
+//     */
+//    public static Analyser getAnalyser(String analyserName, String analyserSetupJson, String sourceId) throws IllegalAccessException, InstantiationException, IOException {
+//        Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.analysing.factories");
+//
+//        Set<Class<? extends AnalyserFactory>> foundAnalyserFactories = reflections.getSubTypesOf(AnalyserFactory.class);
+//
+//        for (Class<? extends AnalyserFactory> klass : foundAnalyserFactories){
+//            AnalyserFactory analyserFactory = klass.newInstance();
+//            if (analyserFactory.getName().equals(analyserName)) {
+//                Analyser a = analyserFactory.readJson(analyserSetupJson);
+//                a.sourceId = sourceId;
+//                return a;
+//            }
+//        } throw new IOException("Unable to load analyser; analyser name not found.");
+//    }
 }

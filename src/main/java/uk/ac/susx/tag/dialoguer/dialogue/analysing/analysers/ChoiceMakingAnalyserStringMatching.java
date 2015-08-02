@@ -1,8 +1,5 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
-import org.apache.commons.lang3.StringUtils;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.ChoiceMakingAnalyserStringMatchingFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
@@ -15,9 +12,9 @@ import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Tries to determine what choices the user is making when the Handler has indicated that it has presented choices to
@@ -46,18 +43,21 @@ public class ChoiceMakingAnalyserStringMatching  extends Analyser {
         choiceFraction = other.choiceFraction;
     }
 
-    public static final Set<String> nullChoicePhrases = Sets.newHashSet(
+    private static final String[] nullChoicePhraseArray = {
             "none",
             "no",
             "none of them",
             "no thanks",
             "neither"
-    );
+    };
+    public static final Set<String> nullChoicePhrases =
+            new HashSet<>(Arrays.asList(nullChoicePhraseArray));
 
-    /**
-     * Check whether latest message is choice by seeing how well described the user comment is by the closest matching
-     * choice presented to the user.
-     */
+
+            /**
+             * Check whether latest message is choice by seeing how well described the user comment is by the closest matching
+             * choice presented to the user.
+             */
     public static boolean isChoice(Dialogue d, List<String> choices, double threshold) {
         // Strip message to basics
         String userMessage = d.getStrippedNoStopwordsText();

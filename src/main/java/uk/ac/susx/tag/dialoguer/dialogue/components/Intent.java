@@ -1,16 +1,14 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Represents an intent of the user. An intent has a name, and potentially text associated with it (optional).
@@ -41,7 +39,7 @@ public class Intent {
 
     private String name;
     private String text;
-    private Multimap<String, Slot> slots;
+    private HashMap<String, HashSet<Slot>> slots;
     private String source;
 
 
@@ -50,10 +48,10 @@ public class Intent {
     }
 
     public Intent(String name, String text){
-        this(name, text, ArrayListMultimap.create());
+        this(name, text, new HashMap<String, HashSet<Slot>>());
     }
 
-    public Intent(String name, String text, Multimap<String, Slot> slots){
+    public Intent(String name, String text, HashMap<String, HashSet<Slot>> slots){
         this.name = name;
         this.text = text;
         this.slots = slots;
@@ -90,7 +88,10 @@ public class Intent {
 
     public void copySlots(List<Intent> intents){
         for (Intent i : intents) {
-            i.getSlotCollection().forEach(this::fillSlot);
+            Collection<Slot> slots = i.getSlotCollection();
+            for (Slot slot : slots) {
+                fillSlot(slot);
+            }
         }
     }
 
@@ -99,57 +100,88 @@ public class Intent {
     }
 
     public boolean isSlotTypeFilledWith(String type, String value){
-        return getSlotByType(type).stream()
-                .anyMatch(slot -> slot.value.equals(value));
+        Collection<Slot> slots = getSlotByType(type);
+        for (Slot slot : slots) {
+            if (slot.value.equals(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    public static boolean areSlotsFilled(List<Intent> intents, Map<String, Set<String>> necessarySlotsPerIntent){
-        // Only return true if all slots are field on all intents
-        return intents.stream().allMatch(i -> i.areSlotsFilled(necessarySlotsPerIntent.get(i.getName())));
+//    public static boolean areSlotsFilled(List<Intent> intents, Map<String, Set<String>> necessarySlotsPerIntent){
+//        // Only return true if all slots are field on all intents
+//        return intents.stream().allMatch(i -> i.areSlotsFilled(necessarySlotsPerIntent.get(i.getName())));
+//    }
+
+    @Deprecated
+    public HashSet<String> getUnfilledSlotNames(Set<String> requiredSlotNames){
+        HashSet<String> results = new HashSet<>(requiredSlotNames);
+        results.removeAll(slots.keySet());
+        return results;
     }
 
-    public Sets.SetView<String> getUnfilledSlotNames(Set<String> requiredSlotNames){
-        return Sets.difference(requiredSlotNames, slots.keySet());
-    }
-
+    @Deprecated
     public boolean areSlotsFilled(Set<String> requiredSlotNames){
         return getUnfilledSlotNames(requiredSlotNames).isEmpty();
     }
 
+    public boolean isSlotFilled(String requiredSlotName) {
+        return slots.containsKey(requiredSlotName);
+    }
+
     public Intent fillSlot(String name, String value, int start, int end){
-        slots.put(name, new Slot(name, value, start, end));  return this;
+        HashSet<Slot> slotsToFill = ensureSlotExists(name);
+        slotsToFill.add(new Slot(name, value, start, end));
+        return this;
     }
     public Intent fillSlot(String name, String value){
         return fillSlot(name, value, 0, 0);
     }
 
     public Intent fillSlot(Slot s){
-        slots.put(s.name, s); return this;
-    }
-
-    public Intent replaceSlot(Slot s){
-        slots.removeAll(s.name);
-        slots.put(s.name, s);
+        HashSet<Slot> slotToFill = ensureSlotExists(s.name);
+        slotToFill.add(s);
         return this;
     }
 
+    public Intent replaceSlot(Slot s){
+        slots.remove(s.name);
+        return fillSlot(s);
+    }
+
     public Intent fillSlots(Collection<Slot> slotlist){
-        slotlist.stream().filter(s->!slots.values().contains(s)).forEach(s -> slots.put(s.name, s));
+        for (Slot s : slotlist) {
+            fillSlot(s);
+        }
         return this;
     }
 
     public Intent clearSlots(String name){
-        slots.removeAll(name);
+        slots.remove(name);
         return this;
     }
 
     public Collection<Slot> getSlotByType(String slotType){ return slots.get(slotType);}
-    public List<String> getSlotValuesByType(String slotType){return this.getSlotByType(slotType).stream().map(slot->slot.value).collect(Collectors.toList());}
-    public Multimap<String, Slot> getSlots() { return slots; }
-    public Collection<Slot> getSlotCollection() {
-        return slots.values();
+
+    public List<String> getSlotValuesByType(String slotType){
+        ArrayList<String> results = new ArrayList<>();
+        for (Slot slot : slots.get(slotType)) {
+            results.add(slot.value);
+        }
+        return results;
     }
-    public void setSlots(Multimap<String, Slot> slots) { this.slots = slots; }
+
+//    public Multimap<String, Slot> getSlots() { return slots; }
+    public Collection<Slot> getSlotCollection() {
+        HashSet<Slot> allSlots = new HashSet<>();
+        for (HashSet<Slot> slotSet : slots.values()) {
+            allSlots.addAll(slotSet);
+        }
+        return allSlots;
+    }
+
+//    public void setSlots(Multimap<String, Slot> slots) { this.slots = slots; }
     public boolean isAnySlotFilled() { return !slots.isEmpty(); }
 
     public static class Slot {
@@ -198,43 +230,78 @@ public class Intent {
  * Utility
  **********************************************/
     public List<Intent> toList(){
-        return Lists.newArrayList(this);
+        ArrayList<Intent> results = new ArrayList<>();
+        results.add(this);
+        return results;
     }
 
     /**
      * Return true if an intent with name=*name* is in *intents*.
      */
     public static boolean isPresent(String name, List<Intent> intents){
-        return intents.stream().anyMatch(i -> i.isName(name));
+        for (Intent intent : intents) {
+            if (intent.isName(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    public static Intent getIfPresentElseNull(String name, List<Intent> intents){
-        return intents.stream().filter(i -> i.isName(name)).findFirst().orElse(null);
-    }
+//    public static Intent getIfPresentElseNull(String name, List<Intent> intents){
+//        for (Intent intent : intents) {
+//            if (intent.isName(name)) {
+//                return intent;
+//            }
+//        }
+//        return null;
+//    }
 
     /**
      * Get first intent from *intents* which has the source specified.
      * If no such intent, then return null.
      */
     public static Intent getFirstIntentFromSource(String source, List<Intent> intents){
-        return intents.stream()
-                .filter(i -> i.getSource().equals(source))
-                .findFirst()
-                .orElse(null);
+        for (Intent intent : intents) {
+            if (intent.getSource().equals(source)) {
+                return intent;
+            }
+        }
+        return null;
     }
+
+//    /**
+//     * Create a new list from those elements in *intents* which have the source specified.
+//     * Empty list will be returned if there are no such intents.
+//     */
+//    public static List<Intent> getAllIntentsFromSource(String source, List<Intent> intents){
+//        ArrayList<Intent> results = new ArrayList<>();
+//        for (Intent intent : intents) {
+//            if (intent.getSource().equals(source)) {
+//                results.add(intent);
+//            }
+//        }
+//        return results;
+//    }
+
+//    @Override
+//    public String toString(){
+//        return Dialoguer.gson.toJson(this);
+//    }
 
     /**
-     * Create a new list from those elements in *intents* which have the source specified.
-     * Empty list will be returned if there are no such intents.
+     * Create a set of slots for the given name if it doesn't exist, and return it,
+     * or return the one that's already there.
+     * @param name The name of the slot
+     * @return The associated set of slots
      */
-    public static List<Intent> getAllIntentsFromSource(String source, List<Intent> intents){
-        return intents.stream()
-                .filter(i -> i.getSource().equals(source))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public String toString(){
-        return Dialoguer.gson.toJson(this);
+    private HashSet<Slot> ensureSlotExists(String name) {
+        HashSet<Slot> slotsToFill;
+        if (!slots.containsKey(name)) {
+            slotsToFill = new HashSet<>();
+            slots.put(name, slotsToFill);
+        } else {
+            slotsToFill = slots.get(name);
+        }
+        return slotsToFill;
     }
 }

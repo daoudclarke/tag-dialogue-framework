@@ -1,6 +1,5 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
-import com.google.common.collect.Lists;
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 
 import java.util.ArrayList;
@@ -8,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 /**
  * NOTE TO DEVS: This class MUST be serialisable and deserialisable using Dialoguer.gson
@@ -142,7 +140,12 @@ public class Dialogue {
  * State management
  ***********************************************/
     public void setStates(List<String> states){ this.states = states; }
-    public void setState(String state){ this.states = Lists.newArrayList(state); }
+
+    public void setState(String state){
+        this.states = new ArrayList<>();
+        states.add(state);
+    }
+
     public List<String> getStates(){ return states; }
     public void clearStates() { states.clear(); }
 
@@ -198,11 +201,11 @@ public class Dialogue {
     public User getUserData(){ return user; }
     public List<Message> getMessageHistory(){ return history; }
     public int getCurrentMessageNumber(){ return history.size(); }
-    public List<Message> getUserMessageHistory(){
-        return history.stream()
-                .filter(Message::isUserMessage)
-                .collect(Collectors.toList());
-    }
+//    public List<Message> getUserMessageHistory(){
+//        return history.stream()
+//                .filter(Message::isUserMessage)
+//                .collect(Collectors.toList());
+//    }
 
     public boolean isLastMessageByUser() {
         return !history.isEmpty() && getLastMessage().isUserMessage();
@@ -245,9 +248,11 @@ public class Dialogue {
      * Get and remove all tracked intents in whatever state they are.
      */
     public List<Intent> popAutoQueriedIntents(){
-        List<Intent> autoQueriedIntents = autoQueryTracker.intents.stream()
-                                              .map(IntentMatch::getIntent)
-                                              .collect(Collectors.toList());
+        List<Intent> autoQueriedIntents = new ArrayList<>();
+        for (IntentMatch match : autoQueryTracker.intents) {
+            autoQueriedIntents.add(match.getIntent());
+        }
+
         autoQueryTracker.reset();
         return autoQueriedIntents;
     }
@@ -284,7 +289,7 @@ public class Dialogue {
  * Utility
  ***********************************************/
 
-    @Override
-    public String toString(){ return Dialoguer.gson.toJson(this); }
+//    @Override
+//    public String toString(){ return Dialoguer.gson.toJson(this); }
 
 }

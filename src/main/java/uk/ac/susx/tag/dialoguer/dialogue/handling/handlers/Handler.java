@@ -1,6 +1,5 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
-import org.reflections.Reflections;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
@@ -14,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * It is the function of the Handler to determine what response to give to a user's intents, and what side-effects to
@@ -139,14 +137,14 @@ public abstract class Handler implements AutoCloseable {
         } return intentIndexToResponse;
     }
 
-    /**
-     * Return a list that contains those Intents in *intents* that CANNOT be handled by the intent handlers.
-     */
-    protected List<Intent> filterOutHandleableIntents(List<Intent> intents){
-        return intents.stream()
-                .filter(i -> !intentHandlers.containsKey(i.getName()))
-                .collect(Collectors.toList());
-    }
+//    /**
+//     * Return a list that contains those Intents in *intents* that CANNOT be handled by the intent handlers.
+//     */
+//    protected List<Intent> filterOutHandleableIntents(List<Intent> intents){
+//        return intents.stream()
+//                .filter(i -> !intentHandlers.containsKey(i.getName()))
+//                .collect(Collectors.toList());
+//    }
 
 /********************************************************
  * Problem handling
@@ -195,25 +193,29 @@ public abstract class Handler implements AutoCloseable {
 //    }
 
     protected boolean useFirstProblemHandler(List<Intent> intents, Dialogue dialogue, Object resource){
-        ProblemHandler handler = problemHandlers.stream()
-                                .filter(h -> h.isInHandleableState(intents, dialogue))
-                                .findFirst().orElse(null);
+        ProblemHandler handler = null;
+        for (ProblemHandler problemHandler : problemHandlers) {
+            if (problemHandler.isInHandleableState(intents, dialogue)) {
+                handler = problemHandler;
+                break;
+            }
+        }
         if (handler != null) {
             handler.handle(intents, dialogue, resource);
             return true;
         } else return false;
     }
 
-    protected boolean useApplicableProblemHandlers(List<Intent> intents, Dialogue dialogue, Object resource){
-        List<ProblemHandler> handlers = problemHandlers.stream()
-                .filter(h -> h.isInHandleableState(intents, dialogue))
-                .collect(Collectors.toList());
-
-        if (!handlers.isEmpty()){
-            handlers.forEach(h -> h.handle(intents, dialogue, resource));
-            return true;
-        } else return false;
-    }
+//    protected boolean useApplicableProblemHandlers(List<Intent> intents, Dialogue dialogue, Object resource){
+//        List<ProblemHandler> handlers = problemHandlers.stream()
+//                .filter(h -> h.isInHandleableState(intents, dialogue))
+//                .collect(Collectors.toList());
+//
+//        if (!handlers.isEmpty()){
+//            handlers.forEach(h -> h.handle(intents, dialogue, resource));
+//            return true;
+//        } else return false;
+//    }
 /********************************************************
  * Creation and factory related methods
  ********************************************************/
@@ -225,19 +227,19 @@ public abstract class Handler implements AutoCloseable {
         return getFactory().getName();
     }
 
-    /**
-     * Get a new instance of a handler with a specified name, using the setup file given.
-     */
-    public static Handler getHandler(String handlerName, String handlerSetupJson) throws IOException, IllegalAccessException, InstantiationException {
-        Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.handling.factories");
-
-        Set<Class<? extends HandlerFactory>> foundHandlerFactories = reflections.getSubTypesOf(HandlerFactory.class);
-
-        for (Class<? extends HandlerFactory> klass : foundHandlerFactories){
-            HandlerFactory handlerFactory = klass.newInstance();
-            if (handlerFactory.getName().equals(handlerName)) {
-                return handlerFactory.readJson(handlerSetupJson);
-            }
-        } throw new IOException("Unable to load handler; handler name not found.");
-    }
+//    /**
+//     * Get a new instance of a handler with a specified name, using the setup file given.
+//     */
+//    public static Handler getHandler(String handlerName, String handlerSetupJson) throws IOException, IllegalAccessException, InstantiationException {
+//        Reflections reflections = new Reflections("uk.ac.susx.tag.dialoguer.dialogue.handling.factories");
+//
+//        Set<Class<? extends HandlerFactory>> foundHandlerFactories = reflections.getSubTypesOf(HandlerFactory.class);
+//
+//        for (Class<? extends HandlerFactory> klass : foundHandlerFactories){
+//            HandlerFactory handlerFactory = klass.newInstance();
+//            if (handlerFactory.getName().equals(handlerName)) {
+//                return handlerFactory.readJson(handlerSetupJson);
+//            }
+//        } throw new IOException("Unable to load handler; handler name not found.");
+//    }
 }

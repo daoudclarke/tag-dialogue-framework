@@ -1,8 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
-import jersey.repackaged.com.google.common.collect.Lists;
-
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +22,7 @@ public class User {
     private Map<String, String> attributes;
 
     public User(){
-        this(new HashMap<>());
+        this(new HashMap<String, String>());
     }
 
     public User(Map<String, String> attributes) {
@@ -32,7 +30,7 @@ public class User {
     }
 
     public User(double latitude, double longitude, double uncertaintyRadius) {
-        this(latitude, longitude, uncertaintyRadius, new HashMap<>());
+        this(latitude, longitude, uncertaintyRadius, new HashMap<String, String>());
     }
 
     public User(double latitude, double longitude, double uncertaintyRadius, Map<String, String> attributes) {
@@ -72,7 +70,7 @@ public class User {
     }
 
     public List<Double> getLocationData(){
-        return Lists.newArrayList(latitude, longitude, uncertaintyRadius);
+        return Arrays.asList(latitude, longitude, uncertaintyRadius);
     }
 
     public double getUncertaintyRadius() {

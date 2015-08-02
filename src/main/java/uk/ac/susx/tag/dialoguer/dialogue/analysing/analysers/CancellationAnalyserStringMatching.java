@@ -1,12 +1,13 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
-import com.google.common.collect.Sets;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.CancellationAnalyserStringMatchingFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +23,7 @@ import java.util.Set;
 public class CancellationAnalyserStringMatching extends Analyser {
 
     // When a message wholly consists of any of these phrases, it is immediately considered a cancellation message
-    public static Set<String> cancellationPhrases = Sets.newHashSet(
+    private static final String[] cancellationPhraseArray = {
             "nevermind",
             "exit",
             "changed my mind",
@@ -42,8 +43,10 @@ public class CancellationAnalyserStringMatching extends Analyser {
             "forget it",
             "no bye",
             "stop",
-            "end"
-    );
+            "end"};
+    public static Set<String> cancellationPhrases =
+            new HashSet<>(Arrays.asList(cancellationPhraseArray));
+
 
     public boolean isCancellation(Dialogue d) {
         // If after trimming unnecessary information from the message, it now exactly matches a cancellation phrase, then return true else false
@@ -52,7 +55,7 @@ public class CancellationAnalyserStringMatching extends Analyser {
 
     @Override
     public List<Intent> analyse(String message, Dialogue d) {
-        return isCancellation(d)? Intent.buildCancelIntent(message).toList() : new ArrayList<>();
+        return isCancellation(d)? Intent.buildCancelIntent(message).toList() : new ArrayList<Intent>();
     }
 
     @Override

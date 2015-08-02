@@ -1,7 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
-import com.google.common.collect.Lists;
-
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -23,12 +22,13 @@ public class IntentMatch {
     private String nextSlotRequired;
 
     private IntentMatch(){
-        this(null, new HashSet<>());
+        this(null, new HashSet<String>());
     }
 
     public IntentMatch(Intent intent, Set<String> necessarySlots) {
         this.intent = intent;
-        this.necessarySlotsRemaining = necessarySlots==null? new HashSet<>() : copyAndTrimFilledSlots(intent, necessarySlots);
+        this.necessarySlotsRemaining = necessarySlots == null
+                ? new HashSet<String>() : copyAndTrimFilledSlots(intent, necessarySlots);
         this.nextSlotRequired = null;
         readyNextSlot();
     }
@@ -65,11 +65,18 @@ public class IntentMatch {
     }
 
     public static boolean areSlotsFilled(List<IntentMatch> intentMatches){
-        return intentMatches.stream().allMatch(IntentMatch::areSlotsFilled);
+        for (IntentMatch match : intentMatches) {
+            if (!match.areSlotsFilled()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public List<IntentMatch> toList(){
-        return Lists.newArrayList(this);
+        ArrayList<IntentMatch> matches = new ArrayList<>();
+        matches.add(this);
+        return matches;
     }
 
     private void readyNextSlot(){
@@ -81,6 +88,10 @@ public class IntentMatch {
     }
 
     private Set<String> copyAndTrimFilledSlots(Intent i, Set<String> necessarySlots){
-        return i.getUnfilledSlotNames(necessarySlots).copyInto(new HashSet<>());
+        Set<String> result = new HashSet<>();
+        for (String name : i.getUnfilledSlotNames(necessarySlots)) {
+            result.add(name);
+        }
+        return result;
     }
 }

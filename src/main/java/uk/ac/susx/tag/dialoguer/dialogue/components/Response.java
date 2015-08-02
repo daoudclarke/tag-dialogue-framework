@@ -52,7 +52,7 @@ public class Response {
     private boolean requestingYesNo;
 
     public Response(String responseName) {
-        this(responseName, new HashMap<>());
+        this(responseName, new HashMap<String, String>());
     }
 
     public Response(String responseName, Map<String, String> responseVariables){
