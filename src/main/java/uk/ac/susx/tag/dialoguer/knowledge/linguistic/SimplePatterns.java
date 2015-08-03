@@ -1,8 +1,8 @@
 package uk.ac.susx.tag.dialoguer.knowledge.linguistic;
 
-import com.google.common.collect.Lists;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -18,7 +18,7 @@ public class SimplePatterns {
     public static Pattern whitespaceRegex = Pattern.compile("\\s+");
     public static Pattern numberRegex = Pattern.compile("[0-9]");
 
-    public static Pattern politenessRegex = StringUtils.buildDisjunctionWithWordBoundaries(Lists.newArrayList(
+    public static Pattern politenessRegex = StringUtils.buildDisjunctionWithWordBoundaries(Arrays.asList(
             "i('| w(oul|u))?d (like|lyk)( to)?",
             "i wa?nt( to)?",
             "ca?n i h(ave|v)",
@@ -30,7 +30,7 @@ public class SimplePatterns {
             "s(or)?ry"
     ));
 
-    public static Pattern simplePolitenessRegex = StringUtils.buildDisjunctionWithWordBoundaries(Lists.newArrayList(
+    public static Pattern simplePolitenessRegex = StringUtils.buildDisjunctionWithWordBoundaries(Arrays.asList(
             "tha?n?(ks|x)",
             "tha?nk (u|you)",
             "pl(ease|s|z|izzle)",
@@ -38,7 +38,7 @@ public class SimplePatterns {
             "s(or)?ry"
     ));
 
-    public static Pattern hesitationRegex = StringUtils.buildDisjunctionWithWordBoundaries(Lists.newArrayList(
+    public static Pattern hesitationRegex = StringUtils.buildDisjunctionWithWordBoundaries(Arrays.asList(
             "a+h+",
             "e+r+m*",
             "o+h+",
@@ -47,7 +47,7 @@ public class SimplePatterns {
             "u+r*m+"
     ));
 
-    public static Pattern botReferenceRegex = StringUtils.buildDisjunctionWithWordBoundaries(Lists.newArrayList(
+    public static Pattern botReferenceRegex = StringUtils.buildDisjunctionWithWordBoundaries(Arrays.asList(
             "(why|y) do?n'?t (u|you)",
             "ca?n (you|u)",
             "i'?d l(i|y)ke? (you|u) (to|2)",
@@ -90,7 +90,7 @@ public class SimplePatterns {
     public static double uppercaseFraction(List<String> tokens){
         int uppercaseCount = 0;
         for (String token : tokens){
-            if (org.apache.commons.lang3.StringUtils.isAllUpperCase(token))
+            if (isAllUpperCase(token))
                 uppercaseCount++;
         } return uppercaseCount / (double) tokens.size();
     }
@@ -104,7 +104,13 @@ public class SimplePatterns {
     }
 
     public static int alphaCount(List<String> tokens){
-        return (int)tokens.stream().filter(org.apache.commons.lang3.StringUtils::isAlpha).count();
+        int count = 0;
+        for (String token : tokens) {
+            if (isAlpha(token)) {
+                count += 1;
+            }
+        }
+        return count;
     }
 
     public static boolean isJunkSentence(List<String> tokens){
@@ -121,5 +127,24 @@ public class SimplePatterns {
         if (alphaCount(tokens) < tokens.size()/2 )
             return true;
         return false;
+    }
+
+    private static boolean isAllUpperCase(String s) {
+        for (char c : s.toCharArray()) {
+            if (c >= 'a' && c <= 'z') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isAlpha(String s) {
+        for (char c : s.toCharArray()) {
+            if (!(c >= 'a' && c <= 'z' || c >= 'A' || c <= 'Z')) {
+                return false;
+
+            }
+        }
+        return true;
     }
 }

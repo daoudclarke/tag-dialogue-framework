@@ -1,10 +1,12 @@
 package uk.ac.susx.tag.dialoguer.knowledge.linguistic;
 
-import com.google.common.collect.Sets;
-import uk.ac.susx.tag.dialoguer.utils.StringUtils;
-
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 /**
  * Collection of English stopwords. Obtained from NLTK.
@@ -18,7 +20,7 @@ import java.util.regex.Pattern;
 public class Stopwords {
 
 
-    public static final Set<String> stopwords = Sets.newHashSet(
+    public static final List<String> stopwordArray = Arrays.asList(
             "a",
             "about",
             "above",
@@ -147,6 +149,7 @@ public class Stopwords {
             "yourself",
             "yourselves"
     );
+    public static final Set<String> stopwords = new HashSet<>(stopwordArray);
 
     public static final Pattern stopwordsRegex = StringUtils.buildDisjunctionWithWordBoundaries(stopwords);
 

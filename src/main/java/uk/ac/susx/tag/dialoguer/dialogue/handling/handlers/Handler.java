@@ -4,9 +4,7 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.factories.HandlerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,11 +72,11 @@ public abstract class Handler implements AutoCloseable {
      */
     public abstract Dialogue getNewDialogue(String dialogueId);
 
-    /**
-     * The handler must be able to provide a new instance of the type of HandlerFactory that can produce this type
-     * of handler.
-     */
-    public abstract HandlerFactory getFactory();
+//    /**
+//     * The handler must be able to provide a new instance of the type of HandlerFactory that can produce this type
+//     * of handler.
+//     */
+//    public abstract HandlerFactory getFactory();
 
 /********************************************************
  * Simple intent handling
@@ -223,9 +221,7 @@ public abstract class Handler implements AutoCloseable {
     /**
      * Get the name of the factory that can produce this type of handler.
      */
-    public String getName(){
-        return getFactory().getName();
-    }
+    public abstract String getName();
 
 //    /**
 //     * Get a new instance of a handler with a specified name, using the setup file given.

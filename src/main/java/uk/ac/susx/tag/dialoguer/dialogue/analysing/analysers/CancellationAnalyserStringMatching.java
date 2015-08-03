@@ -1,7 +1,5 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.CancellationAnalyserStringMatchingFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
@@ -58,10 +56,10 @@ public class CancellationAnalyserStringMatching extends Analyser {
         return isCancellation(d)? Intent.buildCancelIntent(message).toList() : new ArrayList<Intent>();
     }
 
-    @Override
-    public AnalyserFactory getFactory() {
-        return new CancellationAnalyserStringMatchingFactory();
-    }
+//    @Override
+//    public AnalyserFactory getFactory() {
+//        return new CancellationAnalyserStringMatchingFactory();
+//    }
 
     @Override
     public void close() throws Exception {

@@ -1,7 +1,5 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.PatternFindingAnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
@@ -45,13 +43,13 @@ public class PatternFindingAnalyser extends Analyser {
             i.fillSlot("match", m.group(), m.start(), m.end()).toList();
         }
 
-        return i.isAnySlotFilled()? i.toList() : new ArrayList<>();
+        return i.isAnySlotFilled()? i.toList() : new ArrayList<Intent>();
     }
 
-    @Override
-    public AnalyserFactory getFactory() {
-        return new PatternFindingAnalyserFactory();
-    }
+//    @Override
+//    public AnalyserFactory getFactory() {
+//        return new PatternFindingAnalyserFactory();
+//    }
 
     @Override
     public void close() throws Exception {

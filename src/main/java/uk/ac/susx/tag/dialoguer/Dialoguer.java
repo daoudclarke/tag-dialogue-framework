@@ -19,10 +19,8 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
 import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.Handler;
-import uk.ac.susx.tag.dialoguer.dialogue.handling.handlers.RuleBasedHandler;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
 import uk.ac.susx.tag.dialoguer.knowledge.linguistic.Stopwords;
-import uk.ac.susx.tag.dialoguer.utils.JsonUtils;
 
 import java.io.BufferedReader;
 import java.io.File;

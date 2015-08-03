@@ -1,7 +1,6 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
 //import org.reflections.Reflections;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
@@ -31,13 +30,13 @@ public abstract class Analyser implements AutoCloseable {
      */
     public abstract List<Intent> analyse(String message, Dialogue dialogue);
 
-    /**
-     * Return a new instance of the factory which can create this analyser
-     */
-    public abstract AnalyserFactory getFactory();
-
-
-    public String getName(){ return getFactory().getName();}
+//    /**
+//     * Return a new instance of the factory which can create this analyser
+//     */
+//    public abstract AnalyserFactory getFactory();
+//
+//
+//    public String getName(){ return getFactory().getName();}
 
     public String getSourceId() { return sourceId; }
 

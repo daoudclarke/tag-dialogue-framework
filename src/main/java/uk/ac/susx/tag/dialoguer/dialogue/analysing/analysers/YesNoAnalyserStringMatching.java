@@ -1,14 +1,12 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.AnalyserFactory;
-import uk.ac.susx.tag.dialoguer.dialogue.analysing.factories.YesNoAnalyserStringMatchingFactory;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -23,7 +21,7 @@ import java.util.regex.Pattern;
  */
 public class YesNoAnalyserStringMatching extends Analyser {
 
-    private static Set<String> yesPhrases = Sets.newHashSet(
+    private static List<String> yesPhraseList = Arrays.asList(
             "thats right",
             "thats fine",
             "ok",
@@ -60,11 +58,12 @@ public class YesNoAnalyserStringMatching extends Analyser {
             "kosher",
             "sufficient"
     );
+    private static Set<String> yesPhrases = new HashSet<>(yesPhraseList);
 
     private static Pattern yesPattern =
             Pattern.compile(StringUtils.addWordBoundaries("(y+([eau]+[hps]*)?)+"));
 
-    private static Pattern noPattern = StringUtils.buildDisjunctionWithWordBoundaries(Lists.newArrayList(
+    private static Pattern noPattern = StringUtils.buildDisjunctionWithWordBoundaries(Arrays.asList(
             "no+(pe)?",
             "na+h+",
             "nevermind",
@@ -88,11 +87,6 @@ public class YesNoAnalyserStringMatching extends Analyser {
                 return Intent.buildNoChoiceIntent(message).toList();
             }
         } else return new ArrayList<>();
-    }
-
-    @Override
-    public AnalyserFactory getFactory() {
-        return new YesNoAnalyserStringMatchingFactory();
     }
 
     public boolean isNo(String text){
