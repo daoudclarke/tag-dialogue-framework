@@ -114,20 +114,14 @@ public class Intent {
 //        return intents.stream().allMatch(i -> i.areSlotsFilled(necessarySlotsPerIntent.get(i.getName())));
 //    }
 
-    @Deprecated
     public HashSet<String> getUnfilledSlotNames(Set<String> requiredSlotNames){
         HashSet<String> results = new HashSet<>(requiredSlotNames);
         results.removeAll(slots.keySet());
         return results;
     }
 
-    @Deprecated
     public boolean areSlotsFilled(Set<String> requiredSlotNames){
         return getUnfilledSlotNames(requiredSlotNames).isEmpty();
-    }
-
-    public boolean isSlotFilled(String requiredSlotName) {
-        return slots.containsKey(requiredSlotName);
     }
 
     public Intent fillSlot(String name, String value, int start, int end){

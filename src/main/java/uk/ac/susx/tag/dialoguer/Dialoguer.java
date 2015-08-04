@@ -163,6 +163,18 @@ public class Dialoguer implements AutoCloseable {
         responseTemplates = new HashMap<>();
     }
 
+    public Dialoguer(Handler handler,
+                     List<Analyser> analysers,
+                     Map<String, Set<String>> necessarySlotsPerIntent,
+                     Map<String, String> humanReadableSlotNames,
+                     Map<String, ResponseTemplate> responseTemplates) {
+        this.handler = handler;
+        this.analysers = analysers;
+        this.necessarySlotsPerIntent = necessarySlotsPerIntent;
+        this.humanReadableSlotNames = humanReadableSlotNames;
+        this.responseTemplates = responseTemplates;
+    }
+
     public Dialogue startNewDialogue(String dialogueId){
         return handler.getNewDialogue(dialogueId);
     }
