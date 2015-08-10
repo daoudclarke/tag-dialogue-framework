@@ -154,6 +154,7 @@ public class Dialoguer implements AutoCloseable {
     private Map<String, Set<String>> necessarySlotsPerIntent;
     private Map<String, String> humanReadableSlotNames;
     private Map<String, ResponseTemplate> responseTemplates;
+    private String autoQueryResponseTemplate;
 
     private Dialoguer(){
         handler = null;
@@ -161,18 +162,21 @@ public class Dialoguer implements AutoCloseable {
         necessarySlotsPerIntent = new HashMap<>();
         humanReadableSlotNames = new HashMap<>();
         responseTemplates = new HashMap<>();
+        autoQueryResponseTemplate = "Please specify {query}";
     }
 
     public Dialoguer(Handler handler,
                      List<Analyser> analysers,
                      Map<String, Set<String>> necessarySlotsPerIntent,
                      Map<String, String> humanReadableSlotNames,
-                     Map<String, ResponseTemplate> responseTemplates) {
+                     Map<String, ResponseTemplate> responseTemplates,
+                     String autoQueryResponseTemplate) {
         this.handler = handler;
         this.analysers = analysers;
         this.necessarySlotsPerIntent = necessarySlotsPerIntent;
         this.humanReadableSlotNames = humanReadableSlotNames;
         this.responseTemplates = responseTemplates;
+        this.autoQueryResponseTemplate = autoQueryResponseTemplate;
     }
 
     public Dialogue startNewDialogue(String dialogueId){
@@ -444,7 +448,7 @@ public class Dialoguer implements AutoCloseable {
         } else if (r.getResponseName().equals(Response.defaultCompletionResponseId)) {
             dialogue.addNewSystemMessage(r.fillTemplate("Thanks, goodbye!"));
         } else if (r.getResponseName().equals(Response.defaultAutoQueryResponseId)) {
-            dialogue.addNewSystemMessage(r.fillTemplate("Please specify {query}."));
+            dialogue.addNewSystemMessage(r.fillTemplate(autoQueryResponseTemplate));
         } else if (r.getResponseName().equals(Response.defaultUnableToProcessResponseId)) {
             dialogue.addNewSystemMessage(r.fillTemplate("I'm sorry; I don't understand."));
         }
