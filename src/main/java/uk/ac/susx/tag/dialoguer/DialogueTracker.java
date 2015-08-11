@@ -2,12 +2,11 @@ package uk.ac.susx.tag.dialoguer;
 
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.User;
+import uk.ac.susx.tag.dialoguer.utils.Logger;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 /**
@@ -27,21 +26,13 @@ import java.util.logging.SimpleFormatter;
  */
 public class DialogueTracker implements AutoCloseable {
 
-    public static final Logger logger = Logger.getLogger(DialogueTracker.class.getName());
-    static {
-        try {
-            FileHandler f = new FileHandler("dialogues.log");
-            f.setFormatter(new SimpleFormatter());
-            logger.addHandler(f);
-        } catch (IOException e) { e.printStackTrace(); }
-    }
-
     private Dialoguer dialoguer;
     private Map<String, Dialogue> dialogues;
     private Map<String, GregorianCalendar> lastUpdated;
     private int trackingTimeLimitHours;
     private boolean logDialogues;
     private CompletedDialogueHandler cdHandler;
+    private Logger logger;
 
 //    /**
 //     * Create a new Dialogue Tracker, passing in the path to the JSON file containing the definition of the
@@ -51,13 +42,14 @@ public class DialogueTracker implements AutoCloseable {
 //        this(Dialoguer.loadDialoguerFromJsonResourceOrFile(resourcePath));
 //    }
 
-    public DialogueTracker(Dialoguer dialoguer){
+    public DialogueTracker(Dialoguer dialoguer, Logger logger){
         this.dialoguer = dialoguer;
         this.dialogues = new HashMap<>();
         lastUpdated = new HashMap<>();
         trackingTimeLimitHours = 60*60*24;
         logDialogues = false;
         cdHandler = null;
+        this.logger = logger;
     }
 
     /**
@@ -121,12 +113,12 @@ public class DialogueTracker implements AutoCloseable {
     }
 
     public void log(String dialogueId){
-        logger.log(Level.INFO, dialogues.get(dialogueId).toString());
+        logger.info(dialogues.get(dialogueId).toString());
     }
 
     public void logAll(){
         for (Dialogue d : dialogues.values())
-            logger.log(Level.INFO, d.toString());
+            logger.info(d.toString());
     }
 
     @Override
