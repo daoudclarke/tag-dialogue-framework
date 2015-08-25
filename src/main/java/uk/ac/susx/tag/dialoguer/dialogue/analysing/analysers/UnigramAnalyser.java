@@ -19,7 +19,7 @@ import uk.ac.susx.tag.dialoguer.knowledge.linguistic.SimplePatterns;
  *
  */
 public class UnigramAnalyser extends Analyser {
-    ArrayList<Map.Entry<HashSet<String>, Intent>> queryTermIntents;
+    ArrayList<Map.Entry<HashSet<String>, Intent>> queryTermIntents = new ArrayList<>();
 
     public void train(Map<String, Intent> queryParses) {
         for (Map.Entry<String, Intent> entry : queryParses.entrySet()) {
@@ -70,7 +70,9 @@ public class UnigramAnalyser extends Analyser {
             }
         }
         ArrayList<Intent> results = new ArrayList<>();
-        results.add(bestIntent);
+        if (bestIntent != null) {
+            results.add(bestIntent);
+        }
         return results;
     }
 
