@@ -1,6 +1,7 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,7 +72,9 @@ public class UnigramAnalyser extends Analyser {
         }
         ArrayList<Intent> results = new ArrayList<>();
         if (bestIntent != null) {
-            results.add(bestIntent);
+            Intent copy = new Intent(bestIntent.getName());
+            copy.copySlots(Arrays.asList(bestIntent));
+            results.add(copy);
         }
         return results;
     }
