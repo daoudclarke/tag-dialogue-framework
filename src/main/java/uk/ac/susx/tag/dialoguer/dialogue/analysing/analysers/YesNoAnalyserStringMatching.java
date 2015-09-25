@@ -1,15 +1,15 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
-import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
-import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-import uk.ac.susx.tag.dialoguer.utils.StringUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
+import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
+import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 /**
  * Tries to determine whether the using is yes/no-ing or confirming if the Handler has indicated that it is expecting

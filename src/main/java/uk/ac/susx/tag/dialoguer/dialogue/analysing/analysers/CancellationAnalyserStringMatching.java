@@ -1,13 +1,13 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
-import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
-import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
+import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
 /**
  * Try to detemine whether the user is attempting to cancel a dialogue.

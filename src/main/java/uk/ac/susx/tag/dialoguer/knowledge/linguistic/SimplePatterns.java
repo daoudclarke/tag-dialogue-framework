@@ -1,10 +1,10 @@
 package uk.ac.susx.tag.dialoguer.knowledge.linguistic;
 
-import uk.ac.susx.tag.dialoguer.utils.StringUtils;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import uk.ac.susx.tag.dialoguer.utils.StringUtils;
 
 /**
  * Created with IntelliJ IDEA.

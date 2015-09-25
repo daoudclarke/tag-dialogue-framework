@@ -1,6 +1,7 @@
 package uk.ac.susx.tag.dialoguer.knowledge.linguistic;
 
 import org.tartarus.snowball.SnowballStemmer;
+
 import uk.ac.susx.tag.dialoguer.Dialoguer;
 
 /**

@@ -1,7 +1,5 @@
 package uk.ac.susx.tag.dialoguer.dialogue.components;
 
-import uk.ac.susx.tag.dialoguer.Dialoguer;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

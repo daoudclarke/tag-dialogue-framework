@@ -1,16 +1,16 @@
 package uk.ac.susx.tag.dialoguer.dialogue.handling.handlers;
 
-import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
-import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
-import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
+import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
+import uk.ac.susx.tag.dialoguer.dialogue.components.IntentMatch;
+import uk.ac.susx.tag.dialoguer.dialogue.components.Response;
 
 /**
  * It is the function of the Handler to determine what response to give to a user's intents, and what side-effects to

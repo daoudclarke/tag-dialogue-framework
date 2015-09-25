@@ -1,12 +1,12 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
-import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
-import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
+import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 
 /**
  * An analyser that fires and intent when a pattern is found in the stripped text of the last user message. The intent

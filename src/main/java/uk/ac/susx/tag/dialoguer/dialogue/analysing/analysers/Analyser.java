@@ -1,12 +1,11 @@
 package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 
 //import org.reflections.Reflections;
+
+import java.util.List;
+
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 
 /**
  * It is the responsibility of an Analyser to look at the latest message received from the user (and potentially the
