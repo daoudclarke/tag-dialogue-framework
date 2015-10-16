@@ -148,13 +148,14 @@ public class Dialoguer implements AutoCloseable {
     private Map<String, ResponseTemplate> responseTemplates;
     private String autoQueryResponseTemplate;
 
-    private Dialoguer(){
-        handler = null;
-        analysers = new ArrayList<>();
+    public Dialoguer(Handler handler, List<Analyser> analysers,
+                     String autoQueryResponseTemplate){
+        this.handler = handler;
+        this.analysers = analysers;
         necessarySlotsPerIntent = new HashMap<>();
         humanReadableSlotNames = new HashMap<>();
         responseTemplates = new HashMap<>();
-        autoQueryResponseTemplate = "Please specify {query}";
+        this.autoQueryResponseTemplate = autoQueryResponseTemplate;
     }
 
     public Dialoguer(Handler handler,
@@ -169,6 +170,18 @@ public class Dialoguer implements AutoCloseable {
         this.humanReadableSlotNames = humanReadableSlotNames;
         this.responseTemplates = responseTemplates;
         this.autoQueryResponseTemplate = autoQueryResponseTemplate;
+    }
+
+    public void addNewHumanReadableSlotName(String slot, String name) {
+        humanReadableSlotNames.put(slot, name);
+    }
+
+    public void addNecessarySlotsPerIntent(String intentName, Set<String> slots) {
+        necessarySlotsPerIntent.put(intentName, slots);
+    }
+
+    public void addResponseTemplate(String responseName, ResponseTemplate template) {
+        responseTemplates.put(responseName, template);
     }
 
     public Dialogue startNewDialogue(String dialogueId){
