@@ -3,6 +3,8 @@ package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 import com.google.plaintext.diff_match_patch;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -50,13 +52,35 @@ public class DiffAnalyser extends Analyser {
     }
 
     private Intent matchTemplate(String translation, Intent intent, String input) {
-        // TODO: match template (copy from js)
-        return null;
+        Intent result = new Intent(intent.getName());
+        for (Intent.Slot slot : intent.getSlotCollection()) {
+            if (translation.contains(slot.value)) {
+                String replaced = translation.replace(slot.value, "*");
+                ArrayList<diff_match_patch.Diff> inputDiffs =
+                        new ArrayList<>(dmp.diff_main(replaced, input));
+                for (int i=0; i<inputDiffs.size(); ++i) {
+                    diff_match_patch.Diff diff = inputDiffs.get(i);
+                    if (diff.text.equals("*")) {
+                        String replacement = inputDiffs.get(i + 1).text;
+                        result.fillSlot(slot.name, replacement);
+                    }
+                }
+            } else {
+                result.fillSlot(slot);
+            }
+        }
+
+        return result;
     }
 
     @Override
     public List<Intent> analyse(String message, Dialogue dialogue) {
-        return null;
+        Map.Entry<String, Intent> best = findBest(message);
+        if (best != null) {
+            return Collections.singletonList(
+                    matchTemplate(best.getKey(), best.getValue(), message));
+        }
+        return Collections.emptyList();
     }
 
     @Override
