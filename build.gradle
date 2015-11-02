@@ -1,37 +1,8 @@
-//buildscript {
-//    repositories {
-//        mavenCentral()
-//    }
-//    dependencies {
-////        classpath 'com.android.tools.build:gradle:0.6.+'
-//    }
-//}
 
 apply plugin: 'java'
 
-//repositories {
-//    mavenCentral()
-//}
-//
-//android {
-//    compileSdkVersion 21
-//    buildToolsVersion "21.1.2"
-//
-//    defaultConfig {
-//        minSdkVersion 19
-//        targetSdkVersion 21
-//    }
-//
-//    sourceSets {
-//        main {
-//            manifest.srcFile 'pom.xml'
-//            java.srcDirs = ['src']
-//            resources.srcDirs = ['src']
-//            aidl.srcDirs = ['src']
-//            renderscript.srcDirs = ['src']
-//            res.srcDirs = ['res']
-//            assets.srcDirs = ['assets']
-//        }
-//
-//    }
-//}
+dependencies {
+    testCompile 'junit:junit:4.12'
+}
+
+

@@ -3,16 +3,15 @@ package uk.ac.susx.tag.dialoguer.dialogue.analysing.analysers;
 import com.google.plaintext.diff_match_patch;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import uk.ac.susx.tag.dialoguer.dialogue.components.Dialogue;
 import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
+import uk.ac.susx.tag.dialoguer.utils.Logger;
 
 /**
  * Created by dc on 28/10/15.
@@ -20,6 +19,11 @@ import uk.ac.susx.tag.dialoguer.dialogue.components.Intent;
 public class DiffAnalyser extends Analyser {
     HashMap<String, Intent> queryTermIntents = new HashMap<>();
     diff_match_patch dmp = new diff_match_patch();
+    Logger logger;
+
+    public DiffAnalyser(Logger logger) {
+        this.logger = logger;
+    }
 
     private class MatchTemplateResult {
         public Intent intent;
@@ -39,11 +43,13 @@ public class DiffAnalyser extends Analyser {
         }
     }
 
-    private float diffEntails(String s, String t) {
+    private float diffSimilarity(String s, String t) {
         LinkedList<diff_match_patch.Diff> diffs = dmp.diff_main(s, t);
         int common = 0;
         for (diff_match_patch.Diff diff : diffs) {
-            common += diff.text.length();
+            if (diff.operation == diff_match_patch.Operation.EQUAL) {
+                common += diff.text.length();
+            }
         }
         return common / (float) Math.max(t.length(),s.length());
     }
@@ -60,7 +66,7 @@ public class DiffAnalyser extends Analyser {
                     if (diff.text.equals("*")) {
                         String replacement = inputDiffs.get(i + 1).text;
                         result.intent.fillSlot(slot.name, replacement);
-                        result.nlGloss = result.nlGloss.replace(slot.value, diff.text);
+                        result.nlGloss = result.nlGloss.replace(slot.value, replacement);
                     }
                 }
             } else {
@@ -77,7 +83,9 @@ public class DiffAnalyser extends Analyser {
         float bestEnt = 0.0F;
         for (Map.Entry<String, Intent> entry : queryTermIntents.entrySet()) {
             MatchTemplateResult matchTemplateResult = matchTemplate(entry.getKey(), entry.getValue(), message);
-            float ent = diffEntails(message, matchTemplateResult.nlGloss);
+            float ent = diffSimilarity(message, matchTemplateResult.nlGloss);
+            logger.info("Match template result: " + ent +
+                    " " + entry.getKey() + " " + matchTemplateResult.nlGloss);
             if (ent > 0.5 && ent > bestEnt) {
                 bestEnt = ent;
                 best = matchTemplateResult.intent;
