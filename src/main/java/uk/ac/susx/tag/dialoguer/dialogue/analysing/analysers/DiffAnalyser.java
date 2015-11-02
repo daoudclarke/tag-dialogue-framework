@@ -21,6 +21,16 @@ public class DiffAnalyser extends Analyser {
     HashMap<String, Intent> queryTermIntents = new HashMap<>();
     diff_match_patch dmp = new diff_match_patch();
 
+    private class MatchTemplateResult {
+        public Intent intent;
+        public String nlGloss;
+
+        public MatchTemplateResult(String intentName, String nlGloss) {
+            this.intent = new Intent(intentName);
+            this.nlGloss = nlGloss;
+        }
+    }
+
     public void train(Map<String, Intent> queryParses) {
         for (Map.Entry<String, Intent> entry : queryParses.entrySet()) {
             String query = entry.getKey();
@@ -38,21 +48,8 @@ public class DiffAnalyser extends Analyser {
         return common / (float) Math.max(t.length(),s.length());
     }
 
-    private Map.Entry<String, Intent> findBest(String trans) {
-        Map.Entry<String, Intent> best = null;
-        float bestEnt = 0.0F;
-        for (Map.Entry<String, Intent> entry : queryTermIntents.entrySet()) {
-            float ent = diffEntails(trans, entry.getKey());
-            if (ent > 0.5 && ent > bestEnt) {
-                bestEnt = ent;
-                best = entry;
-            }
-        }
-        return best;
-    }
-
-    private Intent matchTemplate(String translation, Intent intent, String input) {
-        Intent result = new Intent(intent.getName());
+    private MatchTemplateResult matchTemplate(String translation, Intent intent, String input) {
+        MatchTemplateResult result = new MatchTemplateResult(intent.getName(), translation);
         for (Intent.Slot slot : intent.getSlotCollection()) {
             if (translation.contains(slot.value)) {
                 String replaced = translation.replace(slot.value, "*");
@@ -62,11 +59,12 @@ public class DiffAnalyser extends Analyser {
                     diff_match_patch.Diff diff = inputDiffs.get(i);
                     if (diff.text.equals("*")) {
                         String replacement = inputDiffs.get(i + 1).text;
-                        result.fillSlot(slot.name, replacement);
+                        result.intent.fillSlot(slot.name, replacement);
+                        result.nlGloss = result.nlGloss.replace(slot.value, diff.text);
                     }
                 }
             } else {
-                result.fillSlot(slot);
+                result.intent.fillSlot(slot);
             }
         }
 
@@ -75,10 +73,19 @@ public class DiffAnalyser extends Analyser {
 
     @Override
     public List<Intent> analyse(String message, Dialogue dialogue) {
-        Map.Entry<String, Intent> best = findBest(message);
+        Intent best = null;
+        float bestEnt = 0.0F;
+        for (Map.Entry<String, Intent> entry : queryTermIntents.entrySet()) {
+            MatchTemplateResult matchTemplateResult = matchTemplate(entry.getKey(), entry.getValue(), message);
+            float ent = diffEntails(message, matchTemplateResult.nlGloss);
+            if (ent > 0.5 && ent > bestEnt) {
+                bestEnt = ent;
+                best = matchTemplateResult.intent;
+            }
+        }
+
         if (best != null) {
-            return Collections.singletonList(
-                    matchTemplate(best.getKey(), best.getValue(), message));
+            return Collections.singletonList(best);
         }
         return Collections.emptyList();
     }
