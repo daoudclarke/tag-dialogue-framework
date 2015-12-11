@@ -220,6 +220,19 @@ public class Intent {
 /**********************************************
  * Utility
  **********************************************/
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder(name);
+        result.append(":");
+        for (HashSet<Slot> slotValues : slots.values()) {
+            for (Slot slot : slotValues) {
+                result.append(slot.toString()).append("-");
+            }
+        }
+        return result.toString();
+    }
+
     public List<Intent> toList(){
         ArrayList<Intent> results = new ArrayList<>();
         results.add(this);
