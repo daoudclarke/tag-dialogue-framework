@@ -44,6 +44,24 @@ public class DiffAnalyserTest {
     }
 
     @Test
+    public void testNoOutOfBoundsException() {
+        DiffAnalyser analyser = new DiffAnalyser(new Logger() {
+            @Override
+            public void info(String message) {
+                System.out.println(message);
+            }
+        });
+
+        Map<String, Intent> trainingSet = new HashMap<>();
+        trainingSet.put("Search Amazon for sausage",
+                newIntent("search_amazon", "amazon_search_item", "sausage"));
+        analyser.train(trainingSet);
+
+        // This used to crash with an out-of-bounds exception.
+        analyser.analyse("Search Amazon for ", new Dialogue("1"));
+    }
+
+    @Test
     public void testMatchesLongestExactMatch() {
         DiffAnalyser analyser = new DiffAnalyser(new Logger() {
             @Override

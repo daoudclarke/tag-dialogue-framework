@@ -62,8 +62,9 @@ public class DiffAnalyser extends Analyser {
                 ArrayList<diff_match_patch.Diff> inputDiffs =
                         new ArrayList<>(dmp.diff_main(replaced, input));
                 for (int i=0; i<inputDiffs.size(); ++i) {
+                    logger.info("Diff: " + i + inputDiffs.get(i));
                     diff_match_patch.Diff diff = inputDiffs.get(i);
-                    if (diff.text.equals("*")) {
+                    if (diff.text.equals("*") && i + 1 < inputDiffs.size()) {
                         String replacement = inputDiffs.get(i + 1).text;
                         result.intent.fillSlot(slot.name, replacement);
                         result.nlGloss = result.nlGloss.replace(slot.value, replacement);
