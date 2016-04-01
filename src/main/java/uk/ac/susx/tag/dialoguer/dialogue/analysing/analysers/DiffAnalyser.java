@@ -54,6 +54,10 @@ public class DiffAnalyser extends Analyser {
         return common / (float) Math.max(t.length(),s.length());
     }
 
+    // TODO: there is a bug here when the template term has a some characters in common with the
+    // query term. We need to find a way around that. E.g:
+    //  - "Search for John on Facebook" - "Search for shoes on Amazon"
+    //  - "John" and "shoes" has a complex diff that messes up the matching.
     private MatchTemplateResult matchTemplate(String translation, Intent intent, String input) {
         MatchTemplateResult result = new MatchTemplateResult(intent.getName(), translation);
         for (Intent.Slot slot : intent.getSlotCollection()) {
